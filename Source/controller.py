@@ -1,7 +1,6 @@
 #  ------------------------------------------------------------------------------
 #
-#  Copyright 2021, MIPI Alliance and its contributors.
-#  SPDX-License-Identifier: BSD-3-Clause
+#  Copyright (C) Microsoft Corporation. All rights reserved.
 #
 #  Module Name:
 #

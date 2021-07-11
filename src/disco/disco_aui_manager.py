@@ -53,6 +53,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.has_project_path = False
         self.tree_list = None
         self.curr_tree = None
+        self.app_data_path = None
 
         # Application path
         app_filepath = sys.argv[0]
@@ -62,8 +63,10 @@ class DiscoToolAuiManager(wx.Frame):
             app_filepath = app_filepath[:-1]
         uirealpath = os.path.realpath(app_filepath)
         self.discoapp_path = os.path.dirname(uirealpath)
+        self.app_data_path = os.path.normpath(self.discoapp_path + os.sep + os.pardir)
+        self.app_data_path = os.path.normpath(self.app_data_path + os.sep + os.pardir)
 
-        self.SetIcon(wx.Icon("MIPIfavicon.ico", wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"data", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
 
         self.statusBar = self.CreateStatusBar(1)
 
@@ -1936,9 +1939,9 @@ class HeaderPanel(wx.Panel):
         self.frame_width = mainframesize[0]
         self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-        bmplogo = wx.Image("Stacked.bmp", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        bmplogo = wx.Image(os.path.join(self.aui_mainframe.app_data_path, "data", "Stacked.bmp"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
 
-        self.app_name = wx.StaticText(self, -1, "Disco Creation Tool                            ",
+        self.app_name = wx.StaticText(self, -1, "DisCo Creation Tool                            ",
                                       wx.DefaultPosition,
                                       wx.DefaultSize, 0)
         self.app_name.SetFont(wx.Font(20, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))

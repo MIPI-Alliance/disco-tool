@@ -42,7 +42,7 @@ def set_button_font(targetobject):
     :param Text object:
     :returns: none
     """
-    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "Intel Clear"))
+    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0))
     targetobject.SetForegroundColour(COLOR_WHITE)
     targetobject.SetBackgroundColour(COLOR_PURPLE4)
 
@@ -53,16 +53,16 @@ def set_title_font(targetobject):
     :param Text object:
     :returns: none
     """
-    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0))
     targetobject.SetForegroundColour(COLOR_PURPLE4)
 
 def set_text_font(targetobject):
     """
     __init__(targetobject)
-    sets title font
+    sets text font
     :param Text object:
     :returns: none
     """
 
-    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+    targetobject.SetFont(wx.Font(12.5, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0))
     targetobject.SetForegroundColour(COLOR_BLACK)

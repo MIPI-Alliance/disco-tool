@@ -1,0 +1,256 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>SDW_Slave</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.0</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdw-sw-interface-revision</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Version of this Specification whose Property definitions apply. 
+This is intended to guard against any potential changes to the property definitions in future versions of this Specification (32-bit value). 
+Bits 31-16: (Upper word) Major version number 
+Bits 15-0: (Lower word) Minor version number  
+This entry shall be provided if any other property entry within this structure is populated. 
+Example: 0x00010000 indicates that the contained properties shall be interpreted according to the property definitions given in version 1.0 of this Specification</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-wake-up-unavailable</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Wake-up events from this Device are not supported or allowed.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-test-mode-supported</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Test mode is supported on this Device.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clock-stop-mode1-supported</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Clock-stop mode1 is supported on this Device.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-simplified-clockstopprepare-sm-supported</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): This Slave only supports the simplified clock stop prepare state machine, and will always be ready for a clock stop transition.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clockstopprepare-timeout</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Slave-specific timeout in milliseconds. 
+This value indicates the worst-case latency of the Clock Stop Prepare state machine transitions. After receiving a successful clock stop prepare/de-prepare command, the Slave should complete the operation before the expiration of the timeout. Software may poll for completion periodically, or wait for this timeout value. If the requested action has not completed at the end of this timeout, software shall interpret this as an error condition. 
+It is recommended that this value be lower than 300 ms. 
+This property shall not be used when a Slave implements a Simplified ClockStopPrepare state machine.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-slave-channelprepare-timeout</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Slave-specific Timeout value in milliseconds. 
+This value indicates the worst-case latency of the Channel Prepare state machine transitions. After receiving a successful channel prepare/de-prepare command, the Slave should complete the operation before the expiration of the timeout. 
+Software may poll for completion periodically or wait for this timeout value. If the requested action has not completed at the end of this timeout, software shall interpret this as an error condition. 
+It is recommended this value be lower than 30 ms, in order to comply with typical operating system certification requirements for cold boot latency for the audio subsystem. The timeout value is assumed to be the same for all channels in all ports. 
+This property shall not be used when a Slave implements a Simplified ChannelPrepare state machine. </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clockstopprepare-hard-reset-behavior</Name>
+			<DataType>BitMap</DataType>
+			<Required>0</Required>
+			<Description>Bit 0: When set, the Slave keeps the status of the SlaveStopClockPrepare state machine (P=1 SCSP_SM) after exit from clock-stop mode1, and needs to be de-prepared by software. Otherwise, the Hard Reset sequence results in the Slave losint its SCSP_SM status when exiting clock-stop mode1 - in this case, it is not necessary for software to send a set of commands to de-prepare the Slave. 
+All other bits: Reserved. 
+If this property is not present, the default behaviour is assumed. </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-highPHY-capable</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Device is HighPHY capable.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-paging-supported</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Device implements paging registers SCP_AddrPage1 and SCP_AddrPage2.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-bank-delay-supported</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>True (nonzero): Device implements bank delay/bridge support registers SCP_BankDelay and SCP_NextFrame.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-port15-read-behavior</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Slave behavior when the Master attempts a Read to the Port15 alias. 
+0: Command_Ignored 
+1: Command_OK, data is logical OR of all registers 
+All other values: Reserved. </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-master-count</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>If present, this property describes the number of Masters present on this Slave. 
+For a Slave containing one or more Masters, this property is Required and its value shall not be Zero</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages>
+				<Package>
+					<Name>SDW_Master</Name>
+					<Filename>Master.xml</Filename>
+					<Description>String encoding of a NameString of an object resolving to a package describing properties for each master. The number of these entries shall be equal to the value of mipi-sdw-master-count.</Description>
+					<PropertyNamePrefix>mipi-sdw-link-</PropertyNamePrefix>
+					<PropertyNamePostfix>-subproperties</PropertyNamePostfix>
+					<PackageNamePrefix>MS</PackageNamePrefix>
+					<InterpretValue>Integer</InterpretValue>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-source-port-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>0</Required>
+			<Description>Bitmap identifying source ports on the Device, including ports that are also sinks. 
+Bit 0: Shall be set to zero 
+Bit N: Set to 0b1 if Port N is source-capable</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages>
+				<Package>
+					<Name>DPn_Source</Name>
+					<Filename>DPn.xml</Filename>
+					<Description>Package description</Description>
+					<PropertyNamePrefix>mipi-sdw-dp-</PropertyNamePrefix>
+					<PropertyNamePostfix>-source-subproperties</PropertyNamePostfix>
+					<PackageNamePrefix>SC</PackageNamePrefix>
+					<InterpretValue>BitMap</InterpretValue>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-sink-port-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>0</Required>
+			<Description>Bitmap identifying sink ports on the Device, including ports that are also sources. 
+Bit 0: Shall be set to zero 
+Bit N: Set to 0b1 if Port N is sink-capable </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages>
+				<Package>
+					<Name>DPn_Sink</Name>
+					<Filename>DPn.xml</Filename>
+					<Description>Package description</Description>
+					<PropertyNamePrefix>mipi-sdw-dp-</PropertyNamePrefix>
+					<PropertyNamePostfix>-sink-subproperties</PropertyNamePostfix>
+					<PackageNamePrefix>SK</PackageNamePrefix>
+					<InterpretValue>BitMap</InterpretValue>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>
+		
+	</Properties>
+	
+	<HierarchicalProperties>
+
+		<HierarchicalProperty>
+			<Name>mipi-sdw-dp-0-subproperties</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>String encoding of a NameString of an object resolving to a package describing properties for DP0. See Table 6 for package contents. 
+This property shall not be set if DP0 is not supported. </Description>
+			<OEMModify>0</OEMModify>
+			<PackageNamePrefix>DP</PackageNamePrefix>
+			<Value></Value>
+			<Filename>DP0.xml</Filename>
+		</HierarchicalProperty>
+		
+	</HierarchicalProperties>
+
+</Template>

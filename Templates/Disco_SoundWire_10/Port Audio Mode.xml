@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>SDW_Port_Audio_Mode</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.0</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+
+	<Properties>
+		<Property>
+			<Name>mipi-sdw-audio-mode-max-bus-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-audio-mode-min-bus-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-bus-frequency-configs</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-max-sampling-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-min-sampling-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-sampling-frequency-config</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-prepare-channel-behavior</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-audio-mode-glitchless-transitions</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	</Properties>
+	
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+
+</Template>

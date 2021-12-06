@@ -1,0 +1,134 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>SDW_DP0</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.0</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+
+	<Properties>
+		<Property>
+			<Name>mipi-sdw-port-max-wordlength</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-port-min-wordlength</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-port-wordlength-configs</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-bra-flow-controlled</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-bra-imp-def-response-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-bra-role-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-simplified-channel-prepare-sm</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-imp-def-dp0-interrupts-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		
+		<Property>
+			<Name>mipi-sdw-imp-def-bpt-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	</Properties>
+	
+	<HierarchicalProperties>
+
+		<HierarchicalProperty>
+			<Name>mipi-sdw-port-bra-mode-m</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<PackageNamePrefix>BA</PackageNamePrefix>
+			<Value></Value>
+			<Filename>BRA Mode.xml</Filename>
+		</HierarchicalProperty>
+		
+	</HierarchicalProperties>
+	
+</Template>

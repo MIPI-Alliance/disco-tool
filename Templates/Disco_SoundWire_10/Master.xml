@@ -1,0 +1,142 @@
+<?xml version="1.0" ?>
+
+<Template>
+
+	<Name></Name> 
+
+	<Header>
+		<TemplateType>SDW_Master</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.0</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdw-sw-interface-revision</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clock-stop-mode0-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clock-stop-mode1-supported</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-max-clock-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-supported-clock-gears</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-clock-frequencies-supported</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-default-frame-rate</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-default-frame-row-size</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-default-frame-col-size</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-dynamic-frame-shape</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>mipi-sdw-command-error-threshold</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+	</Properties>
+	
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+	
+</Template>

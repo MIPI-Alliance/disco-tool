@@ -14,15 +14,16 @@
 #  -------------------------------------------------------------------------------
 
 from pubsub import pub
-import model
+import disco.model as model
 
-from disco_aui_manager import DiscoToolAuiManager
-import ASLgenerator
+from  disco.disco_aui_manager import   DiscoToolAuiManager
+import  disco.ASLgenerator as ASLgenerator
 import wx
 import xml.dom.minidom as md
 import xml.etree.ElementTree as et
 import os
 import sys
+import disco
 
 #This class takes care of communication between the view and the model. It has listeners for when events occur in the UI 
 #and the View sends out corresponding messages. When the Controller receives these, it calls the appropriate method to update the 

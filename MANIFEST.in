@@ -11,5 +11,4 @@ include setup.py
 
 # Include the data files
 recursive-include data *
-recursive-include images *
 recursive-include src *.py

@@ -20,3 +20,4 @@ def main():
     app = wx.App()
     myController = controller()
     app.MainLoop()	
+    

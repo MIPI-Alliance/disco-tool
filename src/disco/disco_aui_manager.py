@@ -24,9 +24,9 @@ from pubsub import pub
 import re
 import wx.grid as grid
 
-import disco_constants as app_constants
-import disco_strings as disco_str
-
+import  disco.disco_constants as app_constants
+import disco.disco_strings as disco_str
+import disco
 
 class DiscoToolAuiManager(wx.Frame):
     """
@@ -64,9 +64,9 @@ class DiscoToolAuiManager(wx.Frame):
         uirealpath = os.path.realpath(app_filepath)
         self.discoapp_path = os.path.dirname(uirealpath)
         self.app_data_path = os.path.normpath(self.discoapp_path + os.sep + os.pardir)
-        self.app_data_path = os.path.normpath(self.app_data_path + os.sep + os.pardir)
+        self.app_data_path = os.path.dirname(disco.__file__)#os.path.normpath(self.app_data_path + os.sep + os.pardir)
 
-        self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"data", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
 
         self.statusBar = self.CreateStatusBar(1)
 
@@ -1939,7 +1939,7 @@ class HeaderPanel(wx.Panel):
         self.frame_width = mainframesize[0]
         self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-        bmplogo = wx.Image(os.path.join(self.aui_mainframe.app_data_path, "data", "Stacked.bmp"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        bmplogo = wx.Image(os.path.join(self.aui_mainframe.app_data_path, "images", "Stacked.bmp"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
 
         self.app_name = wx.StaticText(self, -1, "DisCo Creation Tool                            ",
                                       wx.DefaultPosition,

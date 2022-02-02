@@ -9,7 +9,7 @@
 #
 #  Abstract:
 #
-#    Disco pakage entry point.
+#    DisCo package entry point.
 #
 #  -------------------------------------------------------------------------------
 

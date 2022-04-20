@@ -28,6 +28,8 @@ class model():
         self.project_path = None
         self.template_path = None
         self.tree_list = []
+        self.pacakageName_list = []
+        self.propertyName_list = []
         
     #sets the current template path variable 
     def set_template_path(self, path):

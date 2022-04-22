@@ -1,0 +1,6 @@
+pypubsub
+wxPython = 4.1.1
+pytest
+flake8
+pyinstaller = 4.10
+

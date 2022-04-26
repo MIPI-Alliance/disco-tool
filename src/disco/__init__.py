@@ -13,11 +13,14 @@
 #
 #  -------------------------------------------------------------------------------
 
-from   disco.controller import  controller
 import wx
+from disco.disco_help import VERSION   
+__version__ = VERSION
+
+from disco.disco_aui_manager import DiscoToolApp
 def main():
     """Entry point for the application script"""
     app = wx.App()
-    myController = controller()
+    myController = DiscoToolApp(redirect=False)
     app.MainLoop()	
     

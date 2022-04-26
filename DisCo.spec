@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['src\\disco\\controller.py'],
+a = Analysis(['src\\disco\\disco_aui_manager.py'],
              pathex=[],
              binaries=[],
              datas=[],

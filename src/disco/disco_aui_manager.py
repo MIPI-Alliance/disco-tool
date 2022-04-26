@@ -20,13 +20,30 @@ import wx
 import multiprocessing
 import wx.lib.agw.aui as aui
 import sys
-from pubsub import pub
 import re
 import wx.grid as grid
+import logging
+import xml.dom.minidom as md
+import xml.etree.ElementTree as et
 
-import  disco.disco_constants as app_constants
-import disco.disco_strings as disco_str
-import disco
+try:
+    import disco
+    import  disco.disco_constants as app_constants
+    import disco.disco_strings as disco_str
+    import disco.model as model
+    from disco.properties import PropertyPanel
+    from disco.hierarchical_properties import HierarchicalPropertyPanel
+    from disco.ASLgenerator import GenerateASLFrame
+    from disco.disco_help import DisCoInfo
+except:
+    import disco_constants as app_constants
+    import disco_strings as disco_str
+    import model
+    from properties import PropertyPanel
+    from hierarchical_properties import HierarchicalPropertyPanel
+    from ASLgenerator import GenerateASLFrame
+    from disco_help import DisCoInfo
+
 
 class DiscoToolAuiManager(wx.Frame):
     """
@@ -54,6 +71,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.tree_list = None
         self.curr_tree = None
         self.app_data_path = None
+        self.model = model.model()
 
         # Application path
         app_filepath = sys.argv[0]
@@ -62,11 +80,13 @@ class DiscoToolAuiManager(wx.Frame):
         if app_filepath.endswith('"'):
             app_filepath = app_filepath[:-1]
         uirealpath = os.path.realpath(app_filepath)
-        self.discoapp_path = os.path.dirname(uirealpath)
-        self.app_data_path = os.path.normpath(self.discoapp_path + os.sep + os.pardir)
-        self.app_data_path = os.path.dirname(disco.__file__)#os.path.normpath(self.app_data_path + os.sep + os.pardir)
-
-        self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+        self.app_data_path = os.path.dirname(uirealpath)
+        try:
+            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+        except:
+            self.app_data_path = os.path.dirname(disco.__file__)
+            self.app_data_path = os.path.join(self.app_data_path, "disco")
+            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
 
         self.statusBar = self.CreateStatusBar(1)
 
@@ -88,6 +108,13 @@ class DiscoToolAuiManager(wx.Frame):
         fileMenu.Append(self.item_generate_asl)
         fileMenu.Append(wx.MenuItem(fileMenu, wx.ID_EXIT, text="E&xit"))
 
+        #Help menu
+        helpMenu = wx.Menu()
+        menuBar.Append(helpMenu, "&Help")        
+        self.item_about = wx.MenuItem(helpMenu, wx.ID_ABOUT, "&About DisCo", "About DisCo creation tool")
+        helpMenu.Append(self.item_about)
+        
+        
         self.item_save.Enable(False)
         self.item_save_as.Enable(False)
         self.item_generate_asl.Enable(False)
@@ -185,21 +212,18 @@ class DiscoToolAuiManager(wx.Frame):
                 if self.has_project_path is False:
                     self.save_dir_dialog()
                 else:
-                    pub.sendMessage("save", message=None)
+                    self.save_files(message=None)
         self.Destroy()
 
-    # updates the value of data_changed variable - called when some data is updated by user
-    def set_data_changed(self, value):
-        self.data_changed = value
-        print("data changed set to " + str(value))
+
 
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_property(self, event):
-        pub.sendMessage("property_deleted", message=self.delete_property_name)
+        self.property_deleted(message=self.delete_property_name)
 
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_hier_property(self, event):
-        pub.sendMessage("hier_property_deleted", message=[self.delete_property_name, None, None, self.curr_tree])
+        self.hier_property_deleted(message=[self.delete_property_name, None, None, self.curr_tree])
 
     # called when the user single clicks on an item in the treectrl
     def OnTreeItemSelectionChanged(self, event):
@@ -222,7 +246,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.hier_tree.SetFocusedItem(event.GetItem())
 
         # sends message to the Controller that a new item in the treeCtrl was chosen
-        pub.sendMessage("new_tree_chosen", message=text)
+        self.new_tree_chosen(message=text)
 
     # Expands and colors green the treeCtrl item that corresponds to the text value passed in and its children
     def ExpandAndColorTreeItem(self, root, text):
@@ -269,72 +293,6 @@ class DiscoToolAuiManager(wx.Frame):
         # If the function goes through all of the trees under higher_tree and
         # does not find a match to lower_tree, return False
         return False
-
-    # called when the user changes a cell in the properties grid (the value cell)
-    def OnPropsGridCellChange(self, event):
-        # collects the new property value, the previous value, the property's name,
-        # and initializes user_choice (used for warning box) to none
-        value = self.props_grid.GetCellValue(event.GetRow(), event.GetCol())
-        old_value = event.GetString()
-        prop_name = self.props_grid.GetCellValue(event.GetRow(), 0)
-        user_choice = wx.ID_NONE
-
-        # defines the message to be sent if property value is updated in the model
-        message = [prop_name, value, old_value]
-
-        # TODO: currently, this function is being called multiple times
-        # when a user only changes a grid cell once - after the first correct
-        # function call, the old_value is equal to the new value.
-        # This if statement is to prevent the warning dialogs to show up more than
-        # once when the function is called with these incorrect values.
-        if old_value != value:
-
-            # if user changes a property's name, that property name is updated in the model
-            if event.GetCol() == 0:
-                message = [value, old_value]
-                pub.sendMessage("property_name_changed", message=message)
-            # if user changes a property's value:
-            else:
-                # iterates through the current tree's properties to find the one that was just edited by the user -
-                # once it finds this it then finds the list of dependent packages (if any)
-                # that are attached to this property
-                for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
-                    if prop.find('Name').text == prop_name:
-
-                        # TODO: move the following data validation to the Controller
-                        # (checking data type matches what the user entered)
-
-                        # if new value is not the correct data type,
-                        # an error message is shown and value won't be updated
-                        ret, msg = self.check_type(prop.find('DataType').text, value)
-                        if ret is not True:
-                            wx.MessageBox(message=msg,
-                                          caption='Property value type check failed.',
-                                          style=wx.OK | wx.ICON_ERROR)
-                            self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
-                        else:
-                            pckg_list = prop.find('DependentPackages').findall('Package')
-
-                            # if there is at least one dependent package in this property,
-                            # the tool checks if the new value is different than the previous value-
-                            # if so, the user is warned that some of their hierarchical properties might be deleted.
-                            # If they decide to continue, then the property value is changed in the model.
-                            # If not, the value is changed back to the previous value.
-                            if len(pckg_list) > 0:
-                                if (value != old_value) & (old_value != ''):
-                                    user_choice = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDPROP_MSG,
-                                                                caption='Property value warning',
-                                                                style=wx.YES_NO | wx.ICON_WARNING)
-
-                                if user_choice != wx.NO:
-                                    pub.sendMessage("property_value_changed", message=message)
-                                else:
-                                    self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
-
-                            # if there are no dependent packages in this property,
-                            # the property value is changed in the model
-                            else:
-                                pub.sendMessage("property_value_changed", message=message)
 
     # TODO: move this type checking to the Controller
     # this function takes in a data type and a value that was just chosen for a property
@@ -413,6 +371,10 @@ class DiscoToolAuiManager(wx.Frame):
     # defines what function the program calls when a particular menu item is chosen
     def menuHandler(self, event):
         id = event.GetId()
+        if id == wx.ID_ABOUT:
+            about = DisCoInfo(self)
+            about.ShowModal()
+            about.Destroy()           
         if id == wx.ID_FILE:
             status = self.open_file_dialog()
             if status is True:
@@ -426,7 +388,7 @@ class DiscoToolAuiManager(wx.Frame):
             if self.has_project_path is False:
                 self.save_dir_dialog()
             else:
-                pub.sendMessage("save", message=None)
+                self.save_files(message=None)
         if id == wx.ID_SAVEAS:
             self.save_dir_dialog()
         if id == wx.ID_NEW:
@@ -454,8 +416,7 @@ class DiscoToolAuiManager(wx.Frame):
 
             with f:
                 data = f.read()
-                pub.sendMessage("new_project_chosen", message=dlg.GetPath())
-
+                self.new_project_chosen(message=dlg.GetPath())
                 status = True
                 self.has_project_path = True
 
@@ -470,7 +431,7 @@ class DiscoToolAuiManager(wx.Frame):
 
         if dlg.ShowModal() == wx.ID_OK:
             self.has_project_path = True
-            pub.sendMessage("save_as", message=dlg.GetPath())
+            self.save_as(message=dlg.GetPath())
 
         dlg.Destroy()
 
@@ -486,11 +447,217 @@ class DiscoToolAuiManager(wx.Frame):
 
             with f:
                 data = f.read()
-                pub.sendMessage("new_file_chosen", message=dlg.GetPath())
+                self.new_file_chosen(message=dlg.GetPath())
                 status = True
 
         dlg.Destroy()
         return status
+
+    #called when the starting xml template is chosen by the user - updates model's data and view's UI with this data (message is the file path)
+    def new_file_chosen(self, message):
+        self.properties_panel.set_data_changed(True)
+        print("setting data changed to true")
+
+        #starting file template name is always set to _DSD
+        templateName = '_DSD'
+        #new_mssg = message
+
+        #gets directory name for the file the user just chose
+        new_mssg = os.path.dirname(message)
+
+        #creates element tree for starting xml file and calls helper function to add this element tree and any other ones already defined to the tree_list
+        tree = et.parse(message)
+        self.model.add_element_trees(tree, templateName, '1')
+
+        #sets the template path to be the same location as the first template chosen
+        self.model.set_template_path(new_mssg)
+
+        #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
+        self.model.set_curr_tree(templateName)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when an existing project is chosen by the user to continue working on - updates model's data and view's UI with this data and adds
+    #any existing element trees in the intermediate xml files (message is the directory path)
+    def new_project_chosen(self, message):
+        #finds the starting template in this directory
+        path = os.path.join(message, '_DSD.xml')
+        tree = et.parse(path)
+
+        #tree = et.parse(message + "\\_DSD.xml")
+        print(message + "\\_DSD.xml")
+
+        #adds all of the existing element trees and sets the project path to be the same location the user just chose
+        self.model.set_project_path(message)
+        self.model.add_element_trees(tree, '_DSD', '1')
+
+        #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
+        self.model.set_curr_tree('_DSD')
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when the user clicks on a new package in the hierarchy on the left of the screen - changes the current tree and refreshes the view.
+    #message is the name of the new package chosen.
+    def new_tree_chosen(self, message):
+        self.model.set_curr_tree(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+    #called when a new property is added by the user - updates model's data and view's UI with this data
+    def property_added(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.add_property(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+
+    #called when user inputs a value for a hierarchical property - updates model's data and view's UI with this data
+    def hier_property_value_changed(self, message):
+        #Print statement for debugging purposes:
+        self.view.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.update_hier_property_value(message)
+
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when user presses the 'save' button (saves all element trees as files named with their template names)
+    def save_files(self, message):
+        #changes the set_data_changed variable to False because we just saved
+        self.set_data_changed(False)
+        print("initializing data changed to false")
+
+        tree_list = self.model.get_tree_list()
+        
+        #goes through the list of element trees and adds each one as an xml file to the current project path 
+        for tree in tree_list:
+            root = tree.getroot()
+            file_name = root.find('Name').text + '.xml'
+
+            #Print statement for debugging purposes:
+            print("FILE NAME:" + file_name)
+
+            #converting element tree to xml (adjust indents/newlines accordingly)
+            tree_str = et.tostring(root)
+            tree_str_parsed = md.parseString(tree_str)
+
+            path = os.path.join(self.model.get_project_path(), file_name)
+
+            #with open(self.model.get_project_path() +"\\" + file_name,'w') as my_file:
+            with open(path,'w') as my_file:
+                tree_str_pretty = tree_str_parsed.toprettyxml(indent='\t', newl='\n')
+                tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
+                my_file.write(tree_str_pretty)
+
+    #called when user presses the "save as" button or when they save their work for the first time (message is the path the user chose to save to)
+    def save_as(self, message):
+        #changes the set_data_changed variable to False because we just saved
+        self.set_data_changed(False)
+        print("initializing data changed to false")
+
+        tree_list = self.model.get_tree_list()
+        
+        #goes through the list of element trees and adds each one as an xml file to the path the user chose
+        for tree in tree_list:
+            root = tree.getroot()
+            file_name = root.find('Name').text + '.xml'
+
+            #Print statement for debugging purposes:
+            print("FILE NAME:" + file_name)
+
+            #converting element tree to xml (adjust indents/newlines accordingly)
+            tree_str = et.tostring(root)
+            tree_str_parsed = md.parseString(tree_str)
+
+            path = os.path.join(message, file_name)
+
+            #with open(message + "\\" + file_name,'w') as my_file:
+            with open(path,'w') as my_file:
+                tree_str_pretty = tree_str_parsed.toprettyxml(indent='\t', newl='\n')
+                tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
+                my_file.write(tree_str_pretty)
+
+        #updating the project path to be the path the user just chose
+        self.model.set_project_path(message)
+
+    #called when the user is adding a NEW hierarchical property - message consists of property name/data type/required
+    #/description/OEMmodify/packagenameprefix/value/filename
+    def new_hier_property_added(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.add_new_hier_property(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when the user deletes a property - message consists of that property's name
+    def property_deleted(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.delete_property(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when the user deletes a hierarchical property - message consists of property name, property location, package location, current tree (locations will be None
+    # if the hierarchical property does not come from a property's dependent package)
+    def hier_property_deleted(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.delete_hier_property(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        new_tree_list = self.model.get_tree_list()
+        self.refresh_tree(new_tree_list)
+
+    #called when the user cahnges the name of a property (message = value, old_value)
+    def property_name_changed(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.update_property_name(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+    #called when the user changes the name of a hierarchical property (message = value, old_value)
+    def hier_property_name_changed(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.update_hier_property_name(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        new_tree_list = self.model.get_tree_list()
+        self.refresh_tree(new_tree_list)
+    
+    #called when the View needs to get the current tree list
+    def get_tree_list(self, message):
+        self.model.get_tree_list()
 
     # updates the hierarchy of packages (in the form of a treeCtrl) on the left side of the screen -
     # starts by clearing this treeCtrl,then adds _DSD as the root, then recursively adds new packages 
@@ -727,7 +894,7 @@ class DiscoToolAuiManager(wx.Frame):
                 if self.has_project_path is False:
                     self.save_dir_dialog()
                 else:
-                    pub.sendMessage("save", message=None)
+                    self.save_files(message=None)
         # deinitialize the frame manager
         self.aui_manager.UnInit()
         # delete the frame
@@ -750,315 +917,9 @@ class DiscoToolAuiManager(wx.Frame):
             self.aui_manager.Update()
         event.Skip()
 
-
-# This class displays the app's UI for the Property Frame using wxPython widgets. In this frame, the user can type in
-# all of the fields for a new property and then add that property to the current element tree.
-class PropertyPanel(wx.Panel):
-
-    # initializes the Property Frame with the appropraite wxPython widgets
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.SetBackgroundColour("white")
-        # saves reference to the Main Window to reopen it once the Property Frame is closed.
-        self.main_window = parent.GetParent()
-        self.vbox_main = wx.BoxSizer(wx.VERTICAL)
-        # getting the initial width and height of the frame (in order to size the grid columns correctly)
-        w, h = self.main_window.GetClientSize()
-
-        # adding the properties grid and the add property button to the properties panel
-        self.props_grid = grid.Grid(self, size=(5000, 300))
-        self.props_grid.CreateGrid(0, 3)
-
-        # sets the initial sizes for the property grid columns
-        self.props_grid.SetColSize(0, (w - 80) / 3)
-        self.props_grid.SetColSize(1, 80)
-        self.props_grid.SetColSize(2, (w - 80) / 3)
-
-        self.props_grid.SetColLabelValue(0, "Property Name")
-        self.props_grid.SetColLabelValue(1, "Data Type")
-        self.props_grid.SetColLabelValue(2, "Value")
-        self.props_grid.SetLabelFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
-        self.props_grid.SetLabelTextColour(app_constants.COLOR_PURPLE4)
-
-        # calls certain functions when user changes a properties grid cell or right clicks on a properties grid cell
-        self.props_grid.Bind(grid.EVT_GRID_CELL_CHANGED, self.OnPropsGridCellChange)
-        self.props_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPropsGridRightClick)
-        self.props_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPropsGridMouseOver)
-
-        self.addPropBtn = wx.Button(self, label="Add Property", size=(-1, 35))
-        app_constants.set_button_font(self.addPropBtn)
-        self.addPropBtn.Bind(wx.EVT_BUTTON, self.open_property_frame)
-        self.addPropBtn.Disable()
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.props_grid, 0, wx.LEFT, 5)
-        self.vbox_main.Add(hbox, 0, wx.TOP, 10)
-        self.SetSizer(self.vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.addPropBtn, 0, wx.LEFT, 5)
-        self.vbox_main.Add(hbox, 0, wx.TOP, 10)
-        self.SetSizer(self.vbox_main)
-
-        self.SetAutoLayout(True)
-        self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
-
-    # called when the user resizes the frame - resizes the properties grid accordingly
-    def resize_props_grids(self, event):
-        w, h = self.main_window.GetClientSize()
-        self.props_grid.SetColSize(0, (w - 80) / (3))
-        self.props_grid.SetColSize(1, 80)
-        self.props_grid.SetColSize(2, (w - 80) / (3))
-        event.Skip()
-
-    # called when the user exits the window - does not add any new property
-    def close_window(self, event):
-        self.main_window.Enable()
-        self.Destroy()
-
-    # re-opens the Main Window, sends out all of the information for the new property the user just added in a message
-    # to the rest of the program, and closes the Property Window
-    def open_main(self, event):
-
-        # creates a list with all of the tag values for the new property
-        nameMsg = self.name.GetValue()
-        dataMsg = self.combo.GetValue()
-        descriptionMsg = self.description.GetValue()
-        requiredMsg = self.required.GetValue()
-        modifyMsg = self.modify.GetValue()
-        valueMsg = self.value.GetValue()
-        messageList = [nameMsg, dataMsg, int(requiredMsg), descriptionMsg, int(modifyMsg), valueMsg]
-
-        if (nameMsg == '') | (dataMsg == '') | (valueMsg == ''):
-            wx.MessageBox(message='Please fill out all information for the property before adding it.',
-                          caption='Property error',
-                          style=wx.OK | wx.ICON_ERROR)
-
-        else:
-            pub.sendMessage("property_added", message=messageList)
-            self.main_window.Enable()
-            self.Close()
-
-    # called when the user changes a cell in the properties grid (the value cell)
-    def OnPropsGridCellChange(self, event):
-        # collects the new property value, the previous value, the property's name,
-        # and initializes user_choice (used for warning box) to none
-        value = self.props_grid.GetCellValue(event.GetRow(), event.GetCol())
-        old_value = event.GetString()
-        prop_name = self.props_grid.GetCellValue(event.GetRow(), 0)
-        user_choice = wx.ID_NONE
-
-        # defines the message to be sent if property value is updated in the model
-        message = [prop_name, value, old_value]
-
-        # TODO: currently, this function is being called multiple times when a
-        # user only changes a grid cell once - after the first correct function call,
-        # the old_value is equal to the new value. This if statement is to prevent the warning dialogs
-        # to show up more than once when the function is called with these incorrect values.
-        if old_value != value:
-
-            # if user changes a property's name, that property name is updated in the model
-            if event.GetCol() == 0:
-                message = [value, old_value]
-                pub.sendMessage("property_name_changed", message=message)
-            # if user changes a property's value:
-            else:
-                # iterates through the current tree's properties to find the one that was just edited by the user -
-                # once it finds this it then finds the list of dependent packages (if any)-
-                # that are attached to this property
-                for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
-                    if prop.find('Name').text == prop_name:
-
-                        # TODO: move the following data validation to the Controller
-                        # (checking data type matches what the user entered)
-
-                        # if new value is not the correct data type, an error message is shown and
-                        # value won't be updated
-                        ret, msg = self.check_type(prop.find('DataType').text, value)
-                        if ret is not True:
-                            wx.MessageBox(message=msg, caption='Property value type check failed.',
-                                          style=wx.OK | wx.ICON_ERROR)
-                            self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
-                        else:
-                            pckg_list = prop.find('DependentPackages').findall('Package')
-
-                            # if there is at least one dependent package in this property,
-                            # the tool checks if the new value is different than the previous value-
-                            # if so, the user is warned that some of their hierarchical properties might be deleted.
-                            # If they decide to continue, then the property value is changed in the model.
-                            # If not, the value is chagned back to the previous value.
-                            if len(pckg_list) > 0:
-                                if (value != old_value) & (old_value != ''):
-                                    user_choice = wx.MessageBox(message=value + ' is different than your previous value for this property. If you continue, some hierarchical properties and their data may be automatically deleted. Do you want to continue?',
-                                                                caption='Property value warning',
-                                                                style=wx.YES_NO | wx.ICON_WARNING)
-
-                                if user_choice != wx.NO:
-                                    pub.sendMessage("property_value_changed", message=message)
-                                else:
-                                    self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
-
-                            # if there are no dependent packages in this property,
-                            # the property value is changed in the model
-                            else:
-                                pub.sendMessage("property_value_changed", message=message)
-
-    # TODO: move this type checking to the Controller
-    # this function takes in a data type and a value that was just chosen for a property and
-    # will return True if the value is of the correct data type and returns false otherwise
-    def check_type(self, data_type, val):
-        msg = ""
-        if data_type == 'String':
-            # String - do we need a regex here?
-            pattern = '^\S*$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg
-            else:
-                msg = "String can have any format."
-                return False, msg
-
-        if data_type == 'BitMap':
-            # Bitmap - '0b' and then up to 32 binary values
-            pattern = '^[0-1]{1,32}$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg
-            else:
-                msg = "Bitmap should be entered as a series of 0's or 1's (up to 64 bits). Value goes from MSB to LSB."
-                return False, msg
-
-        if data_type == 'Package':
-            # Package - a series of values separated by a comma or a space or both
-            # TODO: Allow for {} values since packages could contain more packages
-            pattern = '^([0-9a-zA-Z]*\s?,?)*$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg
-            else:
-                msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 1, 12)"
-                return False, msg
-
-        if data_type == 'Boolean':
-            # Boolean - either 1 or 0
-            pattern = '^[0-1]$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg
-            else:
-                msg = "Boolean should be entered in format either 0 or 1. Where 0: False 1:True"
-                return False, msg
-
-        if data_type == 'Integer':
-            # Integer - can either be in decimal or hex
-            # (either a series of numbers or a series of numbers and letters A-F)
-            # can match integers against multiple regexes (one for hex - '0x[A-F0-9]', one for decimal)
-            pattern_dec = '^[0-9]*$'
-            pattern_hex = '^0x[a-fA-F0-9]*$'
-            match_hex = re.match(pattern_hex, val)
-            match_dec = re.match(pattern_dec, val)
-
-            if match_hex:
-                return True, msg
-            elif match_dec:
-                return True, msg
-            else:
-                msg = "Integer should be entered in decimal (12) or hexidecimal (0xF)"
-                return False, msg
-
-    # enables the buttons and certain menu items in the main window, disables other menu items in the main window
-
-    # called when user right clicks on a property in the properties grid -
-    # opens a pop up menu with the option to delete that property
-    def OnPropsGridRightClick(self, event):
-
-        # gets the current width and height of the window and the position where the user clicked
-        w, h = self.GetClientSize()
-        point = event.GetPosition()
-
-        # takes the x position of where the user clicked and offsets it by .25*w (to account for tree panel on the left)
-        point.x = (w * 0.25) + point.x
-
-        # finds the name of the property to be deleted (to be used in the delete_property function)
-        self.delete_property_name = self.props_grid.GetCellValue(event.GetRow(), 0)
-
-        # creates a pop up menu with the option to delete and opens this menu at the correct screen position
-        popUpMenu = wx.Menu()
-        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
-        popUpMenu.Append(deleteItem)
-        popUpMenu.Bind(wx.EVT_MENU, self.delete_property, deleteItem)
-        self.PopupMenu(popUpMenu, point)
-
-    # called when the user moves the mouse over the screen
-    def onPropsGridMouseOver(self, event):
-        # gets position of the mouse on the screen and converts this to row and column
-        x, y = self.props_grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
-        coordinates = self.props_grid.XYToCell(x, y)
-        row = coordinates[0]
-        column = coordinates[1]
-
-        # gets the total number of rows and columns
-        num_rows = self.props_grid.GetNumberRows()
-        num_cols = self.props_grid.GetNumberCols()
-
-        # if the mouse is over an actual row and column in the grid, find that row's property and
-        # data type and display its description to the user
-        if (column >= 0) & (column < num_cols) & (row >= 0) & (row < num_rows):
-            data_type = self.props_grid.GetCellValue(row, 1)
-            prop_name = self.props_grid.GetCellValue(row, 0)
-
-            # find the description for the property the user is hoering over
-            for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
-                if prop.find('Name').text == prop_name:
-                    description = prop.find('Description').text
-                    if description is None:
-                        description = ""
-
-                    # add a string that gives information on how the current property's data type should be entered
-                    data_mssg = ''
-                    if data_type == 'Integer':
-                        data_mssg = "Integer should be entered in decimal (i.e. 12) or hexidecimal (i.e. 0xF)"
-                    if data_type == 'String':
-                        data_mssg = "String can be entered in any format."
-                    if data_type == 'Boolean':
-                        data_mssg = "Boolean should be entered in format either 0 or 1. Where 0: False 1:True"
-                    if data_type == 'Package':
-                        data_mssg = "Package should be entered as a list of values with a comma and a space in between each one (i.e. 4, 1, 12)"
-                    if data_type == 'BitMap':
-                        data_mssg = "Bitmap should be entered as a series of 0's or 1's (up to 64 bits). Value goes from MSB to LSB."
-                    msg = description + ":" + "\n\n" + data_mssg
-                    # event.GetEventObject().SetToolTip(msg)
-                    self.main_window.description_panel.SetValue(msg)
-
-    # temporarily disables the Main Frame and opens the Property Frame (where user can add a new property to the
-    # current Element Tree)
-    def open_property_frame(self, event):
-
-        dlg = AddProperty(self, -1, "Add property", size=(450, 800),
-                          style=wx.DEFAULT_DIALOG_STYLE)
-        dlg.CenterOnScreen()
-        val = dlg.ShowModal()
-
-        if val == wx.ID_OK:
-            # creates a list with all of the tag values for the new property
-            nameMsg = dlg.name.GetValue()
-            dataMsg = dlg.combo.GetValue()
-            descriptionMsg = dlg.description.GetValue()
-            requiredMsg = dlg.required.GetValue()
-            modifyMsg = dlg.modify.GetValue()
-            valueMsg = dlg.value.GetValue()
-            messageList = [nameMsg, dataMsg, int(requiredMsg), descriptionMsg, int(modifyMsg), valueMsg]
-
-            if (nameMsg == '') | (dataMsg == '') | (valueMsg == ''):
-                wx.MessageBox(message='Please fill out all information for the property before adding it.',
-                              caption='Property error', style=wx.OK | wx.ICON_ERROR)
-            else:
-                pub.sendMessage("property_added", message=messageList)
-
-
 class DescriptionPanel(wx.Panel):
 
-    # initializes the Hierarchical Property Frame with the appropraite wxPython widgets
+    # initializes the Hierarchical Property Frame with the appropriate wxPython widgets
     def __init__(self, parent, description_text=" "):
         wx.Panel.__init__(self, parent)
         self.SetBackgroundColour("white")
@@ -1076,381 +937,6 @@ class DescriptionPanel(wx.Panel):
         self.SetSizer(self.vbox)
         self.Layout()
         self.SetAutoLayout(True)
-
-
-# This class displays the app's UI for the Hierarchical Property Frame using wxPython widgets.
-# In this frame, the user can type in
-# all of the fields for a new property and then add that property to the current element tree.
-class HierarchicalPropertyPanel(wx.Panel):
-
-    # initializes the Hierarchical Property Frame with the appropraite wxPython widgets
-    def __init__(self, parent, tree_list, curr_tree):
-        wx.Panel.__init__(self, parent)
-        self.SetBackgroundColour("white")
-        # saves reference to the Main Window to reopen it once the Property Frame is closed.
-        self.main_window = parent.GetParent()
-        self.tree_list = tree_list
-        self.vbox_main = wx.BoxSizer(wx.VERTICAL)
-
-        w, h = self.main_window.GetClientSize()
-        # adding the hierarchical properties grid and the add hierarchical property button to the properties panel
-        self.packs_grid = grid.Grid(self, size=(5000, 300))
-        self.packs_grid.CreateGrid(0, 3)
-
-        # sets the initial sizes for the hierarchical property grid columns
-        self.packs_grid.SetColSize(0, (w - 80) / 3)
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / 3)
-
-        self.packs_grid.SetColLabelValue(0, "Property Name")
-        self.packs_grid.SetColLabelValue(1, "Data Type")
-        self.packs_grid.SetColLabelValue(2, "Package Name")
-        self.packs_grid.SetLabelFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
-        self.packs_grid.SetLabelTextColour(app_constants.COLOR_PURPLE4)
-
-        # calls certain functions when user changes a hierarchical properties grid cell or
-        # right clicks on a hierarchical properties grid cell
-        self.packs_grid.Bind(grid.EVT_GRID_CELL_CHANGED, self.OnPacksGridCellChange)
-        self.packs_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPacksGridRightClick)
-        self.packs_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPacksGridMouseOver)
-
-        self.addHierPropBtn = wx.Button(parent=self, label="Add Hierarchical Property", size=(-1, 35))
-        app_constants.set_button_font(self.addHierPropBtn)
-        self.addHierPropBtn.Bind(wx.EVT_BUTTON, self.open_hierarchical_property_frame)
-        self.addHierPropBtn.Disable()
-
-        # creates sizer for hierarchical properties panel
-        self.packsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.packsSizer.Add(self.packs_grid, wx.EXPAND)
-        self.packsSizer.Add(self.addHierPropBtn)
-        self.SetSizer(self.packsSizer)
-        self.Layout()
-
-        self.SetAutoLayout(True)
-
-        # when user resizes the frame, methods will be called to appropriately resize the grids
-        self.packs_grid.Bind(wx.EVT_SIZE, self.resize_packs_grids)
-
-    # temporarily disables the Main Frame and opens the Hierarchical Property Frame
-    # (where user can add a new hier prop to the current Element Tree)
-    def open_hierarchical_property_frame(self, event):
-        new_hierarchical_property = AddHierarchicalProperty(self, -1, "Add Hierarchical Property", size=(450, 800),
-                                                            style=wx.DEFAULT_DIALOG_STYLE)
-        new_hierarchical_property.CenterOnScreen()
-        val = new_hierarchical_property.ShowModal()
-
-        if val == wx.ID_OK:
-            # creates a list with all of the tag values for the new property
-            messageList = []
-            nameMsg = new_hierarchical_property.name.GetValue()
-            messageList.append(nameMsg)
-
-            dataMsg = new_hierarchical_property.data.GetValue()
-            messageList.append(dataMsg)
-
-            requiredMsg = new_hierarchical_property.required.GetValue()
-            messageList.append(str(int(requiredMsg)))
-
-            descriptionMsg = new_hierarchical_property.description.GetValue()
-            messageList.append(str(int(descriptionMsg)))
-
-            modifyMsg = new_hierarchical_property.modify.GetValue()
-            messageList.append(str(int(modifyMsg)))
-
-            prefixMsg = new_hierarchical_property.prefix.GetValue()
-            messageList.append(prefixMsg)
-
-            valueMsg = new_hierarchical_property.value.GetValue()
-            messageList.append(valueMsg)
-
-            fileMsg = new_hierarchical_property.file.GetValue()
-            messageList.append(fileMsg)
-            messageList.append(None)
-            messageList.append(None)
-
-            result_new = wx.ID_NONE
-            ancestor = False
-            over_four = False
-
-            # if the new value is not four characters, an error message is shown
-            # and the over_four variable is set to true
-            if len(valueMsg) > 4:
-                wx.MessageBox(message=valueMsg + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
-                              caption='Package name error', style=wx.OK | wx.ICON_ERROR)
-                over_four = True
-
-            # TODO: move the following data validation to the Controller
-            # (checking if tree is an ancestor of curr_tree) this loop determines if there is an existing
-            # element tree associated with the new hierarchical property value -
-            # if there is, an error message is sent if the existing tree is an ancestor of the curr_tree
-            # (because this would cause an infinite loop) and a
-            # warning message pops up telling the user if they use this value,
-            # they will be sharing this package among other parents.
-            for tree in self.main_window.tree_list:
-                if tree.getroot().find('Name').text == valueMsg:
-                    ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
-                    if ancestor is True:
-                        wx.MessageBox(message='Circular reference found. One of the parent packages has the same name.',
-                                      caption='Package name error',
-                                      style=wx.OK | wx.ICON_ERROR)
-                    else:
-                        result_new = wx.MessageBox(message=valueMsg + disco_str.DISCO_STR_PKG_REUSE_MSG,
-                                                   caption='Package name warning',
-                                                   style=wx.YES_NO | wx.WARNING)
-
-            # if the user does not get the warning message or replies "yes" to it,
-            # the new value is not an ancestor of the current element tree,
-            # the value is equal or less than four characters, and the name/data/value/file are filled out,
-            # the new hierarchical property is added to the model
-            if (result_new != wx.NO) & (ancestor is False) & (over_four is False):
-                if (nameMsg == '') | (dataMsg == '') | (valueMsg == '') | (fileMsg == ''):
-                    wx.MessageBox(message='Please fill out all information for the hierarchical property before adding it.',
-                                  caption='Property error',
-                                  style=wx.OK | wx.ICON_ERROR)
-                else:
-                    pub.sendMessage("new_hier_property_added", message=messageList)
-
-    # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
-    def resize_packs_grids(self, event):
-        w, h = self.GetClientSize()
-        self.packs_grid.SetColSize(0, (w - 80) / (3))
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / (3))
-        event.Skip()
-
-    # called when the user exits the window - does not add any new property
-    def close_window(self, event):
-        self.main_window.Enable()
-        self.Destroy()
-
-    # opens up the main window, closes the hierarchical properties window,
-    # and adds the appropriate hierarchical property to the current tree
-    def open_main(self, event):
-        # creates a list with all of the tag values for the new property
-        nameMsg = self.name.GetValue()
-        dataMsg = self.data.GetValue()
-        descriptionMsg = self.description.GetValue()
-        requiredMsg = self.required.GetValue()
-        modifyMsg = self.modify.GetValue()
-        valueMsg = self.value.GetValue()
-        fileMsg = self.file.GetValue()
-        prefixMsg = self.prefix.GetValue()
-        messageList = [nameMsg, dataMsg, str(int(requiredMsg)), descriptionMsg, str(int(modifyMsg)), prefixMsg,
-                       valueMsg, fileMsg, None, None]
-
-        result_new = wx.ID_NONE
-        ancestor = False
-        over_four = False
-
-        # if the new value is not four characters, an error message is shown and the over_four variable is set to true
-        if len(valueMsg) > 4:
-            wx.MessageBox(message=valueMsg + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
-                          caption='Package name error', style=wx.OK | wx.ICON_ERROR)
-            over_four = True
-
-        # TODO: move the following data validation to the Controller (checking if tree is an ancestor of curr_tree)
-
-        # this loop determines if there is an existing element tree associated with the
-        # new hierarchical property value - if there is, an error message is sent if
-        # the existing tree is an ancestor of the curr_tree (because this would cause an infinite loop) and a
-        # warning message pops up telling the user if they use this value,
-        # they will be sharing this package among other parents.
-        for tree in self.tree_list:
-            if tree.getroot().find('Name').text == valueMsg:
-                ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
-                if ancestor is True:
-                    wx.MessageBox(message='Circular reference found. One of the parent packages has the same name.',
-                                  caption='Package name error',
-                                  style=wx.OK | wx.ICON_ERROR)
-                else:
-                    result_new = wx.MessageBox(message=valueMsg + ' is an existing package. Do you want to re-use existing package?',
-                                               caption='Package name warning',
-                                               style=wx.YES_NO | wx.WARNING)
-
-        # if the user does not get the warning message or replies "yes" to it,
-        # the new value is not an ancestor of the current element tree,
-        # the value is equal or less than four characters, and the name/data/value/file are filled out,
-        # the new hierarchical property is added to the model
-        if (result_new != wx.NO) & (ancestor is False) & (over_four is False):
-            if (nameMsg == '') | (dataMsg == '') | (valueMsg == '') | (fileMsg == ''):
-                wx.MessageBox(message='Please fill out all information for the hierarchical property before adding it.',
-                              caption='Property error',
-                              style=wx.OK | wx.ICON_ERROR)
-            else:
-                pub.sendMessage("new_hier_property_added", message=messageList)
-                self.main_window.Enable()
-                self.Close()
-
-    # move this function to the Controller
-    # TODO: this function is repeat code from the MainFrame class. Define an interface to share between all three
-    # windows with common code.
-    # helper function for OnPacksGridCellChange - returns true if
-    # higher_tree is an ancestor of lower_tree and returns false otherwise
-    def is_ancestor(self, higher_tree, lower_tree):
-        # find hier_props and loop through - for each one, find that tree and if it matches lower_tree, return true.
-        # otherwise, call this function again but with (new tree, lower_tree)
-
-        higher_name = higher_tree.getroot().find('Name').text
-        lower_name = lower_tree.getroot().find('Name').text
-
-        # Base case: if the trees are the same, return true
-        if higher_name == lower_name:
-            return True
-
-        # Recursive case: loop through the hierarchical properties of the higher_tree.
-        # For each one, find its associated element tree and call this function again
-        # with this element tree as the higher_tree; return True if the function returns True.
-        for hier_prop in higher_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
-            name = hier_prop.find('Value').text
-            for tree in self.tree_list:
-                if tree.getroot().find('Name').text == name:
-                    result = self.is_ancestor(tree, lower_tree)
-                    if result is True:
-                        return True
-
-        # If the function goes through all of the trees under higher_tree and
-        # does not find a match to lower_tree, return False
-        return False
-
-    # called when the user changes the value cell for a hierarchical property in the hierarchical properties grid -
-    # prevents the user from entering a value that is not four characters and
-    # warns the user if their value already exists (meaning this package would have several parents)
-    def OnPacksGridCellChange(self, event):
-
-        # collects the new property value and the previous property value
-        old_value = event.GetString()
-        value = self.packs_grid.GetCellValue(event.GetRow(), event.GetCol())
-
-        # initializes variables to starting values
-        over_four = False
-        ancestor = False
-        result_new = wx.ID_NONE
-        result_old = wx.ID_NONE
-
-        # if user changes a property's name, that property name is updated in the model
-        if event.GetCol() == 0:
-            message = [value, old_value]
-            pub.sendMessage("hier_property_name_changed", message=message)
-        # if user changes a property's value:
-        else:
-            # TODO: currently, this function is being called multiple times when a user only changes a grid cell once -
-            # after the first correct function call, the old_value is equal to the new value.
-            # This if statement is to prevent the warning dialogs to show up more than
-            # once when the function is called with these incorrect values.
-            if old_value != value:
-                # if the new value is over four characters, an error message is shown and
-                # the over_four variable is set to true
-                if len(value) > 4:
-                    wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
-                                  caption='Package name error',
-                                  style=wx.OK | wx.ICON_ERROR)
-                    over_four = True
-
-                # iterates through the current element tree list to see if the new value already has an associated
-                # element tree or if the old value had several parents (not just curr_tree).
-                for tree in self.tree_list:
-
-                    # TODO: move the following data validation to the Controller
-                    # (checking if tree is an ancestor of curr_tree)
-                    # enters this if statement if the new value already has an element tree -
-                    # in this case send an error message if this element
-                    # tree is an ancestor of the curr_tree (because this would cause an infinite loop)
-                    # and send a warning message telling the user
-                    # if they use this value, they will be sharing this package among other parents.
-                    if tree.getroot().find('Name').text == value:
-                        ancestor = self.is_ancestor(tree, self.curr_tree)
-
-                        if ancestor is True:
-                            wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
-                                          caption='Package name error',
-                                          style=wx.OK | wx.ICON_ERROR)
-                        else:
-                            result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
-
-                    # Condition when the element tree is found that was associated with the previous value.
-                    # Counter variable is used to count how many parents this tree has -
-                    # if it has more than one, send a warning message telling the user if they use this
-                    # value, the new package will no longer be shared with these other parents.
-                    if tree.getroot().find('Name').text == old_value:
-                        counter = 0
-                        for parent in tree.getroot().find('Header').find('Parents').iter('Parent'):
-                            counter += 1
-
-                        if counter > 1:
-                            result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
-
-                # if the new value is not an ancestor of the current tree, has equal or less than four characters,
-                # and the user did not reply "no" to any warning messages they might have gotten,
-                # then the hierarchical property is changed in the Model. Otherwise, the property
-                # is not changed in the model and the grid cell value returns to its previous value.
-                if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
-                    # Print statement for debugging purposes:
-                    print(" publishing property ")
-
-                    message = [self.packs_grid.GetCellValue(event.GetRow(), 0), value, old_value]
-                    pub.sendMessage("hier_property_value_changed", message=message)
-                else:
-                    # Print statement for debugging purposes:
-                    print("\n setting cell value " + old_value + " " + value)
-                    self.packs_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
-
-            else:
-                # Print statement for debugging purposes:
-                print("skipping event")
-
-    # called when user right clicks on a property in the hierarchical properties grid -
-    # opens a pop up menu with the option to delete that property
-    def OnPacksGridRightClick(self, event):
-
-        # gets the current width and height of the window and the position where the user clicked
-        w, h = self.GetClientSize()
-        point = event.GetPosition()
-
-        # takes the x position of where the user clicked and offsets it by .25*w (to account for tree panel on the left)
-        point.x = (w * 0.25) + point.x
-        point.y = (h * 0.5) + point.y
-
-        # finds the name of the property to be deleted (to be used in the delete_property function)
-        self.delete_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
-
-        # creates a pop up menu with the option to delete and opens this menu at the correct screen position
-        popUpMenu = wx.Menu()
-        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
-        popUpMenu.Append(deleteItem)
-        popUpMenu.Bind(wx.EVT_MENU, self.delete_hier_property, deleteItem)
-        self.PopupMenu(popUpMenu, point)
-
-    # called when the user moves the mouse over the screen
-    def onPacksGridMouseOver(self, event):
-        # gets position of the mouse on the screen and converts this to row and column
-        x, y = self.packs_grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
-        coordinates = self.packs_grid.XYToCell(x, y)
-        row = coordinates[0]
-        column = coordinates[1]
-
-        # gets the total number of rows and columns
-        num_rows = self.packs_grid.GetNumberRows()
-        num_cols = self.packs_grid.GetNumberCols()
-
-        # if the mouse is over an actual row and column in the grid, find that row's property and
-        # data type and display its description to the user
-        if (column >= 0) & (column < num_cols) & (row >= 0) & (row < num_rows):
-            # data_type = self.packs_grid.GetCellValue(row, 1)
-            prop_name = self.packs_grid.GetCellValue(row, 0)
-            tree_root = self.main_window.curr_tree.getroot()
-            for prop in tree_root.find('HierarchicalProperties').iter('HierarchicalProperty'):
-                if prop.find('Name').text == prop_name:
-                    description = prop.find('Description').text
-                    if description is None:
-                        description = ""
-                    msg = description + ":" + "\n\n" + "String can be entered in any format."
-                    # event.GetEventObject().SetToolTip(msg)
-                    self.main_window.description_panel.SetValue(msg)
-
 
 # This class displays the app's UI for the Generate ASL Frame using wxPython widgets.
 # In this frame, the user can define their
@@ -1548,369 +1034,6 @@ class GenerateASL(wx.Dialog):
         self.combo.Bind(wx.EVT_COMBOBOX, self.type_selected)
         self.Bind(wx.EVT_CLOSE, self.close_window)
 
-
-class GenerateASLFrame(wx.Frame):
-
-    def __init__(self, MainWindow):
-        self.main_window = MainWindow
-        wx.Frame.__init__(self, None, title="Generate ASL Frame", size=(400, 400))
-        asl_panel = wx.Panel(self)
-        asl_panel.SetBackgroundColour("white")
-
-        deviceLabel = wx.StaticText(parent=asl_panel, label="Device Name: ")
-        app_constants.set_title_font(deviceLabel)
-        self.device = wx.TextCtrl(parent=asl_panel, value="")
-        self.device.SetMaxLength(4)
-        my_list = ['_HID', '_ADR']
-        self.combo = wx.ComboBox(parent=asl_panel, choices=my_list)
-        self.HIDValueLabel = wx.StaticText(parent=asl_panel, label="_HID Value:")
-        self.HIDValue = wx.TextCtrl(parent=asl_panel, value="")
-        self.CIDValueLabel = wx.StaticText(parent=asl_panel, label="_CID Value:")
-        self.CIDValue = wx.TextCtrl(parent=asl_panel, value="")
-        self.ADRValueLabel = wx.StaticText(parent=asl_panel, label="_ADR Value:")
-        self.ADRValue = wx.TextCtrl(parent=asl_panel, value="")
-        closeBtn = wx.Button(parent=asl_panel, label="Generate ASL")
-        closeBtn.Bind(wx.EVT_BUTTON, self.open_main)
-
-        # adds all widgets to the main panel using a box sizer
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(deviceLabel, 0, wx.ALL, border=10)
-        self.sizer.Add(self.device, 0, wx.ALL, border=10)
-        self.sizer.Add(self.combo, 0, wx.ALL, border=10)
-        self.sizer.Add(self.HIDValueLabel, 0, wx.ALL, border=10)
-        self.sizer.Add(self.HIDValue, 0, wx.ALL, border=10)
-        self.sizer.Add(self.CIDValueLabel, 0, wx.ALL, border=10)
-        self.sizer.Add(self.CIDValue, 0, wx.ALL, border=10)
-        self.sizer.Add(self.ADRValueLabel, 0, wx.ALL, border=10)
-        self.sizer.Add(self.ADRValue, 0, wx.ALL, border=10)
-        self.sizer.Add(closeBtn, 0, wx.ALL, border=10)
-        asl_panel.SetSizer(self.sizer)
-
-        # hides the text boxes for _HID/_CID/_ADR until the user selects one from the combo box
-        self.HIDValueLabel.Hide()
-        self.HIDValue.Hide()
-        self.CIDValueLabel.Hide()
-        self.CIDValue.Hide()
-        self.ADRValueLabel.Hide()
-        self.ADRValue.Hide()
-
-        self.combo.Bind(wx.EVT_COMBOBOX, self.type_selected)
-        self.Bind(wx.EVT_CLOSE, self.close_window)
-
-    # called when a type has been selected from the combo box -
-    # will show the appropriate text boxes for _HID, _CID, or _ADR
-    def type_selected(self, event):
-        choice = self.combo.GetValue()
-        if choice == '_HID':
-            self.HIDValueLabel.Show()
-            self.HIDValue.Show()
-            self.CIDValueLabel.Show()
-            self.CIDValue.Show()
-            self.ADRValueLabel.Hide()
-            self.ADRValue.Hide()
-        else:
-            self.ADRValueLabel.Show()
-            self.ADRValue.Show()
-            self.HIDValueLabel.Hide()
-            self.HIDValue.Hide()
-            self.CIDValueLabel.Hide()
-            self.CIDValue.Hide()
-
-        self.sizer.Layout()
-
-    # called when the user exits the window - does not add any new property
-    def close_window(self, event):
-        self.main_window.Enable()
-        self.Destroy()
-
-    def open_main(self, event):
-        # creates a list with all of the tag values to be passed to generate ASL function
-        deviceMsg = self.device.GetValue()
-        hidMsg = self.HIDValue.GetValue()
-        cidMsg = self.CIDValue.GetValue()
-        adrMsg = self.ADRValue.GetValue()
-
-        # TODO: before sending the message to generate the asl file,
-        # check every property (in current tree as well as all of its child
-        # trees) and make sure it has a value if it is required -
-        # if not, show an error message and do not generate the asl file
-
-        # first check that HID or ADR are filled in - if not, show a messagebox in the view and do not proceed
-        # otherwise, open up a filedialog and pass that path here so that asl file is saved somewhere specific
-        if (hidMsg == '') & (adrMsg == ''):
-            wx.MessageBox(message='Please either enter a _HID or _ADR value.',
-                          caption='Generate ASL error', style=wx.OK | wx.ICON_ERROR)
-        else:
-            # shows file dialog to chose path, closes current window, and returns to the main window
-
-            dlg = wx.DirDialog(self, "Choose folder to save to", style=wx.DD_DEFAULT_STYLE)
-
-            if dlg.ShowModal() == wx.ID_OK:
-
-                path = os.path.join(dlg.GetPath(), deviceMsg + '.asl')
-                self.main_window.Enable()
-                self.Close()
-                pub.sendMessage("generate_asl", message=[deviceMsg, hidMsg, cidMsg, adrMsg, path])
-
-            dlg.Destroy()
-
-
-class AddProperty(wx.Dialog):
-
-    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
-        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
-        self.parent = parent
-        pre = wx.Dialog()
-        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
-        pre.Create(parent, ID, title, pos, size, style)
-
-        vbox_main = wx.BoxSizer(wx.VERTICAL)
-
-        nameLabel = wx.StaticText(self, -1, label="Name: ")
-        app_constants.set_title_font(nameLabel)
-        self.name = wx.TextCtrl(self, -1, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(nameLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.name, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        dataLabel = wx.StaticText(parent=self, label="Data Type:")
-        app_constants.set_title_font(dataLabel)
-        my_list = ['String', 'Integer', 'Package', 'Boolean', 'Bitmap']
-        self.combo = wx.ComboBox(self, choices=my_list)
-        self.combo.Select(0)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(dataLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.combo, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        descriptionLabel = wx.StaticText(self, label="Description:")
-        app_constants.set_title_font(descriptionLabel)
-        self.description = wx.TextCtrl(self, -1, value="", size=(300, 100))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(descriptionLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.description, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        requiredLabel = wx.StaticText(self, label="Required:")
-        app_constants.set_title_font(requiredLabel)
-        self.required = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(requiredLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.required, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        modifyLabel = wx.StaticText(self, label="OEM modifiable:")
-        app_constants.set_title_font(modifyLabel)
-        self.modify = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(modifyLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.modify, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        valueLabel = wx.StaticText(self, label="Value:")
-        app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, -1, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(valueLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.value, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
-        vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
-
-        buttonsizer = wx.StdDialogButtonSizer()
-
-        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
-        app_constants.set_button_font(ok_button)
-        ok_button.SetDefault()
-        buttonsizer.AddButton(ok_button)
-
-        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
-        app_constants.set_button_font(cancel_button)
-        buttonsizer.AddButton(cancel_button)
-        buttonsizer.Realize()
-        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
-        self.SetSizer(vbox_main)
-        vbox_main.Fit(self)
-
-
-class AddHierarchicalProperty(wx.Dialog):
-
-    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
-        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
-        self.parent = parent
-        pre = wx.Dialog()
-        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
-        pre.Create(parent, ID, title, pos, size, style)
-
-        vbox_main = wx.BoxSizer(wx.VERTICAL)
-
-        nameLabel = wx.StaticText(self, label="Name: ")
-        app_constants.set_title_font(nameLabel)
-        self.name = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(nameLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.name, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        dataLabel = wx.StaticText(self, label="Data Type:")
-        app_constants.set_title_font(dataLabel)
-        self.data = wx.TextCtrl(self, value="String", style=wx.TE_READONLY)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(dataLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.data, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        descriptionLabel = wx.StaticText(self, label="Description:")
-        app_constants.set_title_font(descriptionLabel)
-        self.description = wx.TextCtrl(self, value="", size=(300, 100))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(descriptionLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.description, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        requiredLabel = wx.StaticText(self, label="Required:")
-        app_constants.set_title_font(requiredLabel)
-        self.required = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(requiredLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.required, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        modifyLabel = wx.StaticText(self, label="OEM modifiable:")
-        app_constants.set_title_font(modifyLabel)
-        self.modify = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(modifyLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.modify, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        prefixLabel = wx.StaticText(self, label="Package name prefix:")
-        app_constants.set_title_font(prefixLabel)
-        self.prefix = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(prefixLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.prefix, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        fileLabel = wx.StaticText(self, label="File name:")
-        app_constants.set_title_font(fileLabel)
-        self.file = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(fileLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.file, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        valueLabel = wx.StaticText(self, label="Package Name:")
-        app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(valueLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.value, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
-        vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
-
-        buttonsizer = wx.StdDialogButtonSizer()
-
-        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
-        app_constants.set_button_font(ok_button)
-        ok_button.SetDefault()
-        buttonsizer.AddButton(ok_button)
-
-        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
-        app_constants.set_button_font(cancel_button)
-        buttonsizer.AddButton(cancel_button)
-        buttonsizer.Realize()
-        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
-        self.SetSizer(vbox_main)
-        vbox_main.Fit(self)
 
 
 class HeaderPanel(wx.Panel):

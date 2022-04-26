@@ -25,7 +25,7 @@ COLOR_ERROR_MESSAAGE = wx.Colour(237,28,36)
 COLOR_PURPLE4 = wx.Colour(85,26,129)
 
 #AUI Manager Constants
-MAIN_FRAME_SIZE_WxH = (1150, wx.GetDisplaySize()[1]/2)
+MAIN_FRAME_SIZE_WxH = (1150, int(wx.GetDisplaySize()[1]/2))
 LOGO_PANEL_BEST_SIZE = (-1, 75)
 LOGO_PANEL_MIN_SIZE = (-1, 75)
 NAV_PANEL_BEST_SIZE = (-1, wx.GetDisplaySize()[1]-LOGO_PANEL_BEST_SIZE[1]) 

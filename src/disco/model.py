@@ -194,8 +194,8 @@ class model():
             if old_value == "":
                 old_value = []
             else: 
-                old_value = old_value.split(", ")
-            value = value.split(", ")
+                old_value = value.strip().split(",")
+            value = value.strip().split(",")
 
             #populates the to_add and to_delete lists accordingly 
             for val in value:

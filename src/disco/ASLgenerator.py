@@ -14,6 +14,15 @@
 #  -------------------------------------------------------------------------------
 
 import re
+import wx
+import os
+
+try:
+    import disco.disco_constants as app_constants
+    import disco.disco_strings as disco_str
+except:
+    import disco_constants as app_constants
+    import disco_strings as disco_str
 
 #This class contains all the necessary logic to generate an ASL file from the current element trees. 
 class ASLgenerator():
@@ -165,3 +174,108 @@ class ASLgenerator():
         if start_package_name == '_DSD':
             self.asl_file.write('}')
             self.asl_file.close()
+
+class GenerateASLFrame(wx.Frame):
+
+    def __init__(self, MainWindow):
+        self.main_window = MainWindow
+        wx.Frame.__init__(self, None, title="Generate ASL Frame", size=(400, 400))
+        asl_panel = wx.Panel(self)
+        asl_panel.SetBackgroundColour("white")
+
+        deviceLabel = wx.StaticText(parent=asl_panel, label="Device Name: ")
+        app_constants.set_title_font(deviceLabel)
+        self.device = wx.TextCtrl(parent=asl_panel, value="")
+        self.device.SetMaxLength(4)
+        my_list = ['_HID', '_ADR']
+        self.combo = wx.ComboBox(parent=asl_panel, choices=my_list)
+        self.HIDValueLabel = wx.StaticText(parent=asl_panel, label="_HID Value:")
+        self.HIDValue = wx.TextCtrl(parent=asl_panel, value="")
+        self.CIDValueLabel = wx.StaticText(parent=asl_panel, label="_CID Value:")
+        self.CIDValue = wx.TextCtrl(parent=asl_panel, value="")
+        self.ADRValueLabel = wx.StaticText(parent=asl_panel, label="_ADR Value:")
+        self.ADRValue = wx.TextCtrl(parent=asl_panel, value="")
+        closeBtn = wx.Button(parent=asl_panel, label="Generate ASL")
+        closeBtn.Bind(wx.EVT_BUTTON, self.open_main)
+
+        # adds all widgets to the main panel using a box sizer
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(deviceLabel, 0, wx.ALL, border=10)
+        self.sizer.Add(self.device, 0, wx.ALL, border=10)
+        self.sizer.Add(self.combo, 0, wx.ALL, border=10)
+        self.sizer.Add(self.HIDValueLabel, 0, wx.ALL, border=10)
+        self.sizer.Add(self.HIDValue, 0, wx.ALL, border=10)
+        self.sizer.Add(self.CIDValueLabel, 0, wx.ALL, border=10)
+        self.sizer.Add(self.CIDValue, 0, wx.ALL, border=10)
+        self.sizer.Add(self.ADRValueLabel, 0, wx.ALL, border=10)
+        self.sizer.Add(self.ADRValue, 0, wx.ALL, border=10)
+        self.sizer.Add(closeBtn, 0, wx.ALL, border=10)
+        asl_panel.SetSizer(self.sizer)
+
+        # hides the text boxes for _HID/_CID/_ADR until the user selects one from the combo box
+        self.HIDValueLabel.Hide()
+        self.HIDValue.Hide()
+        self.CIDValueLabel.Hide()
+        self.CIDValue.Hide()
+        self.ADRValueLabel.Hide()
+        self.ADRValue.Hide()
+
+        self.combo.Bind(wx.EVT_COMBOBOX, self.type_selected)
+        self.Bind(wx.EVT_CLOSE, self.close_window)
+
+    # called when a type has been selected from the combo box -
+    # will show the appropriate text boxes for _HID, _CID, or _ADR
+    def type_selected(self, event):
+        choice = self.combo.GetValue()
+        if choice == '_HID':
+            self.HIDValueLabel.Show()
+            self.HIDValue.Show()
+            self.CIDValueLabel.Show()
+            self.CIDValue.Show()
+            self.ADRValueLabel.Hide()
+            self.ADRValue.Hide()
+        else:
+            self.ADRValueLabel.Show()
+            self.ADRValue.Show()
+            self.HIDValueLabel.Hide()
+            self.HIDValue.Hide()
+            self.CIDValueLabel.Hide()
+            self.CIDValue.Hide()
+
+        self.sizer.Layout()
+
+    # called when the user exits the window - does not add any new property
+    def close_window(self, event):
+        self.main_window.Enable()
+        self.Destroy()
+
+    def open_main(self, event):
+        # creates a list with all of the tag values to be passed to generate ASL function
+        deviceMsg = self.device.GetValue()
+        hidMsg = self.HIDValue.GetValue()
+        cidMsg = self.CIDValue.GetValue()
+        adrMsg = self.ADRValue.GetValue()
+
+        # TODO: before sending the message to generate the asl file,
+        # check every property (in current tree as well as all of its child
+        # trees) and make sure it has a value if it is required -
+        # if not, show an error message and do not generate the asl file
+
+        # first check that HID or ADR are filled in - if not, show a messagebox in the view and do not proceed
+        # otherwise, open up a filedialog and pass that path here so that asl file is saved somewhere specific
+        if (hidMsg == '') & (adrMsg == ''):
+            wx.MessageBox(message='Please either enter a _HID or _ADR value.',
+                          caption='Generate ASL error', style=wx.OK | wx.ICON_ERROR)
+        else:
+            # shows file dialog to chose path, closes current window, and returns to the main window
+
+            dlg = wx.DirDialog(self, "Choose folder to save to", style=wx.DD_DEFAULT_STYLE)
+
+            if dlg.ShowModal() == wx.ID_OK:
+
+                path = os.path.join(dlg.GetPath(), deviceMsg + '.asl')
+                self.main_window.Enable()
+                self.Close()
+                generator = ASLgenerator(self.main_window.model)
+                generator.generate_asl('_DSD', deviceMsg, hidMsg, cidMsg, adrMsg, path)
+            dlg.Destroy()

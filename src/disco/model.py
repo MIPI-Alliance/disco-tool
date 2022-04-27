@@ -28,6 +28,8 @@ class model():
         self.project_path = None
         self.template_path = None
         self.tree_list = []
+        self.property_dictionary = {}
+        self.packageName_list = []
         
     #sets the current template path variable 
     def set_template_path(self, path):
@@ -108,58 +110,128 @@ class model():
                 for package in prop.find('DependentPackages').findall('Package'):
                     pack_name = package.find('Name').text
 
-                    #if there already exists a hierarchical property in this package, the 3 character prefix for the new hierarchical 
-                    #properties is set to be the same as what these other properties used
-                    if (old_value != "") & (old_value != "0"):
-                        hier_prop_name = package.find('HierarchicalProperties').find('HierarchicalProperty').find('Value').text
-                        hier_prop_prefix = hier_prop_name[:-1]
-
-                    #if there are not any hierarchical properties in this package, then the 3 character prefix for the new hierarchical
-                    #properties starts with the 2 character packageNamePrefix and then ends with the lowest 
-                    #number that has not already been used by another package with the same packageNamePrefix. 
-                    else:
-                        prefix = package.find('PackageNamePrefix').text
-                        third_char = 0
-                        entered = True
-
-                        while (entered == True):
-                            temp_prefix = prefix + str(third_char)
-                            entered = False
-
-                            for tree in self.tree_list:
-                                if (tree.find('Name').text)[:-1] == temp_prefix:
-                                    third_char += 1
-                                    entered = True
-                                    break
-                            
-                        #the three character prefix that will be used to name any hierarchical properties that may be added by this method:
-                        hier_prop_prefix = prefix + str(third_char)
-
-                        #Print statement for debugging purposes:
-                        print("hier_prop_prefix: "+hier_prop_prefix)
-
                     #call helper method to get a list of hierarchical properties to be deleted and hierarchical properties to be added (properties
                     # are specified by their number identifier)
                     hier_props_lists = self.create_hier_props_lists(package.find('InterpretValue').text, old_value, value)
                     to_add = hier_props_lists[0]
                     to_delete = hier_props_lists[1]
 
+                    #create the dictionary for the current property if it doesn't already exist (to keep track of its dependent package names)
+                    if name not in self.property_dictionary:
+                        self.property_dictionary[name] = {};
+
                     #add appropriate hierarchical properties
                     for num in to_add:
+                        #call helper function that creates the package name
+                        package_name = self.create_package_name(package, num)
+
                         property_name = package.find('PropertyNamePrefix').text + str(num) + package.find('PropertyNamePostfix').text
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''
                         property_modify = ''
                         property_prefix = package.find('PackageNamePrefix').text
-                        property_value = hier_prop_prefix + str(num)
+                        property_value = package_name
                         property_file = package.find('Filename').text
                         message = [property_name, property_data_type, property_required, property_description, property_modify, property_prefix, property_value, property_file, name, pack_name]
                         self.add_new_hier_property(message)
+
+                        #update the packageName_list and property_dictionary to keep track of the hierarchical properties
+                        self.packageName_list.append(package_name);
+                        self.property_dictionary[name][num] = package_name;
                     
+                    #delete appropriate hierarchical properties
                     for num in to_delete:
+                        #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
+                        package_name = self.property_dictionary[name][num]
+                        del self.property_dictionary[name][num]
+                        self.packageName_list.remove(package_name)
+
                         property_name = package.find('PropertyNamePrefix').text + str(num) + package.find('PropertyNamePostfix').text
                         self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
+    
+    #when a hierarchical property is automatically created, this function will be called to define the package name based on the dependent package 
+    #and the value the user defined for this specific property
+    def create_package_name(self, package, num):
+        #get the packageNamePrefix from the package (this prefix can be 1, 2, or 3 characters long)
+        prefix = package.find('PackageNamePrefix').text
+        prefix_length = len(prefix)
+        name = None
+        num_zeros = 1
+        count = 0
+
+        #figure out the number of digits in num
+        if num == 0:
+            count += 1
+
+        temp_num = num 
+        while (temp_num > 0):
+            temp_num = temp_num//10
+            count = count + 1
+
+        #if value is 4 or more digits, then just use four random letters as the package name
+        if count > 3:
+            name = random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters)
+            return name
+
+        #the package name should always be 4 characters, so it is defined differently based on how long the packageNamePrefix is
+        if prefix_length == 1:
+            num_zeros = 3 - count
+            name = prefix 
+            while (num_zeros > 0):
+                name += str(0)
+                num_zeros -= 1
+            
+            #define the name as the prefix, a fixed number of 0's, and the value
+            name += str(num)
+
+            #if this name already exists, try calling this function again with a larger value
+            if name in self.packageName_list:
+                return self.create_package_name(package, num+1)
+
+        elif prefix_length == 2:
+            #if the value is more than 2 digits, then just use four random letters as the package name
+            if count > 2:
+                name = random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters)
+                return name
+
+            num_zeros = 2 - count
+            name = prefix 
+            while (num_zeros > 0):
+                name += str(0)
+                num_zeros -= 1
+            
+            #define the name as the prefix, a fixed number of 0's, and the value
+            name += str(num)
+
+            #if this name already exists, try calling this function again with a larger value
+            if name in self.packageName_list:
+                return self.create_package_name(package, num+1)
+
+        else: 
+            #if the value is more than 1 digit, then just use four random letters as the package name
+            if count > 1:
+                name = random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters)
+                return name
+
+            num_zeros = 1 - count
+            name = prefix 
+            while (num_zeros > 0):
+                name += str(0)
+                num_zeros -= 1
+            
+            #define the name as the prefix, a fixed number of 0's, and the value
+            name += str(num)
+
+            #if this name already exists, try calling this function again with a larger value
+            if name in self.packageName_list:
+                return self.create_package_name(package, num+1)
+       
+        #if the name already exists or if the name is more than 4 characters, just assign 4 random letters to be the name
+        if (name in self.packageName_list) or (len(name) > 4):
+            name = random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters) + random.choice(string.ascii_letters)
+        
+        return name
     
     #when the user updates a property value and that property has correspondning dependent packages, this method is called for each package
     #to find out what hierarchical properties need to be added and deleted (this information is given in the form of a list of integers)
@@ -194,18 +266,51 @@ class model():
             if old_value == "":
                 old_value = []
             else: 
-                old_value = value.strip().split(",")
-            value = value.strip().split(",")
+                old_value = old_value.split(", ")
+            value = value.split(", ")
+
+            #updates the value and old_value lists to only have decimal values (they can be entered in hexadecimal)
+            decimal_value = []
+            decimal_old_value = []
+
+            for val in value:
+                if val[:2]=="0x":
+                    val = val[2:]
+                    val = int(val, 16)
+                    decimal_value.append(val)
+                else: 
+                    decimal_value.append(val)
+            for val in old_value:
+                if val[:2]=="0x":
+                    val = val[2:]
+                    val = int(val, 16)
+                    decimal_old_value.append(val)
+                else:
+                    decimal_old_value.append(val)
 
             #populates the to_add and to_delete lists accordingly 
-            for val in value:
-                if val not in old_value:
+            for val in decimal_value:
+                if val not in decimal_old_value:
                     to_add.append(int(val))
-            for val in old_value:
-                if val not in value:
+            for val in decimal_old_value:
+                if val not in decimal_value:
                     to_delete.append(int(val))
 
         if interpret_value == 'BitMap':
+
+            #BitMap can be entered as a binary value or as a hexadecimal value, if it is hexadecimal then convert it to binary so that we can determine 
+            #what bits are set in the new value
+            if value[:2]=="0b":
+                value = value[2:]
+            elif value[:2]=="0x":
+                value = value[2:]
+                value = bin(int(value, 16))[2:]
+
+            if old_value[:2]=="0b":
+                old_value = old_value[2:]
+            elif old_value[:2]=="0x":
+                old_value = old_value[2:]
+                old_value = bin(int(old_value, 16))[2:]
 
             #finding the length of the old and new values and creating a local variable for the new value
             old_len = len(old_value)

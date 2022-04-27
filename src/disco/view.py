@@ -557,7 +557,7 @@ class MainFrame(wx.Frame):
         if data_type == 'Package':
             # Package - a series of values separated by a comma or a space or both
             #TODO: Allow for {} values since packages could contain more packages
-            pattern = '^([0-9a-zA-Z]*\s?,?)*$'
+            pattern = '^([0-9]+,\s)*([0-9]+)$'
             match = re.match(pattern, val)
             if match: 
                 return True, msg

@@ -232,25 +232,24 @@ class PropertyPanel(wx.Panel):
                     valid_data = False
             elif val[:2]=="0x":
                 if hex(int(val[2:],16))<hex(int("FFFFFFFF",16)):
-                    val = "".join("0b", bin(int(val, 16))[2:].zfill(64))
                     valid_data = True
                 else:
-                    msg = "Input  value larger than 0xFFFFFFFF."
+                    msg = "Input value larger than 0xFFFFFFFF."
                     valid_data = False
             else:
-                msg = "Bitmap should be 64bit binary value starts with 0b( as a series of 0's or 1's from MSB to LSB) or a hexadecimal value starts with 0x."
+                msg = "Bitmap should be 64bit binary value starts with 0b (as a series of 0's or 1's from MSB to LSB) or a hexadecimal value starts with 0x."
                 valid_data = False
             return valid_data, msg, val
 
         if data_type == 'Package':
-            # Package - a series of values separated by a comma or a space or both
+            # Package - a series of values (decimal to hexadecimal) separated by a comma and a space
             # TODO: Allow for {} values since packages could contain more packages
-            pattern = '^([0-9a-zA-Z]*\s?,?)*$'
+            pattern = '^((0x)?[0-9]+,\s)*((0x)?[0-9]+)$'
             match = re.match(pattern, val)
             if match:
                 return True, msg, val
             else:
-                msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 1, 12)"
+                msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 0x16, 12)"
                 return False, msg, val
 
         if data_type == 'Boolean':

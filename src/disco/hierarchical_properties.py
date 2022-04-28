@@ -38,12 +38,11 @@ except:
 class HierarchicalPropertyPanel(wx.Panel):
 
     # initializes the Hierarchical Property Frame with the appropriate wxPython widgets
-    def __init__(self, parent, tree_list, curr_tree):
+    def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.SetBackgroundColour("white")
         # saves reference to the Main Window to reopen it once the Property Frame is closed.
         self.main_window = parent.GetParent()
-        self.tree_list = tree_list
         self.vbox_main = wx.BoxSizer(wx.VERTICAL)
 
         w, h = self.main_window.GetClientSize()
@@ -209,7 +208,7 @@ class HierarchicalPropertyPanel(wx.Panel):
         # the existing tree is an ancestor of the curr_tree (because this would cause an infinite loop) and a
         # warning message pops up telling the user if they use this value,
         # they will be sharing this package among other parents.
-        for tree in self.tree_list:
+        for tree in self.main_window.tree_list:
             if tree.getroot().find('Name').text == valueMsg:
                 ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
                 if ancestor is True:
@@ -256,7 +255,7 @@ class HierarchicalPropertyPanel(wx.Panel):
         # with this element tree as the higher_tree; return True if the function returns True.
         for hier_prop in higher_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
             name = hier_prop.find('Value').text
-            for tree in self.tree_list:
+            for tree in self.main_window.tree_list:
                 if tree.getroot().find('Name').text == name:
                     result = self.is_ancestor(tree, lower_tree)
                     if result is True:
@@ -284,7 +283,7 @@ class HierarchicalPropertyPanel(wx.Panel):
         # if user changes a property's name, that property name is updated in the model
         if event.GetCol() == 0:
             message = [value, old_value]
-            self.hier_property_name_changed(message=message)
+            self.main_window.hier_property_name_changed(message=message)
         # if user changes a property's value:
         else:
             # TODO: currently, this function is being called multiple times when a user only changes a grid cell once -
@@ -302,7 +301,7 @@ class HierarchicalPropertyPanel(wx.Panel):
 
                 # iterates through the current element tree list to see if the new value already has an associated
                 # element tree or if the old value had several parents (not just curr_tree).
-                for tree in self.tree_list:
+                for tree in self.main_window.tree_list:
 
                     # TODO: move the following data validation to the Controller
                     # (checking if tree is an ancestor of curr_tree)
@@ -312,7 +311,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                     # and send a warning message telling the user
                     # if they use this value, they will be sharing this package among other parents.
                     if tree.getroot().find('Name').text == value:
-                        ancestor = self.is_ancestor(tree, self.curr_tree)
+                        ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
 
                         if ancestor is True:
                             wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
@@ -346,7 +345,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                     print(" publishing property ")
 
                     message = [self.packs_grid.GetCellValue(event.GetRow(), 0), value, old_value]
-                    self.hier_property_value_changed(message=message)
+                    self.main_window.hier_property_value_changed(message=message)
                 else:
                     # Print statement for debugging purposes:
                     print("\n setting cell value " + old_value + " " + value)

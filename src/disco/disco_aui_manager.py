@@ -163,7 +163,7 @@ class DiscoToolAuiManager(wx.Frame):
                                  PaneBorder(False).
                                  Floatable(False))
 
-        self.packages_panel = HierarchicalPropertyPanel(self.auimainpanel, self.tree_list, self.curr_tree)
+        self.packages_panel = HierarchicalPropertyPanel(self.auimainpanel)
         self.packages_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.packages_panel, aui.AuiPaneInfo().
                                  Name("packagespanel").BestSize((-1, 250)).MinSize((-1, 250)).
@@ -521,7 +521,7 @@ class DiscoToolAuiManager(wx.Frame):
     #called when user inputs a value for a hierarchical property - updates model's data and view's UI with this data
     def hier_property_value_changed(self, message):
         #Print statement for debugging purposes:
-        self.view.set_data_changed(True)
+        self.set_data_changed(True)
         print("setting data changed to true")
 
         self.model.update_hier_property_value(message)
@@ -654,7 +654,12 @@ class DiscoToolAuiManager(wx.Frame):
 
         new_tree_list = self.model.get_tree_list()
         self.refresh_tree(new_tree_list)
-    
+
+    #updates the value of data_changed variable - called when some data is updated by user
+    def set_data_changed(self, value):
+        self.data_changed = value
+        print("data changed set to "+ str(value))    
+
     #called when the View needs to get the current tree list
     def get_tree_list(self, message):
         self.model.get_tree_list()

@@ -244,7 +244,7 @@ class PropertyPanel(wx.Panel):
         if data_type == 'Package':
             # Package - a series of values (decimal to hexadecimal) separated by a comma and a space
             # TODO: Allow for {} values since packages could contain more packages
-            pattern = '^((0x)?[0-9]+,\s)*((0x)?[0-9]+)$'
+            pattern = '^(((0x[a-zA-Z0-9]+)|([0-9]+)),\s)*((0x[a-zA-Z0-9]+)|([0-9]+))$'
             match = re.match(pattern, val)
             if match:
                 return True, msg, val

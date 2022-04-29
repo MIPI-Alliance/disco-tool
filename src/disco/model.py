@@ -16,6 +16,8 @@
 import xml.etree.ElementTree as et
 import copy
 import os
+import random
+import string
 
 #This class manages the app's data. It stores all of the xml files for the current device as ElementTree objects. It
 #defines all of the methods to update these ElementTrees as the user interacts with the GUI. 

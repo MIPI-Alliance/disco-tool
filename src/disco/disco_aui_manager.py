@@ -219,11 +219,11 @@ class DiscoToolAuiManager(wx.Frame):
 
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_property(self, event):
-        self.property_deleted(message=self.delete_property_name)
+        self.property_deleted(message=self.packages_panel.delete_property_name)
 
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_hier_property(self, event):
-        self.hier_property_deleted(message=[self.delete_property_name, None, None, self.curr_tree])
+        self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
 
     # called when the user single clicks on an item in the treectrl
     def OnTreeItemSelectionChanged(self, event):

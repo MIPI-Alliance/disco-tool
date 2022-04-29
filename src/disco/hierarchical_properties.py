@@ -161,7 +161,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                                   caption='Property error',
                                   style=wx.OK | wx.ICON_ERROR)
                 else:
-                    self.new_hier_property_added(message=messageList)
+                    self.main_window.new_hier_property_added(message=messageList)
 
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
     def resize_packs_grids(self, event):
@@ -230,7 +230,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                               caption='Property error',
                               style=wx.OK | wx.ICON_ERROR)
             else:
-                self.new_hier_property_added(message=messageList)
+                self.main_window.new_hier_property_added(message=messageList)
                 self.main_window.Enable()
                 self.Close()
 

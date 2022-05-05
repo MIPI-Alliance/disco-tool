@@ -118,6 +118,8 @@ class PropertyPanel(wx.Panel):
                         # TODO: move the following data validation to the Controller
                         # (checking data type matches what the user entered)
 
+                        #add a check to make sure there's no repeating values in the new list - if there are, show an error and don't update
+
                         # if new value is not the correct data type, an error message is shown and
                         # value won't be updated
                         ret, msg, value = self.check_type(prop.find('DataType').text, value)
@@ -212,14 +214,8 @@ class PropertyPanel(wx.Panel):
         msg = ""
         valid_data = False
         if data_type == 'String':
-            # String - do we need a regex here?
-            pattern = '^\S*$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg, val
-            else:
-                msg = "String can have any format."
-                return False, msg, val
+            # String can have any format
+            return True, msg, val
 
         if data_type == 'BitMap':
             # Bitmap - '0b' and then up to 32 binary values
@@ -243,6 +239,25 @@ class PropertyPanel(wx.Panel):
 
         if data_type == 'Package':
             # Package - a series of values (decimal to hexadecimal) separated by a comma and a space
+
+            #check there are no repeating values in the list (decimal or hexadecimal)
+            decimal_value = []
+            seen = []
+            value_list = val.split(", ")
+            for value in value_list:
+                if value[:2]=="0x":
+                    value = value[2:]
+                    value = int(value, 16)
+                    decimal_value.append(int(value))
+                else: 
+                    decimal_value.append(int(value))
+            for value in decimal_value:
+                if value in seen:
+                    msg = "Package should not contain two or more of the same value (i.e. 0xA, 12, 10)."
+                    return False, msg, val
+                seen.append(value)
+
+            #check the input matches what a package should look like (list of values seperated by a comma and a space)
             # TODO: Allow for {} values since packages could contain more packages
             pattern = '^(((0x[a-zA-Z0-9]+)|([0-9]+)),\s)*((0x[a-zA-Z0-9]+)|([0-9]+))$'
             match = re.match(pattern, val)

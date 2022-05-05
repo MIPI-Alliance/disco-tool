@@ -122,12 +122,40 @@ class model():
                     if name not in self.property_dictionary:
                         self.property_dictionary[name] = {};
 
+                    #delete appropriate hierarchical properties
+                    for num in to_delete:
+                        
+                        #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
+                        #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
+                        if num[:2]=="0x":
+                            converted_num = num[2:]
+                            converted_num = int(converted_num, 16)
+                        else:
+                            converted_num = num
+
+                        #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
+                        package_name = self.property_dictionary[name][num]
+                        del self.property_dictionary[name][num]
+                        self.packageName_list.remove(package_name)
+
+                        property_name = package.find('PropertyNamePrefix').text + str(converted_num) + package.find('PropertyNamePostfix').text
+                        self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
+
                     #add appropriate hierarchical properties
                     for num in to_add:
-                        #call helper function that creates the package name
-                        package_name = self.create_package_name(package, num)
 
-                        property_name = package.find('PropertyNamePrefix').text + str(num) + package.find('PropertyNamePostfix').text
+                        #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
+                        #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
+                        if num[:2]=="0x":
+                            converted_num = num[2:]
+                            converted_num = int(converted_num, 16)
+                        else:
+                            converted_num = num
+
+                        #call helper function that creates the package name
+                        package_name = self.create_package_name(package, int(converted_num))
+
+                        property_name = package.find('PropertyNamePrefix').text + str(converted_num) + package.find('PropertyNamePostfix').text
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''
@@ -141,16 +169,6 @@ class model():
                         #update the packageName_list and property_dictionary to keep track of the hierarchical properties
                         self.packageName_list.append(package_name);
                         self.property_dictionary[name][num] = package_name;
-                    
-                    #delete appropriate hierarchical properties
-                    for num in to_delete:
-                        #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
-                        package_name = self.property_dictionary[name][num]
-                        del self.property_dictionary[name][num]
-                        self.packageName_list.remove(package_name)
-
-                        property_name = package.find('PropertyNamePrefix').text + str(num) + package.find('PropertyNamePostfix').text
-                        self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
     
     #when a hierarchical property is automatically created, this function will be called to define the package name based on the dependent package 
     #and the value the user defined for this specific property
@@ -236,7 +254,7 @@ class model():
         return name
     
     #when the user updates a property value and that property has correspondning dependent packages, this method is called for each package
-    #to find out what hierarchical properties need to be added and deleted (this information is given in the form of a list of integers)
+    #to find out what hierarchical properties need to be added and deleted (this information is given in the form of a list of integers).
     def create_hier_props_lists(self, interpret_value, old_value, value):
         #method returns a tuple with a list of hierarchical properties to add and a list of hierarchical properties to delete (each property
         # is just defined by their integer value that follows the shared hierarchical property prefix)
@@ -271,32 +289,12 @@ class model():
                 old_value = old_value.split(", ")
             value = value.split(", ")
 
-            #updates the value and old_value lists to only have decimal values (they can be entered in hexadecimal)
-            decimal_value = []
-            decimal_old_value = []
-
-            for val in value:
-                if val[:2]=="0x":
-                    val = val[2:]
-                    val = int(val, 16)
-                    decimal_value.append(val)
-                else: 
-                    decimal_value.append(val)
+            for val in value: 
+                if val not in old_value: 
+                    to_add.append(val)
             for val in old_value:
-                if val[:2]=="0x":
-                    val = val[2:]
-                    val = int(val, 16)
-                    decimal_old_value.append(val)
-                else:
-                    decimal_old_value.append(val)
-
-            #populates the to_add and to_delete lists accordingly 
-            for val in decimal_value:
-                if val not in decimal_old_value:
-                    to_add.append(int(val))
-            for val in decimal_old_value:
-                if val not in decimal_value:
-                    to_delete.append(int(val))
+                if val not in value:
+                    to_delete.append(val)
 
         if interpret_value == 'BitMap':
 

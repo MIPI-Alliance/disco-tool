@@ -381,7 +381,7 @@ class PropertyPanel(wx.Panel):
                 wx.MessageBox(message='Please fill out all information for the property before adding it.',
                               caption='Property error', style=wx.OK | wx.ICON_ERROR)
             else:
-                self.property_added(message=messageList)
+                self.main_window.property_added(message=messageList)
                 
 class AddProperty(wx.Dialog):
 

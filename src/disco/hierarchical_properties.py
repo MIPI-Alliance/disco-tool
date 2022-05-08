@@ -105,7 +105,7 @@ class HierarchicalPropertyPanel(wx.Panel):
             messageList.append(str(int(requiredMsg)))
 
             descriptionMsg = new_hierarchical_property.description.GetValue()
-            messageList.append(str(int(descriptionMsg)))
+            messageList.append(descriptionMsg)
 
             modifyMsg = new_hierarchical_property.modify.GetValue()
             messageList.append(str(int(modifyMsg)))

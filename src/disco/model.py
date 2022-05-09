@@ -114,7 +114,8 @@ class model():
 
                     #call helper method to get a list of hierarchical properties to be deleted and hierarchical properties to be added (properties
                     # are specified by their number identifier)
-                    hier_props_lists = self.create_hier_props_lists(package.find('InterpretValue').text, old_value, value)
+                    interpret_value = package.find('InterpretValue').text
+                    hier_props_lists = self.create_hier_props_lists(interpret_value, old_value, value)
                     to_add = hier_props_lists[0]
                     to_delete = hier_props_lists[1]
 
@@ -127,11 +128,11 @@ class model():
                         
                         #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
                         #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
-                        if num[:2]=="0x":
-                            converted_num = num[2:]
-                            converted_num = int(converted_num, 16)
-                        else:
-                            converted_num = num
+                        converted_num = num
+                        if interpret_value == 'Package':
+                            if num[:2]=="0x":
+                                converted_num = num[2:]
+                                converted_num = int(converted_num, 16)
 
                         #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
                         package_name = self.property_dictionary[name][num]
@@ -146,11 +147,11 @@ class model():
 
                         #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
                         #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
-                        if num[:2]=="0x":
-                            converted_num = num[2:]
-                            converted_num = int(converted_num, 16)
-                        else:
-                            converted_num = num
+                        converted_num = num
+                        if interpret_value == 'Package':
+                            if num[:2]=="0x":
+                                converted_num = num[2:]
+                                converted_num = int(converted_num, 16)
 
                         #call helper function that creates the package name
                         package_name = self.create_package_name(package, int(converted_num))

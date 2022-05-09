@@ -115,8 +115,11 @@ class ASLgenerator():
                 
                 #converts bitmap to hex when displayed in the ASL
                 elif dtype == 'BitMap':
-                    val = hex(int(val, 2))
-                    self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")
+                    if val[:2]=="0x":
+                        self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")
+                    else:
+                        val = hex(int(val, 2))
+                        self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")
                 
                 elif dtype == 'Integer':
                     self.asl_file.write('           Package (2) {"'+name+'", '+val.lower()+"},\n")

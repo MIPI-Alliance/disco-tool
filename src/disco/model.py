@@ -136,10 +136,10 @@ class model():
 
                         #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
                         package_name = self.property_dictionary[name][num][1]
+                        property_name = self.property_dictionary[name][num][0]
                         del self.property_dictionary[name][num]
-                        self.packageName_list.remove(package_name)
 
-                        property_name = package.find('PropertyNamePrefix').text + str(converted_num) + package.find('PropertyNamePostfix').text
+                        #delete the hierarchical property
                         self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
 
                     #add appropriate hierarchical properties
@@ -167,8 +167,7 @@ class model():
                         message = [property_name, property_data_type, property_required, property_description, property_modify, property_prefix, property_value, property_file, name, pack_name]
                         self.add_new_hier_property(message)
 
-                        #update the packageName_list and property_dictionary to keep track of the hierarchical properties
-                        self.packageName_list.append(package_name);
+                        #update the property_dictionary to keep track of the hierarchical properties
                         self.property_dictionary[name][num] = (property_name, package_name);
     
     #when a hierarchical property is automatically created, this function will be called to define the package name based on the dependent package 
@@ -690,7 +689,7 @@ class model():
         prop_name = message[0]
         hierPropsTag = None
 
-        #if this new hierarchical property is to be added within a specific property, that property's name and dependent package name will be 
+        #if this hierarchical property is located within a specific property, that property's name and dependent package name will be 
         #extracted here - otherwise, these values will be None
         property_location = message[1]
         package_location = message[2]
@@ -761,6 +760,9 @@ class model():
                         hierPropsTag.remove(parent)
 
                         break
+
+        #update the list of package names --> this is not going to work I don't think, especially because this function is called recursively
+        self.packageName_list.remove(package_name)
 
     #adds a new hierarchical property to the current element tree (and creates the corresponding element tree if it doesn't already exist)
     def add_new_hier_property(self, message):
@@ -839,6 +841,10 @@ class model():
 
                             file_ch = et.SubElement(child, "Filename")
                             file_ch.text = message[7]
+
+
+        #adding the new hierarchical property package name to our list of package names
+        self.packageName_list.append(message[6]);
 
         #found variable starts as false and represents whether or not the new value is already related to an element tree
         self.found = False

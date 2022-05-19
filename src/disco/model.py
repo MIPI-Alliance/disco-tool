@@ -154,9 +154,20 @@ class model():
                                 converted_num = int(converted_num, 16)
 
                         #call helper function that creates the package name
+                        
                         package_name = self.create_package_name(package, int(converted_num))
-
-                        property_name = package.find('PropertyNamePrefix').text + str(converted_num) + package.find('PropertyNamePostfix').text
+                        if package.find('PackageNameDataType').text=="Hex":
+                            converted_num = hex(int(converted_num))
+                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            if prefix0x=="0x" or "0X":
+                                pkg_value_name = (str(converted_num))[2:]
+                        else:
+                            converted_num = int(converted_num)
+                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            pkg_value_name = str(converted_num)
+                                
+                                                          
+                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.capitalize()  + package.find('PropertyNamePostfix').text
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''

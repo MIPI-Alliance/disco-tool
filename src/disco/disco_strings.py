@@ -33,7 +33,7 @@ DISCO_STR_GRIDCELL_REUSE_MSG = '''
 is an existing package. Do you want to re-use existing package or rename current package?
 '''
 
-DISCO_STR_GRIDCELL_REUSE_MSG = '''
+DISCO_STR_GRIDCELL_OLD_SHARED_MSG = '''
   had several parent packages. If you continue,
   new data associated with this property will no longer affect other instances of the previous package.
   Would you like to continue?

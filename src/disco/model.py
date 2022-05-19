@@ -135,11 +135,11 @@ class model():
                                 converted_num = int(converted_num, 16)
 
                         #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
-                        package_name = self.property_dictionary[name][num]
+                        package_name = self.property_dictionary[name][num][1]
+                        property_name = self.property_dictionary[name][num][0]
                         del self.property_dictionary[name][num]
-                        self.packageName_list.remove(package_name)
 
-                        property_name = package.find('PropertyNamePrefix').text + str(converted_num) + package.find('PropertyNamePostfix').text
+                        #delete the hierarchical property
                         self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
 
                     #add appropriate hierarchical properties
@@ -167,9 +167,8 @@ class model():
                         message = [property_name, property_data_type, property_required, property_description, property_modify, property_prefix, property_value, property_file, name, pack_name]
                         self.add_new_hier_property(message)
 
-                        #update the packageName_list and property_dictionary to keep track of the hierarchical properties
-                        self.packageName_list.append(package_name);
-                        self.property_dictionary[name][num] = package_name;
+                        #update the property_dictionary to keep track of the hierarchical properties
+                        self.property_dictionary[name][num] = (property_name, package_name);
     
     #when a hierarchical property is automatically created, this function will be called to define the package name based on the dependent package 
     #and the value the user defined for this specific property
@@ -369,10 +368,34 @@ class model():
         name = message[0]
         old_name = message[1]
 
-        #finds the correct property in the current tree and updates its value
+        #changes the name of the hierarchical property in the current element tree to the new name
+        hierProp_found = False
         for prop in self.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
             if prop.find('Name').text == old_name:
                 prop.find('Name').text = name
+                hierProp_found = True
+
+        #if the hierarchical property is not found in the HierarchicalProperties section, then search for it
+        #in the DependentPackages section of the Properties.
+        property_name = None
+
+        if hierProp_found == False:
+            for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
+                if prop.find('DependentPackages').iter('Package') != None:
+                    for pack in prop.find('DependentPackages').iter('Package'):
+                        if pack.find('HierarchicalProperties').iter('HierarchicalProperty') != None:
+                            for hier_prop in pack.find('HierarchicalProperties').iter('HierarchicalProperty'):
+                                if hier_prop.find('Name').text == old_name:
+                                   hier_prop.find('Name').text = name
+
+                                   property_name = prop.find('Name').text
+                                   hier_prop_value = hier_prop.find('Value').text
+
+                                   #update the property_dictionary to keep track of the hierarchical properties
+                                   name_dictionary = self.property_dictionary[property_name]
+                                   for num_value in name_dictionary.keys():
+                                       if self.property_dictionary[property_name][num_value] == (old_name, hier_prop_value):
+                                           self.property_dictionary[property_name][num_value] = (name, hier_prop_value)
 
     #updates the value for a specific hierarchical property when user changes the corresponding grid cell in the View
     def update_hier_property_value(self, message):
@@ -419,15 +442,41 @@ class model():
             if tree.getroot().find('Name').text == instance_name:
                 self.found_new = True
                 self.new_tree = tree
-            
+
         #changes the value of the hierarchical property in the current element tree to the new value
+        hierProp_found = False
         root = self.curr_tree.getroot()
         hierPropsTag = root.find('HierarchicalProperties')
         for prop in hierPropsTag.iter('HierarchicalProperty'):
             if prop.find('Name').text == name:
+                hierProp_found = True
                 prop.find('Value').text = instance_name
                 file_name = prop.find('Filename').text
-        
+
+        #if the hierarchical property is not found in the HierarchicalProperties section, then search for it
+        #in the DependentPackages section of the Properties.
+        property_name = None
+
+        if hierProp_found == False:
+            for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
+                if prop.find('DependentPackages').iter('Package') != None:
+                    for pack in prop.find('DependentPackages').iter('Package'):
+                        if pack.find('HierarchicalProperties').iter('HierarchicalProperty') != None:
+                            for hier_prop in pack.find('HierarchicalProperties').iter('HierarchicalProperty'):
+                                if hier_prop.find('Name').text == name:
+                                    property_name = prop.find('Name').text
+                                    hierProp_found = True
+                                    hier_prop.find('Value').text = instance_name
+                                    file_name = pack.find('Filename').text
+
+            #update the packageName_list and property_dictionary to keep track of the hierarchical properties
+            name_dictionary = self.property_dictionary[property_name]
+            for num_value in name_dictionary.keys():
+                if self.property_dictionary[property_name][num_value] == (name, old_value):
+                    self.packageName_list.remove(old_value)
+                    self.packageName_list.append(instance_name)
+                    self.property_dictionary[property_name][num_value] = (name, instance_name)
+
         #if new value already has an associated element tree, the current element tree is added as a parent to this one
         if self.found_new == True:
             self.add_parent(self.new_tree, curr_tree_name)
@@ -507,45 +556,48 @@ class model():
         self.print_tree_list()
 
         #removes all of the element trees for the hierarchical properties that aren't associated with another property's dependent package
-        for prop in tree.getroot().find('HierarchicalProperties').iter("HierarchicalProperty"):
-            for other_tree in self.tree_list:
-                if other_tree.getroot().find('Name').text == prop.find("Value").text:
+        if tree.getroot().find('HierarchicalProperties').iter("HierarchicalProperty") != None:
+            for prop in tree.getroot().find('HierarchicalProperties').iter("HierarchicalProperty"):
+                for other_tree in self.tree_list:
+                    if other_tree.getroot().find('Name').text == prop.find("Value").text:
 
-                    #counter variable keeps track of how many parent packages the current element tree has
-                    counter = 0
-                    for p in other_tree.getroot().find('Header').find('Parents').iter('Parent'):
-                        counter += 1
-
-                    #if the current element tree has more than one parent, it is not removed from the tree_list and the current tree is simply removed as a parent - otherwise,
-                    #the tree is removed all together
-                    if counter > 1:
+                        #counter variable keeps track of how many parent packages the current element tree has
+                        counter = 0
                         for p in other_tree.getroot().find('Header').find('Parents').iter('Parent'):
-                            if p.text == tree.getroot().find('Name').text:
-                                other_tree.getroot().find('Header').find('Parents').remove(p)
-                    else:
-                        self.delete_tree(other_tree)
+                            counter += 1
+
+                        #if the current element tree has more than one parent, it is not removed from the tree_list and the current tree is simply removed as a parent - otherwise,
+                        #the tree is removed all together
+                        if counter > 1:
+                            for p in other_tree.getroot().find('Header').find('Parents').iter('Parent'):
+                                if p.text == tree.getroot().find('Name').text:
+                                    other_tree.getroot().find('Header').find('Parents').remove(p)
+                        else:
+                            self.delete_tree(other_tree)
 
         #removes all of the element trees for the hierarchical properties that are associated with another property's dependent package
         for prop in tree.getroot().find('Properties').iter('Property'):
-            for pack in prop.find('DependentPackages').iter('Package'):
-                for hier_prop in pack.find('HierarchicalProperties').find('HierarchicalProperty'):
-                    for other_tree in self.tree_list:
-                        if other_tree.getroot().find('Name').text == hier_prop.find("Value").text:
+            if prop.find('DependentPackages').iter('Package') != None:
+                for pack in prop.find('DependentPackages').iter('Package'):
+                    if pack.find('HierarchicalProperties').find('HierarchicalProperty') != None:
+                        for hier_prop in pack.find('HierarchicalProperties').find('HierarchicalProperty'):
+                            for other_tree in self.tree_list:
+                                if other_tree.getroot().find('Name').text == hier_prop.find("Value").text:
 
-                            #counter variable keeps track of how many parent packages the current element tree has
-                            counter = 0
-                            parents = other_tree.getroot().find('Header').find('Parents').iter('Parent')
-                            for p in parents:
-                                counter += 1
+                                    #counter variable keeps track of how many parent packages the current element tree has
+                                    counter = 0
+                                    parents = other_tree.getroot().find('Header').find('Parents').iter('Parent')
+                                    for p in parents:
+                                        counter += 1
 
-                             #if the current element tree has more than one parent, it is not removed from the tree_list and the current tree is simply removed as a parent 
-                             # - otherwise, the tree is removed all together
-                            if counter > 1:
-                                for p in parents:
-                                    if p.text == tree.getroot().find('Name').text:
-                                        parents.remove(p)
-                            else:
-                                self.delete_tree(other_tree)
+                                     #if the current element tree has more than one parent, it is not removed from the tree_list and the current tree is simply removed as a parent 
+                                     # - otherwise, the tree is removed all together
+                                    if counter > 1:
+                                        for p in parents:
+                                            if p.text == tree.getroot().find('Name').text:
+                                                parents.remove(p)
+                                    else:
+                                        self.delete_tree(other_tree)
 
     #called when the initial xml file is uploaded (template renamed to _DSD and saved in the list here) OR when 
     #an instance of a new package is created (template renamed to whatever the user chose and saved in the list here).
@@ -637,14 +689,13 @@ class model():
         prop_name = message[0]
         hierPropsTag = None
 
-        #if this new hierarchical property is to be added within a specific property, that property's name and dependent package name will be 
+        #if this hierarchical property is located within a specific property, that property's name and dependent package name will be 
         #extracted here - otherwise, these values will be None
         property_location = message[1]
         package_location = message[2]
         curr_tree = message[3]
 
         curr_tree_name = curr_tree.getroot().find('Name').text
-        multiple_parents = False
 
         #finds the hierarchical properties section where the property to delete can be found
         if (property_location == None) & (package_location == None):
@@ -669,16 +720,18 @@ class model():
 
                         #deletes the appropriate parent tag from the etree and checks to see if there are other 
                         # parents still
+                        counter = 0
                         for p in parents:
                             if p.text == curr_tree_name:
                                 to_remove = p
+                                counter += 1
                             else:
-                                multiple_parents = True
+                                counter += 1
                         
                         parents.remove(to_remove)
                         
                         #if there was only one parent, this etree and all of its hierarchical prop.s are deleted
-                        if multiple_parents == False:
+                        if counter == 1:
 
                             #deletes the hierarchical properties found in the HierarchicalProperties tag at the end of the tree
                             for prop in tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
@@ -707,6 +760,9 @@ class model():
                         hierPropsTag.remove(parent)
 
                         break
+
+        #update the list of package names --> this is not going to work I don't think, especially because this function is called recursively
+        self.packageName_list.remove(package_name)
 
     #adds a new hierarchical property to the current element tree (and creates the corresponding element tree if it doesn't already exist)
     def add_new_hier_property(self, message):
@@ -785,6 +841,10 @@ class model():
 
                             file_ch = et.SubElement(child, "Filename")
                             file_ch.text = message[7]
+
+
+        #adding the new hierarchical property package name to our list of package names
+        self.packageName_list.append(message[6]);
 
         #found variable starts as false and represents whether or not the new value is already related to an element tree
         self.found = False

@@ -332,7 +332,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                             counter += 1
 
                         if counter > 1:
-                            result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
+                            result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_OLD_SHARED_MSG,
                                                        caption='Package name warning',
                                                        style=wx.YES_NO | wx.ICON_WARNING)
 
@@ -342,10 +342,11 @@ class HierarchicalPropertyPanel(wx.Panel):
                 # is not changed in the model and the grid cell value returns to its previous value.
                 if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
-                    print(" publishing property ")
+                    print("publishing property " + value)
 
                     message = [self.packs_grid.GetCellValue(event.GetRow(), 0), value, old_value]
                     self.main_window.hier_property_value_changed(message=message)
+
                 else:
                     # Print statement for debugging purposes:
                     print("\n setting cell value " + old_value + " " + value)

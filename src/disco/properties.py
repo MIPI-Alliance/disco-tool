@@ -106,7 +106,7 @@ class PropertyPanel(wx.Panel):
             # if user changes a property's name, that property name is updated in the model
             if event.GetCol() == 0:
                 message = [value, old_value]
-                self.property_name_changed(message=message)
+                self.main_window.property_name_changed(message=message)
             # if user changes a property's value:
             else:
                 # iterates through the current tree's properties to find the one that was just edited by the user -
@@ -240,6 +240,15 @@ class PropertyPanel(wx.Panel):
         if data_type == 'Package':
             # Package - a series of values (decimal to hexadecimal) separated by a comma and a space
 
+            #check the input matches what a package should look like (list of values seperated by a comma and a space)
+            # TODO: Allow for {} values since packages could contain more packages
+            pattern = '^(((0x[a-zA-Z0-9]+)|([0-9]+)),\s)*((0x[a-zA-Z0-9]+)|([0-9]+))$'
+            match = re.match(pattern, val)
+
+            if match == None: 
+                msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 0x16, 12)"
+                return False, msg, val
+
             #check there are no repeating values in the list (decimal or hexadecimal)
             decimal_value = []
             seen = []
@@ -257,15 +266,7 @@ class PropertyPanel(wx.Panel):
                     return False, msg, val
                 seen.append(value)
 
-            #check the input matches what a package should look like (list of values seperated by a comma and a space)
-            # TODO: Allow for {} values since packages could contain more packages
-            pattern = '^(((0x[a-zA-Z0-9]+)|([0-9]+)),\s)*((0x[a-zA-Z0-9]+)|([0-9]+))$'
-            match = re.match(pattern, val)
-            if match:
-                return True, msg, val
-            else:
-                msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 0x16, 12)"
-                return False, msg, val
+            return True, msg, val
 
         if data_type == 'Boolean':
             # Boolean - either 1 or 0
@@ -314,7 +315,7 @@ class PropertyPanel(wx.Panel):
         popUpMenu = wx.Menu()
         deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
         popUpMenu.Append(deleteItem)
-        popUpMenu.Bind(wx.EVT_MENU, self.delete_property, deleteItem)
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 
     # called when the user moves the mouse over the screen

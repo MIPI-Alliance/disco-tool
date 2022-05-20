@@ -126,15 +126,13 @@ class model():
                     #delete appropriate hierarchical properties
                     for num in to_delete:
                         
-                        #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
-                        #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
                         converted_num = num
                         if interpret_value == 'Package':
                             if num[:2]=="0x":
                                 converted_num = num[2:]
                                 converted_num = int(converted_num, 16)
 
-                        #before calling delete_hier_property, we should update the packageName_list and property_dictionary so that both get rid of this value
+                        #before calling delete_hier_property, we should update the property_dictionary to get rid of this value
                         package_name = self.property_dictionary[name][num][1]
                         property_name = self.property_dictionary[name][num][0]
                         del self.property_dictionary[name][num]
@@ -145,8 +143,6 @@ class model():
                     #add appropriate hierarchical properties
                     for num in to_add:
 
-                        #TODO: add a check here once we have the PackageNameDataType tag to determine whether or not we want the package name
-                        #and hierarchical property name to be in hex if we entered it in hex (right now we are always using decimal for the names)
                         converted_num = num
                         if interpret_value == 'Package':
                             if num[:2]=="0x":
@@ -165,8 +161,7 @@ class model():
                             converted_num = int(converted_num)
                             prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
                             pkg_value_name = str(converted_num)
-                                
-                                                          
+                               
                         property_name = package.find('PropertyNamePrefix').text + pkg_value_name.capitalize()  + package.find('PropertyNamePostfix').text
                         property_data_type = 'String'
                         property_required = ''
@@ -368,11 +363,21 @@ class model():
     def update_property_name(self, message):
         name = message[0]
         old_name = message[1]
+        found = False
+        value = None
 
         #finds the correct property in the current tree and updates its value
         for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
             if prop.find('Name').text == old_name:
                 prop.find('Name').text = name
+        for prop_name in self.property_dictionary.keys():
+            if prop_name == old_name:
+                value = self.property_dictionary[prop_name]
+                found = True
+
+        if found == True:
+            self.property_dictionary.pop(old_name)
+            self.property_dictionary[name] = value
     
     #updates the name for a specific hierarchical property when user changes the corresponding grid cell in the View
     def update_hier_property_name(self, message):
@@ -673,6 +678,8 @@ class model():
         for parent in propsTag.iter('Property'):
             if parent.find('Name').text == message:
 
+                print("entered")
+
                 #variable for the list of hierarchical properties that need to be deleted
                 to_delete = []
 
@@ -680,7 +687,13 @@ class model():
                 for package in parent.find('DependentPackages').iter('Package'):
                     for hier_prop in package.find('HierarchicalProperties').iter('HierarchicalProperty'):
                         to_delete.append(hier_prop.find('Name').text)
-                        
+                
+                if len(to_delete) > 0:
+                    for prop_name in self.property_dictionary.keys():
+                        if prop_name == message:
+                            self.property_dictionary.pop(prop_name)
+                            break
+
                 for prop in to_delete:
                     self.delete_hier_property([prop, message, package.find('Name').text, self.curr_tree])
 
@@ -726,6 +739,9 @@ class model():
 
                     #finds the element tree referenced by this hierarchical property
                     if tree.getroot().find('Name').text == parent.find('Value').text:
+
+                        print("parent value: " + parent.find('Value').text)
+
                         parents = tree.getroot().find('Header').find('Parents')
                         to_remove = None
 
@@ -758,6 +774,9 @@ class model():
                             self.tree_list.remove(tree)
                             print("removing element " + tree.getroot().find('Name').text)
                             self.print_tree_list()
+
+                        #update the list of package names
+                        self.packageName_list.remove(parent.find('Value').text)
                         
                         #the hierarchical property is removed from the current etree
                         parent.remove(parent.find('Name'))
@@ -771,9 +790,6 @@ class model():
                         hierPropsTag.remove(parent)
 
                         break
-
-        #update the list of package names --> this is not going to work I don't think, especially because this function is called recursively
-        self.packageName_list.remove(package_name)
 
     #adds a new hierarchical property to the current element tree (and creates the corresponding element tree if it doesn't already exist)
     def add_new_hier_property(self, message):

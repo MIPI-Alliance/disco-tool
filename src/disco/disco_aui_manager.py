@@ -215,11 +215,9 @@ class DiscoToolAuiManager(wx.Frame):
                     self.save_files(message=None)
         self.Destroy()
 
-
-
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_property(self, event):
-        self.property_deleted(message=self.packages_panel.delete_property_name)
+        self.property_deleted(message=self.properties_panel.delete_property_name)
 
     # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_hier_property(self, event):

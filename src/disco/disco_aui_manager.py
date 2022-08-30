@@ -143,7 +143,8 @@ class DiscoToolAuiManager(wx.Frame):
                                  Floatable(False).
                                  PaneBorder(False))
 
-        self.tree_panel = wx.Panel(self.auimainpanel, style=wx.TAB_TRAVERSAL | wx.CLIP_CHILDREN)
+        self.tree_panel = wx.TreeCtrl(self.auimainpanel, -1, wx.Point(0, 0), wx.Size(160, 250),
+                                       wx.TR_DEFAULT_STYLE | wx.NO_BORDER)
         self.tree_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.tree_panel, aui.AuiPaneInfo().
                                  Name("treepanel").BestSize((200, -1)).MinSize((200, -1)).
@@ -183,7 +184,7 @@ class DiscoToolAuiManager(wx.Frame):
                                  MinimizeButton(False).PaneBorder(False).Floatable(False))
 
         # adding all of the widgets to the tree panel
-        self.hier_tree = wx.TreeCtrl(parent=self.tree_panel, size=(4000, 6000))
+        self.hier_tree = self.tree_panel
         self.hier_tree.SetFont(wx.Font(13, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
         self.hier_tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.hier_tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelectionChanged)
@@ -553,7 +554,7 @@ class DiscoToolAuiManager(wx.Frame):
             path = os.path.join(self.model.get_project_path(), file_name)
 
             #with open(self.model.get_project_path() +"\\" + file_name,'w') as my_file:
-            with open(path,'w') as my_file:
+            with open(path, 'w', encoding="utf-8") as my_file:
                 tree_str_pretty = tree_str_parsed.toprettyxml(indent='\t', newl='\n')
                 tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
                 my_file.write(tree_str_pretty)
@@ -581,7 +582,7 @@ class DiscoToolAuiManager(wx.Frame):
             path = os.path.join(message, file_name)
 
             #with open(message + "\\" + file_name,'w') as my_file:
-            with open(path,'w') as my_file:
+            with open(path, 'w', encoding="utf-8") as my_file:
                 tree_str_pretty = tree_str_parsed.toprettyxml(indent='\t', newl='\n')
                 tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
                 my_file.write(tree_str_pretty)

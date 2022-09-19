@@ -33,6 +33,7 @@ try:
     import disco.model as model
     from disco.properties import PropertyPanel
     from disco.hierarchical_properties import HierarchicalPropertyPanel
+    from disco.bufferdata_properties import BufferDataPropertyPanel
     from disco.ASLgenerator import GenerateASLFrame
     from disco.disco_help import DisCoInfo
 except:
@@ -41,6 +42,7 @@ except:
     import model
     from properties import PropertyPanel
     from hierarchical_properties import HierarchicalPropertyPanel
+    from bufferdata_properties import BufferDataPropertyPanel
     from ASLgenerator import GenerateASLFrame
     from disco_help import DisCoInfo
 
@@ -168,6 +170,18 @@ class DiscoToolAuiManager(wx.Frame):
         self.packages_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.packages_panel, aui.AuiPaneInfo().
                                  Name("packagespanel").BestSize((-1, 250)).MinSize((-1, 250)).
+                                 CenterPane().
+                                 CloseButton(False).
+                                 MaximizeButton(False).
+                                 MinimizeButton(False).
+                                 PaneBorder(False).
+                                 Floatable(False))
+
+
+        self.packages_bufferdata_panel = BufferDataPropertyPanel(self.auimainpanel)
+        self.packages_bufferdata_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
+        self.aui_manager.AddPane(self.packages_bufferdata_panel, aui.AuiPaneInfo().
+                                 Name("packagespanel2").BestSize((-1, 250)).MinSize((-1, 250)).
                                  CenterPane().
                                  CloseButton(False).
                                  MaximizeButton(False).
@@ -361,6 +375,7 @@ class DiscoToolAuiManager(wx.Frame):
     def enable_buttons(self):
         self.packages_panel.addHierPropBtn.Enable()
         self.properties_panel.addPropBtn.Enable()
+        self.packages_bufferdata_panel.addbufferdataBtn.Enable()
         self.item_save.Enable(True)
         self.item_save_as.Enable(True)
         self.item_generate_asl.Enable(True)

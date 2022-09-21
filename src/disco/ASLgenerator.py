@@ -91,18 +91,18 @@ class ASLgenerator():
                 if dtype == 'Package':
                     x = re.findall('([0-9a-zA-Z]*)', val)
                     new_val = ""
-                    counter = 0
+                    new_counter = 0
                     entries = []
                     for entry in x:
                         if entry != "":
                             entries.append(entry)
                     for entry in entries:
                         if entry != "":
-                            if counter == len(entries)-1:
+                            if new_counter == len(entries)-1:
                                 new_val += entry
                             else:
                                 new_val += entry+", "
-                        counter += 1
+                        new_counter += 1
                     self.asl_file.write('           Package (2) {"'+name+'",\n            Package() {'+new_val+'} },\n')
                 
                 #uses values "One" and "Zero" for properties of type boolean
@@ -145,6 +145,14 @@ class ASLgenerator():
         for hier_prop in hierarchical_list:
             if hier_prop[1] is not None:
                 new_hierarchical_list.append((hier_prop[0], hier_prop[1]))
+        
+        #buffer properties at the bottom of the xml file are added to buffer list as tuples (with the property name, buffer name and the value for each)
+        buffer_list = []
+        buff_tag = self.curr_tree.find('BufferProperties')
+        for prop in buff_tag.iter('BufferProperty'):
+            if prop.find('BufferName').text is not None:
+                if prop.find('Value').text is not None:
+                    buffer_list.append((prop.find('PropertyName').text, prop.find('BufferName').text, prop.find('Filename').text))
 
         #if there are hierarchical properties in the current etree, they are added to the current package section in the asl file
         if len(new_hierarchical_list) > 0:
@@ -156,19 +164,39 @@ class ASLgenerator():
 
             for hier_prop in new_hierarchical_list:
                 self.asl_file.write('           Package (2) {"'+ hier_prop[0] +'", "'+ hier_prop[1] +'"},\n')
-        
+
+        #if there are buffer properties in the current etree, they are added to the current package section in the asl file
+        if len(buffer_list) > 0:
+
+            if (len(new_hierarchical_list) > 0 or counter > 0):
+                self.asl_file.write('        },\n')
+
+            self.asl_file.write('        ToUUID("edb12dd0-363d-4085-a3d2-49522ca160c4"),\n        Package () {\n')
+
+            for buff_prop in buffer_list:
+                self.asl_file.write('           Package (2) {"'+ buff_prop[0] +'", "'+ buff_prop[1] +'"},\n')
+
             self.asl_file.write('        }\n')
         else: 
-            if counter > 0:
+            if (len(new_hierarchical_list) > 0 or counter > 0):
                 self.asl_file.write('        }\n')
 
         self.asl_file.write('   }) //End ' + device_name + '.' + start_package_name + '\n\n')
+
+        #this method is recursively called on any buffer properties in order to add those properties to the asl file
+        for buff_prop in buffer_list:
+
+            #if a buffer property from this tree doesn't exist in master_hierarchical_list, add it there and then generate the asl-
+            #this is to prevent shared packages from being included more than once in the asl file
+            if buff_prop[1] not in self.master_hierarchical_list:
+                self.master_hierarchical_list.append(buff_prop[1])
+                self.generate_asl(buff_prop[1], device_name, None, None, None, None)
 
         #this method is recursively called on any hierarchical properties in order to add those packages to the asl file
         for hier_prop in new_hierarchical_list:
 
             #if a hierarchical property from this tree doesn't exist in master_hierarchical_list, add it there and then generate the asl-
-            #this is to prevent shared packages from being included more than once in the asl file
+            #this is to prevent shared buffer properties from being included more than once in the asl file
             if hier_prop[1] not in self.master_hierarchical_list:
                 self.master_hierarchical_list.append(hier_prop[1])
                 self.generate_asl(hier_prop[1], device_name, None, None, None, None)

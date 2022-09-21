@@ -47,25 +47,25 @@ class BufferDataPropertyPanel(wx.Panel):
 
         w, h = self.main_window.GetClientSize()
         # adding the hierarchical properties grid and the add hierarchical property button to the properties panel
-        self.packs_grid = grid.Grid(self, size=(5000, 300))
-        self.packs_grid.CreateGrid(0, 3)
+        self.props_grid = grid.Grid(self, size=(5000, 300))
+        self.props_grid.CreateGrid(0, 3)
 
         # sets the initial sizes for the hierarchical property grid columns
-        self.packs_grid.SetColSize(0, (w - 80) / 3)
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / 3)
+        self.props_grid.SetColSize(0, (w - 80) / 3)
+        self.props_grid.SetColSize(1, 80)
+        self.props_grid.SetColSize(2, (w - 80) / 3)
 
-        self.packs_grid.SetColLabelValue(0, "Property Name")
-        self.packs_grid.SetColLabelValue(1, "Data Type")
-        self.packs_grid.SetColLabelValue(2, "Package Name")
-        self.packs_grid.SetLabelFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
-        self.packs_grid.SetLabelTextColour(app_constants.COLOR_PURPLE4)
+        self.props_grid.SetColLabelValue(0, "Property Name")
+        self.props_grid.SetColLabelValue(1, "Data Type")
+        self.props_grid.SetColLabelValue(2, "Package Name")
+        self.props_grid.SetLabelFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+        self.props_grid.SetLabelTextColour(app_constants.COLOR_PURPLE4)
 
         # calls certain functions when user changes a hierarchical properties grid cell or
         # right clicks on a hierarchical properties grid cell
-        self.packs_grid.Bind(grid.EVT_GRID_CELL_CHANGED, self.OnPacksGridCellChange)
-        self.packs_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPacksGridRightClick)
-        self.packs_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPacksGridMouseOver)
+        self.props_grid.Bind(grid.EVT_GRID_CELL_CHANGED, self.OnPropsGridCellChange)
+        self.props_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPropsGridRightClick)
+        self.props_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPropsGridMouseOver)
 
         self.addbufferdataBtn = wx.Button(parent=self, label="Add Buffer Properties", size=(-1, 35))
         app_constants.set_button_font(self.addbufferdataBtn)
@@ -74,7 +74,7 @@ class BufferDataPropertyPanel(wx.Panel):
 
         # creates sizer for hierarchical properties panel
         self.packsSizer = wx.BoxSizer(wx.VERTICAL)
-        self.packsSizer.Add(self.packs_grid, wx.EXPAND)
+        self.packsSizer.Add(self.props_grid, wx.EXPAND)
         self.packsSizer.Add(self.addbufferdataBtn)
         self.SetSizer(self.packsSizer)
         self.Layout()
@@ -82,7 +82,95 @@ class BufferDataPropertyPanel(wx.Panel):
         self.SetAutoLayout(True)
 
         # when user resizes the frame, methods will be called to appropriately resize the grids
-        self.packs_grid.Bind(wx.EVT_SIZE, self.resize_packs_grids)
+        self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
+
+    # called when the user changes a cell in the buffer properties grid (the value cell)
+    def OnPropsGridCellChange(self, event):
+        # collects the new property value and the previous property value
+        old_value = event.GetString()
+        value = self.props_grid.GetCellValue(event.GetRow(), event.GetCol())
+
+        # initializes variables to starting values
+        over_four = False
+        ancestor = False
+        result_new = wx.ID_NONE
+        result_old = wx.ID_NONE
+
+        # if user changes a property's name, that property name is updated in the model
+        if event.GetCol() == 0:
+            message = [value, old_value]
+            self.main_window.buff_property_name_changed(message=message)
+        # if user changes a property's value:
+        else:
+            # TODO: currently, this function is being called multiple times when a user only changes a grid cell once -
+            # after the first correct function call, the old_value is equal to the new value.
+            # This if statement is to prevent the warning dialogs to show up more than
+            # once when the function is called with these incorrect values.
+            if old_value != value:
+                # if the new value is over four characters, an error message is shown and
+                # the over_four variable is set to true
+                if len(value) > 4:
+                    wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
+                                  caption='Package name error',
+                                  style=wx.OK | wx.ICON_ERROR)
+                    over_four = True
+
+                # iterates through the current element tree list to see if the new value already has an associated
+                # element tree or if the old value had several parents (not just curr_tree).
+                for tree in self.main_window.tree_list:
+
+                    # TODO: move the following data validation to the Controller
+                    # (checking if tree is an ancestor of curr_tree)
+                    # enters this if statement if the new value already has an element tree -
+                    # in this case send an error message if this element
+                    # tree is an ancestor of the curr_tree (because this would cause an infinite loop)
+                    # and send a warning message telling the user
+                    # if they use this value, they will be sharing this package among other parents.
+                    if tree.getroot().find('Name').text == value:
+                        ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
+
+                        if ancestor is True:
+                            wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
+                                          caption='Package name error',
+                                          style=wx.OK | wx.ICON_ERROR)
+                        else:
+                            result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
+                                                       caption='Package name warning',
+                                                       style=wx.YES_NO | wx.ICON_WARNING)
+
+                    # Condition when the element tree is found that was associated with the previous value.
+                    # Counter variable is used to count how many parents this tree has -
+                    # if it has more than one, send a warning message telling the user if they use this
+                    # value, the new package will no longer be shared with these other parents.
+                    if tree.getroot().find('Name').text == old_value:
+                        counter = 0
+                        for parent in tree.getroot().find('Header').find('Parents').iter('Parent'):
+                            counter += 1
+
+                        if counter > 1:
+                            result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_OLD_SHARED_MSG,
+                                                       caption='Package name warning',
+                                                       style=wx.YES_NO | wx.ICON_WARNING)
+
+                # if the new value is not an ancestor of the current tree, has equal or less than four characters,
+                # and the user did not reply "no" to any warning messages they might have gotten,
+                # then the hierarchical property is changed in the Model. Otherwise, the property
+                # is not changed in the model and the grid cell value returns to its previous value.
+                if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
+                    # Print statement for debugging purposes:
+                    print("publishing property " + value)
+
+                    message = [self.props_grid.GetCellValue(event.GetRow(), 0), value, old_value]
+                    self.main_window.buff_property_value_changed(message=message)
+
+                else:
+                    # Print statement for debugging purposes:
+                    print("\n setting cell value " + old_value + " " + value)
+                    self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
+
+            else:
+                # Print statement for debugging purposes:
+                print("skipping event")
 
     # temporarily disables the Main Frame and opens the Hierarchical Property Frame
     # (where user can add a new hier prop to the current Element Tree)
@@ -112,17 +200,15 @@ class BufferDataPropertyPanel(wx.Panel):
 
             result_new = wx.ID_NONE
             ancestor = False
-            over_four = False
-
-             
+            over_four = False  
 
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
-    def resize_packs_grids(self, event):
+    def resize_props_grids(self, event):
         try:
             w, h = self.GetClientSize()
-            self.packs_grid.SetColSize(0, (w - 80) / (3))
-            self.packs_grid.SetColSize(1, 80)
-            self.packs_grid.SetColSize(2, (w - 80) / (3))
+            self.props_grid.SetColSize(0, (w - 80) / (3))
+            self.props_grid.SetColSize(1, 80)
+            self.props_grid.SetColSize(2, (w - 80) / (3))
             event.Skip()
         except:
             print(w)
@@ -132,14 +218,11 @@ class BufferDataPropertyPanel(wx.Panel):
         self.main_window.Enable()
         self.Destroy()
 
-    def OnPacksGridCellChange(self, event):
-        pass
-
-    def OnPacksGridRightClick(self, event):
+    def OnPropsGridRightClick(self, event):
         pass
 
 
-    def onPacksGridMouseOver(self, event):
+    def onPropsGridMouseOver(self, event):
         pass
 
 class AddBufferDataProperty(wx.Dialog):

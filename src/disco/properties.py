@@ -84,7 +84,6 @@ class PropertyPanel(wx.Panel):
         self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
 
     # called when the user changes a cell in the properties grid (the value cell)
-    # called when the user changes a cell in the properties grid (the value cell)
     def OnPropsGridCellChange(self, event):
         # collects the new property value, the previous value, the property's name,
         # and initializes user_choice (used for warning box) to none

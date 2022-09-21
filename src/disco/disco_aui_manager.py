@@ -178,9 +178,9 @@ class DiscoToolAuiManager(wx.Frame):
                                  Floatable(False))
 
 
-        self.packages_bufferdata_panel = BufferDataPropertyPanel(self.auimainpanel)
-        self.packages_bufferdata_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
-        self.aui_manager.AddPane(self.packages_bufferdata_panel, aui.AuiPaneInfo().
+        self.buffprops_panel = BufferDataPropertyPanel(self.auimainpanel)
+        self.buffprops_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
+        self.aui_manager.AddPane(self.buffprops_panel, aui.AuiPaneInfo().
                                  Name("packagespanel2").BestSize((-1, 250)).MinSize((-1, 250)).
                                  CenterPane().
                                  CloseButton(False).
@@ -375,7 +375,7 @@ class DiscoToolAuiManager(wx.Frame):
     def enable_buttons(self):
         self.packages_panel.addHierPropBtn.Enable()
         self.properties_panel.addPropBtn.Enable()
-        self.packages_bufferdata_panel.addbufferdataBtn.Enable()
+        self.buffprops_panel.addbufferdataBtn.Enable()
         self.item_save.Enable(True)
         self.item_save_as.Enable(True)
         self.item_generate_asl.Enable(True)
@@ -531,7 +531,6 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-
     #called when user inputs a value for a hierarchical property - updates model's data and view's UI with this data
     def hier_property_value_changed(self, message):
         #Print statement for debugging purposes:
@@ -539,6 +538,20 @@ class DiscoToolAuiManager(wx.Frame):
         print("setting data changed to true")
 
         self.model.update_hier_property_value(message)
+
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
+
+    #called when user inputs a value for a buffer property - updates model's data and view's UI with this data
+    def buff_property_value_changed(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.update_buff_property_value(message)
 
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
@@ -646,7 +659,7 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree_list = self.model.get_tree_list()
         self.refresh_tree(new_tree_list)
 
-    #called when the user cahnges the name of a property (message = value, old_value)
+    #called when the user changes the name of a property (message = value, old_value)
     def property_name_changed(self, message):
         #Print statement for debugging purposes:
         self.set_data_changed(True)
@@ -668,6 +681,16 @@ class DiscoToolAuiManager(wx.Frame):
 
         new_tree_list = self.model.get_tree_list()
         self.refresh_tree(new_tree_list)
+
+    #called when the user changes the name of a buffer property (message = value, old_value)
+    def buff_property_name_changed(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.update_buff_property_name(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
 
     #updates the value of data_changed variable - called when some data is updated by user
     def set_data_changed(self, value):
@@ -771,10 +794,42 @@ class DiscoToolAuiManager(wx.Frame):
                     # and EnsureVisible set to new value
                     self.add_tree_items(new_tree_item, tree, curr_tree_list, EnsureVisible)
 
-    # updates the Main Window UI to display the current Element Tree's properties and hierarchical properties.
+        # iterate through the current tree's buffer properties
+        for buff_prop in curr_tree.getroot().find('BufferProperties').iter('BufferProperty'):
+            name = buff_prop.find('BufferName').text
+
+            # find the element tree corresponding to the current buffer property
+            for tree in curr_tree_list:
+                if tree.getroot().find('Name').text == name:
+
+                    # appends this element tree as a child to the current root and
+                    # sets EnsureVisible variable (which keeps track of whether or
+                    # not the loop has reached the current element tree or not - if so,
+                    # EnsureVisible is True and method will set all of the
+                    # following children to be expanded)
+                    new_tree_item = self.hier_tree.AppendItem(curr_root, name)
+                    EnsureVisible = visible
+
+                    # if the loop has reached the current element tree, EnsureVisible is set to True
+                    # and the current treeCtrl item is expanded
+                    if tree.getroot().find('Name').text == self.curr_tree.getroot().find('Name').text:
+                        EnsureVisible = True
+                    if EnsureVisible is True:
+                        self.hier_tree.EnsureVisible(new_tree_item)
+
+                    # recursive call to function with the new treeCtrl item as the current root
+                    # and EnsureVisible set to new value
+                    self.add_tree_items(new_tree_item, tree, curr_tree_list, EnsureVisible)
+
+    # temporarily disables the Main Window UI and shows the window where user can update the buffer property's value
+    #def open_buffer_window(self, tree):
+
+    # updates the Main Window UI to display the current Element Tree's properties and hierarchical properties
     def refresh(self, tree):
         # updates the curr_tree variable
         self.curr_tree = tree
+
+        #TODO: check if the new tree has a buffer property and if so, then disable the Main Window UI and open up a pop up where user can enter the value
 
         # adjusts number of rows in properties grid to match the current tree
         num = self.properties_panel.props_grid.GetNumberRows()
@@ -782,6 +837,9 @@ class DiscoToolAuiManager(wx.Frame):
 
         row_counter = 0
         for prop in root.iter('Property'):
+            #if prop.find('DataType').text == 'Buffer':
+                #open_buffer_window()
+                #return
             row_counter += 1
 
         if row_counter < num:
@@ -833,7 +891,7 @@ class DiscoToolAuiManager(wx.Frame):
         # counter is used to keep track of what row the loop is in as properties are added to the grid
         counter = 0
 
-        # updates hierarchical properties grid with hierarchical properties
+	    # updates hierarchical properties grid with hierarchical properties
         # that aren't associated with other properties (these have editable names)
         for hier_prop in root.find('HierarchicalProperties').iter('HierarchicalProperty'):
             name = hier_prop.find('Name').text
@@ -841,12 +899,12 @@ class DiscoToolAuiManager(wx.Frame):
             dType = hier_prop.find('DataType').text
             val = hier_prop.find('Value').text
 
-            if val is not None:
-                prefix = val
+            if val is None:
+                val = ""
 
             self.packages_panel.packs_grid.SetCellValue(counter, 0, name)
             self.packages_panel.packs_grid.SetCellValue(counter, 1, dType)
-            self.packages_panel.packs_grid.SetCellValue(counter, 2, prefix)
+            self.packages_panel.packs_grid.SetCellValue(counter, 2, val)
             self.packages_panel.packs_grid.SetReadOnly(counter, 0, isReadOnly=False)
             self.packages_panel.packs_grid.SetReadOnly(counter, 1, isReadOnly=False)
             self.packages_panel.packs_grid.SetReadOnly(counter, 2, isReadOnly=False)
@@ -881,6 +939,45 @@ class DiscoToolAuiManager(wx.Frame):
                     self.packages_panel.packs_grid.SetCellFont(counter, 2, wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
                     self.packages_panel.packs_grid.SetRowSize(counter, 25)
                     counter += 1
+
+        # adjusts number of rows in buffer properties grid to match the current tree
+        num = self.buffprops_panel.props_grid.GetNumberRows()
+        root = tree.getroot()
+
+        row_counter = 0
+        for prop in root.iter('BufferProperty'):
+            row_counter += 1
+
+        if row_counter < num:
+            self.buffprops_panel.props_grid.DeleteRows(0, num - row_counter)
+
+        if num < row_counter:
+            self.buffprops_panel.props_grid.AppendRows(row_counter - num)
+
+        # counter is used to keep track of what row the loop is in as properties are added to the grid
+        counter = 0
+
+	    # updates buffer properties grid with buffer properties
+        for buff_prop in root.find('BufferProperties').iter('BufferProperty'):
+            name = buff_prop.find('PropertyName').text
+            buffName = buff_prop.find('BufferName').text
+            dType = buff_prop.find('DataType').text
+            val = buff_prop.find('Value').text
+
+            if buffName is None:
+                buffName = ""
+
+            self.buffprops_panel.props_grid.SetCellValue(counter, 0, name)
+            self.buffprops_panel.props_grid.SetCellValue(counter, 1, dType)
+            self.buffprops_panel.props_grid.SetCellValue(counter, 2, buffName)
+            self.buffprops_panel.props_grid.SetReadOnly(counter, 0, isReadOnly=False)
+            self.buffprops_panel.props_grid.SetReadOnly(counter, 1, isReadOnly=False)
+            self.buffprops_panel.props_grid.SetReadOnly(counter, 2, isReadOnly=False)
+            self.buffprops_panel.props_grid.SetCellFont(counter, 0, wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+            self.buffprops_panel.props_grid.SetCellFont(counter, 1, wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+            self.buffprops_panel.props_grid.SetCellFont(counter, 2, wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
+            self.buffprops_panel.props_grid.SetRowSize(counter, 25)
+            counter += 1
 
     def _bind_mainframe_events(self):
         """

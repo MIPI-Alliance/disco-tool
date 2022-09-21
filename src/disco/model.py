@@ -378,6 +378,150 @@ class model():
         if found == True:
             self.property_dictionary.pop(old_name)
             self.property_dictionary[name] = value
+
+    #updates the name for a specific buffer property when user changes the corresponding grid cell in the View
+    def update_buff_property_name(self, message):
+        name = message[0]
+        old_name = message[1]
+        found = False
+        value = None
+
+        #finds the correct property in the current tree and updates its value
+        for prop in self.curr_tree.getroot().find('BufferProperties').iter('BufferProperty'):
+            if prop.find('PropertyName').text == old_name:
+                prop.find('PropertyName').text = name
+        for prop_name in self.property_dictionary.keys():
+            if prop_name == old_name:
+                value = self.property_dictionary[prop_name]
+                found = True
+
+        if found == True:
+            self.property_dictionary.pop(old_name)
+            self.property_dictionary[name] = value
+
+    #updates the value for a specific buffer property when user changes the corresponding grid cell in the View
+    def update_buff_property_value(self, message):
+        #if new value already belongs to an existing element tree: add the curr_tree as parent of that one and change the correct value in the 
+        #curr_tree 
+        #       if old element tree exists but was not shared: delete it
+        #       if old element tree exists and was shared: delete appropriate parent tag
+        #       if old element tree doesnt exist: do nothing else
+        #if new value does not already exist: change the correct val in curr_tree
+        #       if old element tree existed and was not shared: just change its name to new
+        #       if old element tree exists and was shared: delete appropriate parent tag and copy old element tree and use that as base for new one
+        #       if old element tree doesnt exist: create a whole new element tree
+
+        #collects the buffer property name, the new property value, the previous property value, and the current tree name
+        name = message[0]
+        buffer_name = message[1]
+        old_value = message[2]
+        curr_tree_name = self.curr_tree.getroot().find("Name").text
+        version_number = self.curr_tree.getroot().find('Header').find('Version').text
+
+        #initializes variables to starting values
+        file_name = ""
+        self.found_old = False
+        self.old_shared = False
+        self.found_new = False
+        self.old_tree = None
+        self.new_tree = None
+
+        #iterates through the current element tree list and sets found_old to true if previous value had an associated element tree (old_tree)-
+        #old_shared is also set to true if this element tree was shared (had several parents).
+        #also sets found_new to true if new value already has an associated element tree(new_tree).
+        for tree in self.tree_list:
+            if tree.getroot().find('Name').text == old_value:
+                self.found_old = True
+                self.old_tree = tree
+
+                counter = 0
+                for parent in tree.getroot().find('Header').find('Parents').iter('Parent'):
+                    counter += 1
+
+                if counter > 1:
+                    self.old_shared = True
+
+            if tree.getroot().find('Name').text == buffer_name:
+                self.found_new = True
+                self.new_tree = tree
+
+        #changes the value of the buffer property in the current element tree to the new value
+        buffProp_found = False
+        root = self.curr_tree.getroot()
+        buffPropsTag = root.find('BufferProperties')
+        for prop in buffPropsTag.iter('BufferProperty'):
+            if prop.find('PropertyName').text == name:
+                buffProp_found = True
+                prop.find('BufferName').text = buffer_name
+                file_name = prop.find('Filename').text
+
+        #if new value already has an associated element tree, the current element tree is added as a parent to this one
+        if self.found_new == True:
+            self.add_parent(self.new_tree, curr_tree_name)
+
+            #if old value also was shared (had several parents), the current element tree is removed as a parent to that one.
+            #if old value was not shared (current tree was its only parent), that tree and its children are deleted
+            if self.found_old == True:
+                if self.old_shared == True:
+                    parents = self.old_tree.getroot().find('Header').find('Parents')
+                    for p in parents:
+                        if p.text == curr_tree_name:
+                            parents.remove(p)
+                else:
+                    #TODO: edit this function to work with buffer properties 
+                    self.delete_tree(self.old_tree)
+        else: 
+            if self.found_old == True:
+
+                #if new value does not already have an associated element tree and previous tree existed but was not shared, the previous
+                #tree's name is simply changed to the new value
+                if self.old_shared == False:
+                    self.update_template_name(self.old_tree, buffer_name)
+                
+                #if new value does not already have an associated element tree and previous tree existed and was shared, a copy of the previous
+                #tree is made to be the new tree (with adjusted template name and parent list) and curr_tree is removed as a parent from the previous
+                #tree
+                else:
+
+                    #TODO: currently, the "copy" of the previous element tree is created by converting the old_tree to a string and then 
+                    #convering that back to an element tree - used this hack becuase copy.deepcopy() was returning new_tree as None.
+                    temp_string = et.tostring(self.old_tree.getroot()).decode()
+                    new_root = et.fromstring(temp_string)
+                    new_tree = et.ElementTree(element = new_root)
+
+                    #Print statements for debugging purposes:
+                    print("old tree\n")
+                    print(self.old_tree)
+                    print("\n new tree\n")
+                    print(new_tree)
+
+                    #variables for the parent tags of the new element tree and the old element tree
+                    new_parents = new_tree.getroot().find('Header').find('Parents')
+                    old_parents = self.old_tree.getroot().find('Header').find('Parents')
+
+                    #new element tree's parent list is adjusted so that it only contains the current element tree
+                    new_tree.getroot().find('Header').remove(new_parents)
+                    et.SubElement(new_tree.getroot().find('Header'), 'Parents')
+                    new_child = et.SubElement(new_tree.getroot().find('Header').find('Parents'), 'Parent')
+                    new_child.text = curr_tree_name
+
+                    #removes the current element tree from the old element tree's parent list
+                    for p in old_parents:
+                        if p.text == curr_tree_name:
+                            old_parents.remove(p)
+
+                    #adds the new element tree to the element tree list
+                    self.add_element_tree(new_tree, buffer_name, version_number)
+
+            #if new value does not already have an associated element tree and there was no previous element tree, a new element
+            #tree is created based on associated filename (from the template) with the current tree as a parent
+            else:
+                path = os.path.join(self.template_path, file_name)
+                print("new tree path is " + path)
+                new_tree = et.parse(path)
+                #new_tree = et.parse(self.template_path + file_name)
+                self.add_parent(new_tree, curr_tree_name)
+                self.add_element_tree(new_tree, buffer_name, self.curr_tree.getroot().find('Header').find('Version').text)
     
     #updates the name for a specific hierarchical property when user changes the corresponding grid cell in the View
     def update_hier_property_name(self, message):
@@ -660,6 +804,15 @@ class model():
                     new_tree = et.parse(path)
 
                     self.add_element_trees(new_tree, hier_prop.find('Value').text, version)
+
+            for buff_prop in etree.getroot().iter('BufferProperty'):
+                if buff_prop.find('BufferName').text != None:
+                    file_name = buff_prop.find('BufferName').text + ".xml"
+
+                    path = os.path.join(self.project_path, file_name)
+                    new_tree = et.parse(path)
+
+                    self.add_element_tree(new_tree, buff_prop.find('BufferName').text, version)
 
     #called either when a tree is first created and the parent needs to be added, or when another reference to an 
     #existing tree is made and the new parent needs to be added

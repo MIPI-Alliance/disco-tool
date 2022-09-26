@@ -309,5 +309,50 @@ class AddBufferDataProperty(wx.Dialog):
         vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
+
+
+class EditBufferDataPropertyValue(wx.Dialog):
+
+    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        valueLabel = wx.StaticText(self, label="Value:")
+        app_constants.set_title_font(valueLabel)
+        self.value = wx.TextCtrl(self, value="", size=(300, 100))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(valueLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.value, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+
+        line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
+        vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)
+        vbox_main.Fit(self)
                     
                     

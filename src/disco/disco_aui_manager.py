@@ -33,7 +33,7 @@ try:
     import disco.model as model
     from disco.properties import PropertyPanel
     from disco.hierarchical_properties import HierarchicalPropertyPanel
-    from disco.bufferdata_properties import BufferDataPropertyPanel
+    from disco.bufferdata_properties import BufferDataPropertyPanel, EditBufferDataPropertyValue
     from disco.ASLgenerator import GenerateASLFrame
     from disco.disco_help import DisCoInfo
 except:
@@ -42,7 +42,7 @@ except:
     import model
     from properties import PropertyPanel
     from hierarchical_properties import HierarchicalPropertyPanel
-    from bufferdata_properties import BufferDataPropertyPanel
+    from bufferdata_properties import BufferDataPropertyPanel, EditBufferDataPropertyValue
     from ASLgenerator import GenerateASLFrame
     from disco_help import DisCoInfo
 
@@ -247,7 +247,20 @@ class DiscoToolAuiManager(wx.Frame):
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
         self.ExpandAndColorTreeItem(root, text)
         self.hier_tree.SetFocusedItem(event.GetItem())
+        
+        #temp check 
+        if text == "buf0":
+            self.TreeItemBufPropertySelected(text)
 
+    def TreeItemBufPropertySelected(self, bufname):
+        add_bufferdata_value = EditBufferDataPropertyValue(self, -1, bufname, size=(450, 800),
+                                                            style=wx.DEFAULT_DIALOG_STYLE)
+        add_bufferdata_value.CenterOnScreen()
+        val = add_bufferdata_value.ShowModal()
+
+        if val == wx.ID_OK:
+            pass
+        
     # called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages
     def OnTreeItemActivated(self, event):
         # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl

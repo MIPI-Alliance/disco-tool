@@ -1,4 +1,4 @@
-#  ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 #  Copyright 2022, MIPI Alliance and its contributors.
 #  SPDX-License-Identifier: BSD-3-Clause
@@ -57,7 +57,7 @@ class BufferDataPropertyPanel(wx.Panel):
 
         self.props_grid.SetColLabelValue(0, "Property Name")
         self.props_grid.SetColLabelValue(1, "Data Type")
-        self.props_grid.SetColLabelValue(2, "Package Name")
+        self.props_grid.SetColLabelValue(2, "Buffer Name")
         self.props_grid.SetLabelFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
         self.props_grid.SetLabelTextColour(app_constants.COLOR_PURPLE4)
 
@@ -92,7 +92,6 @@ class BufferDataPropertyPanel(wx.Panel):
 
         # initializes variables to starting values
         over_four = False
-        ancestor = False
         result_new = wx.ID_NONE
         result_old = wx.ID_NONE
 
@@ -100,6 +99,7 @@ class BufferDataPropertyPanel(wx.Panel):
         if event.GetCol() == 0:
             message = [value, old_value]
             self.main_window.buff_property_name_changed(message=message)
+
         # if user changes a property's value:
         else:
             # TODO: currently, this function is being called multiple times when a user only changes a grid cell once -
@@ -119,22 +119,11 @@ class BufferDataPropertyPanel(wx.Panel):
                 # element tree or if the old value had several parents (not just curr_tree).
                 for tree in self.main_window.tree_list:
 
-                    # TODO: move the following data validation to the Controller
-                    # (checking if tree is an ancestor of curr_tree)
-                    # enters this if statement if the new value already has an element tree -
-                    # in this case send an error message if this element
-                    # tree is an ancestor of the curr_tree (because this would cause an infinite loop)
+                    # enters this if statement if the new value already has an element tree
                     # and send a warning message telling the user
                     # if they use this value, they will be sharing this package among other parents.
                     if tree.getroot().find('Name').text == value:
-                        ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
-
-                        if ancestor is True:
-                            wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
-                                          caption='Package name error',
-                                          style=wx.OK | wx.ICON_ERROR)
-                        else:
-                            result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
+                        result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
                                                        caption='Package name warning',
                                                        style=wx.YES_NO | wx.ICON_WARNING)
 
@@ -152,11 +141,11 @@ class BufferDataPropertyPanel(wx.Panel):
                                                        caption='Package name warning',
                                                        style=wx.YES_NO | wx.ICON_WARNING)
 
-                # if the new value is not an ancestor of the current tree, has equal or less than four characters,
+                # if the new value has equal or less than four characters
                 # and the user did not reply "no" to any warning messages they might have gotten,
                 # then the hierarchical property is changed in the Model. Otherwise, the property
                 # is not changed in the model and the grid cell value returns to its previous value.
-                if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
+                if (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
                     print("publishing property " + value)
 
@@ -172,9 +161,10 @@ class BufferDataPropertyPanel(wx.Panel):
                 # Print statement for debugging purposes:
                 print("skipping event")
 
-    # temporarily disables the Main Frame and opens the Hierarchical Property Frame
-    # (where user can add a new hier prop to the current Element Tree)
+    # temporarily disables the Main Frame and opens the Buffer Property Frame
+    # (where user can add a new buffer prop to the current Element Tree)
     def open_bufferdata_property_frame(self, event):
+
         new_bufferdata_property = AddBufferDataProperty(self, -1, "Add Buffer Properties", size=(450, 800),
                                                             style=wx.DEFAULT_DIALOG_STYLE)
         new_bufferdata_property.CenterOnScreen()
@@ -186,21 +176,47 @@ class BufferDataPropertyPanel(wx.Panel):
             nameMsg = new_bufferdata_property.name.GetValue()
             messageList.append(nameMsg)
 
+            dataMsg = new_bufferdata_property.datatype.GetValue()
+            messageList.append(dataMsg)
+
             descriptionMsg = new_bufferdata_property.description.GetValue()
             messageList.append(descriptionMsg)
 
-
-            valueMsg = new_bufferdata_property.datatype.GetValue()
-            messageList.append(valueMsg)
-
             packagename = new_bufferdata_property.packagename.GetValue()
             messageList.append(packagename)
-            messageList.append(None)
-            messageList.append(None)
+
+            filename = new_bufferdata_property.file.GetValue()
+            messageList.append(filename)
 
             result_new = wx.ID_NONE
-            ancestor = False
-            over_four = False  
+            over_four = False 
+            
+            # if the new buffer name is not four characters, an error message is shown
+            # and the over_four variable is set to true
+            if len(packagename) > 4:
+                wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
+                              caption='Package name error', style=wx.OK | wx.ICON_ERROR)
+                over_four = True
+
+            # this loop determines if there is an existing
+            # element tree associated with the new buffer property value -
+            # if there is, a warning message pops up telling the user if 
+            # they use this value, they will be sharing this package among other parents.
+            for tree in self.main_window.tree_list:
+                if tree.getroot().find('Name').text == packagename:
+                    result_new = wx.MessageBox(message=disco_str.DISCO_STR_PKG_REUSE_MSG,
+                                               caption='Package name warning',
+                                               style=wx.YES_NO | wx.WARNING)
+            
+            # if the user does not get the warning message or replies "yes" to it,
+            # the value is equal or less than four characters, and the name/description/buff name are filled out,
+            # the new buffer property is added to the model
+            if (result_new != wx.NO) & (over_four is False):
+                if (nameMsg == '') | (descriptionMsg == '') | (packagename == ''):
+                    wx.MessageBox(message='Please fill out all information for the property before adding it.', 
+                                  caption='Property error', style=wx.OK | wx.ICON_ERROR)
+                else:
+                    self.main_window.buff_property_added(message=messageList)
 
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
     def resize_props_grids(self, event):
@@ -252,7 +268,7 @@ class AddBufferDataProperty(wx.Dialog):
 
         dataLabel = wx.StaticText(self, label="Data Type:")
         app_constants.set_title_font(dataLabel)
-        self.datatype = wx.TextCtrl(self, value="Buffer", style=wx.TE_READONLY)
+        self.datatype = wx.TextCtrl(self, value="String", style=wx.TE_READONLY)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(dataLabel, 0, wx.LEFT, 10)
@@ -278,7 +294,7 @@ class AddBufferDataProperty(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
-        pkgnameLabel = wx.StaticText(self, label="Package Name:")
+        pkgnameLabel = wx.StaticText(self, label="Buffer Name:")
         app_constants.set_title_font(pkgnameLabel)
         self.packagename = wx.TextCtrl(self, value="", size=(300, -1))
 
@@ -292,6 +308,20 @@ class AddBufferDataProperty(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
+        fileLabel = wx.StaticText(self, label="File name:")
+        app_constants.set_title_font(fileLabel)
+        self.file = wx.TextCtrl(self, value="", size=(300, -1))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(fileLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.file, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
         line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
         vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
 
@@ -310,10 +340,9 @@ class AddBufferDataProperty(wx.Dialog):
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
 
-
 class EditBufferDataPropertyValue(wx.Dialog):
 
-    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
+    def __init__(self, parent, ID, currValue, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
         self.parent = parent
         pre = wx.Dialog()
@@ -324,7 +353,7 @@ class EditBufferDataPropertyValue(wx.Dialog):
 
         valueLabel = wx.StaticText(self, label="Value:")
         app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, value="", size=(300, 100))
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100))
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)
@@ -336,7 +365,6 @@ class EditBufferDataPropertyValue(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
-
         line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
         vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
 
@@ -354,5 +382,6 @@ class EditBufferDataPropertyValue(wx.Dialog):
         vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
+                    
                     
                     

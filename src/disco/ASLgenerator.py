@@ -68,13 +68,28 @@ class ASLgenerator():
 
             #master hierarchical list keeps track of the hierarchical properties from all of the element trees added to the asl file so far
             self.master_hierarchical_list = []
+        
+        # if this tree contains a buffer property, then add that buffer property and value to the asl file and return 
+        props_tag = self.curr_tree.find('Properties')
+        for prop in props_tag.iter('Property'):
+
+            val = prop.find('Value').text
+            dtype = prop.find('DataType').text
+
+            if val == None:
+                val = ''
+
+            if dtype == 'Buffer':
+                self.asl_file.write('   Name('+start_package_name+', Buffer() {\n')
+                self.asl_file.write('        '+val)
+                self.asl_file.write('\n   }) //End '+ device_name +'.'+start_package_name+'\n\n')
+                return
 
         #all normal properties are added to the current package section in the file and any hierarchical properties
         #found are stored in the hierarchical list
         self.asl_file.write('   Name('+start_package_name+', Package() {\n')
         
         counter = 0
-        props_tag = self.curr_tree.find('Properties')
         for prop in props_tag.iter('Property'):
 
             name = prop.find('Name').text
@@ -151,8 +166,7 @@ class ASLgenerator():
         buff_tag = self.curr_tree.find('BufferProperties')
         for prop in buff_tag.iter('BufferProperty'):
             if prop.find('BufferName').text is not None:
-                if prop.find('Value').text is not None:
-                    buffer_list.append((prop.find('PropertyName').text, prop.find('BufferName').text, prop.find('Filename').text))
+                buffer_list.append((prop.find('PropertyName').text, prop.find('BufferName').text, prop.find('Filename').text))
 
         #if there are hierarchical properties in the current etree, they are added to the current package section in the asl file
         if len(new_hierarchical_list) > 0:

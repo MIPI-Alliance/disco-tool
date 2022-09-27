@@ -247,20 +247,7 @@ class DiscoToolAuiManager(wx.Frame):
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
         self.ExpandAndColorTreeItem(root, text)
         self.hier_tree.SetFocusedItem(event.GetItem())
-        
-        #temp check 
-        if text == "buf0":
-            self.TreeItemBufPropertySelected(text)
 
-    def TreeItemBufPropertySelected(self, bufname):
-        add_bufferdata_value = EditBufferDataPropertyValue(self, -1, bufname, size=(450, 800),
-                                                            style=wx.DEFAULT_DIALOG_STYLE)
-        add_bufferdata_value.CenterOnScreen()
-        val = add_bufferdata_value.ShowModal()
-
-        if val == wx.ID_OK:
-            pass
-        
     # called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages
     def OnTreeItemActivated(self, event):
         # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
@@ -543,6 +530,19 @@ class DiscoToolAuiManager(wx.Frame):
         self.model.add_property(message)
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
+
+    #called when a new buffer property is added by the user - updates model's data and view's UI with this data
+    def buff_property_added(self, message):
+        #Print statement for debugging purposes:
+        self.set_data_changed(True)
+        print("setting data changed to true")
+
+        self.model.add_buff_property(message)
+        new_tree = self.model.get_curr_tree()
+        self.refresh(new_tree)
+
+        tree_list = self.model.get_tree_list()
+        self.refresh_tree(tree_list)
 
     #called when user inputs a value for a hierarchical property - updates model's data and view's UI with this data
     def hier_property_value_changed(self, message):
@@ -834,15 +834,10 @@ class DiscoToolAuiManager(wx.Frame):
                     # and EnsureVisible set to new value
                     self.add_tree_items(new_tree_item, tree, curr_tree_list, EnsureVisible)
 
-    # temporarily disables the Main Window UI and shows the window where user can update the buffer property's value
-    #def open_buffer_window(self, tree):
-
     # updates the Main Window UI to display the current Element Tree's properties and hierarchical properties
     def refresh(self, tree):
         # updates the curr_tree variable
         self.curr_tree = tree
-
-        #TODO: check if the new tree has a buffer property and if so, then disable the Main Window UI and open up a pop up where user can enter the value
 
         # adjusts number of rows in properties grid to match the current tree
         num = self.properties_panel.props_grid.GetNumberRows()
@@ -850,9 +845,28 @@ class DiscoToolAuiManager(wx.Frame):
 
         row_counter = 0
         for prop in root.iter('Property'):
-            #if prop.find('DataType').text == 'Buffer':
-                #open_buffer_window()
-                #return
+            if prop.find('DataType').text == 'Buffer':
+                bufname = tree.getroot().find('Name').text
+                currValue = prop.find('Value').text
+                if currValue == None:
+                    currValue = ''
+
+                add_bufferdata_value = EditBufferDataPropertyValue(self, -1, currValue, bufname, size=(450, 800), style=wx.DEFAULT_DIALOG_STYLE)
+                add_bufferdata_value.CenterOnScreen()
+                val = add_bufferdata_value.ShowModal()
+
+                if val == wx.ID_OK:
+                    message = [add_bufferdata_value.value.GetValue(), prop.find('Name').text]
+                    self.model.update_buff_val(message)
+
+                #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
+                self.model.set_curr_tree('_DSD')
+                new_tree = self.model.get_curr_tree()
+                self.refresh(new_tree)
+                tree_list = self.model.get_tree_list()
+                self.refresh_tree(tree_list)
+
+                return 
             row_counter += 1
 
         if row_counter < num:

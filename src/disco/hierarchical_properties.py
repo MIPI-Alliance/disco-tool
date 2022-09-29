@@ -149,7 +149,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                     else:
                         result_new = wx.MessageBox(message=valueMsg + disco_str.DISCO_STR_PKG_REUSE_MSG,
                                                    caption='Package name warning',
-                                                   style=wx.YES_NO | wx.WARNING)
+                                                   style=wx.YES_NO | wx.ICON_WARNING)
 
             # if the user does not get the warning message or replies "yes" to it,
             # the new value is not an ancestor of the current element tree,
@@ -218,7 +218,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                 else:
                     result_new = wx.MessageBox(message=valueMsg + ' is an existing package. Do you want to re-use existing package?',
                                                caption='Package name warning',
-                                               style=wx.YES_NO | wx.WARNING)
+                                               style=wx.YES_NO | wx.ICON_WARNING)
 
         # if the user does not get the warning message or replies "yes" to it,
         # the new value is not an ancestor of the current element tree,

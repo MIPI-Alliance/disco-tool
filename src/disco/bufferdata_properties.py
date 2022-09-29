@@ -206,7 +206,7 @@ class BufferDataPropertyPanel(wx.Panel):
                 if tree.getroot().find('Name').text == packagename:
                     result_new = wx.MessageBox(message=disco_str.DISCO_STR_PKG_REUSE_MSG,
                                                caption='Package name warning',
-                                               style=wx.YES_NO | wx.WARNING)
+                                               style=wx.YES_NO | wx.ICON_WARNING)
             
             # if the user does not get the warning message or replies "yes" to it,
             # the value is equal or less than four characters, and the name/description/buff name are filled out,

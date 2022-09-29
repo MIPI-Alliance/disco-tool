@@ -1073,7 +1073,7 @@ class HierarchicalPropertyFrame(wx.Frame):
                 if ancestor == True:
                     wx.MessageBox(message = 'Circular reference found. One of the parent packages has the same name.' , caption='Package name error',style=wx.OK | wx.ICON_ERROR)
                 else:
-                    result_new = wx.MessageBox(message = valueMsg + ' is an existing package. Do you want to re-use existing package?', caption='Package name warning',style = wx.YES_NO|wx.WARNING)
+                    result_new = wx.MessageBox(message = valueMsg + ' is an existing package. Do you want to re-use existing package?', caption='Package name warning',style = wx.YES_NO|wx.ICON_WARNING)
 
         #if the user does not get the warning message or replies "yes" to it, the new value is not an ancestor of the current element tree,
         #the value is equal or less than four characters, and the name/data/value/file are filled out, the new hierarchical property is added to the model

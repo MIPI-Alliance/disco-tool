@@ -379,6 +379,21 @@ class model():
             self.property_dictionary.pop(old_name)
             self.property_dictionary[name] = value
 
+    #updates the value for a specific buffer property when user updates it
+    def update_buff_val(self, message):
+        value = message[0]
+        name = message[1]
+
+        #finds the property in the current tree that is the one the user just updated
+        root = self.curr_tree.getroot()
+        propsTag = root.find('Properties')
+
+        for prop in propsTag.iter('Property'):
+            if prop.find('Name').text == name:
+
+                #adjusts this property's value to be what the user just inputted
+                prop.find('Value').text = value
+
     #updates the name for a specific buffer property when user changes the corresponding grid cell in the View
     def update_buff_property_name(self, message):
         name = message[0]
@@ -468,7 +483,6 @@ class model():
                         if p.text == curr_tree_name:
                             parents.remove(p)
                 else:
-                    #TODO: edit this function to work with buffer properties 
                     self.delete_tree(self.old_tree)
         else: 
             if self.found_old == True:
@@ -943,6 +957,64 @@ class model():
                         hierPropsTag.remove(parent)
 
                         break
+
+    #adds a new buffer property to the current element tree (and creates the corresponding element tree if it doesn't already exist)
+    def add_buff_property(self, message):
+
+        #finds the current tree name and version number
+        root = self.curr_tree.getroot()
+        curr_tree_name = root.find('Name').text
+        version_num = root.find('Header').find('Version').text 
+
+        parent = root.find('BufferProperties')
+
+        child = et.SubElement(parent, "BufferProperty")
+
+        name_ch = et.SubElement(child, "PropertyName")
+        name_ch.text = message[0]
+
+        data_ch = et.SubElement(child, "DataType")
+        data_ch.text = message[1]
+
+        req_ch = et.SubElement(child, "Required")
+        req_ch.text = "1"
+
+        desc_ch = et.SubElement(child, "Description")
+        desc_ch.text = message[2]
+
+        mod_ch = et.SubElement(child, "OEMModify")
+        mod_ch.text = "0"
+
+        prefix_ch = et.SubElement(child, "BufferName")
+        prefix_ch.text = message[3]
+
+        val_ch = et.SubElement(child, "Value")
+        val_ch.text = ""
+
+        file_ch = et.SubElement(child, "Filename")
+        file_ch.text = message[4]
+
+        #found variable starts as false and represents whether or not the new value is already related to an element tree
+        self.found = False
+
+        #if there already is an element tree for the new value, the current tree is added as a parent to that tree and found variable is 
+        #set to true
+        for existing_tree in self.get_tree_list():
+            if existing_tree.getroot().find('Name').text == message[3]:
+                self.add_parent(existing_tree, curr_tree_name)
+                self.found = True
+
+        #if found is false (there is no element tree associated with the new value), a new element tree is created with the current tree
+        #as its parent and the value as its name
+        if self.found == False:
+            path = os.path.join(self.template_path, message[4])
+            print("new tree path is " + path)
+            tree = et.parse(path)
+
+            #tree = et.parse(self.template_path + message[7])
+            self.update_template_name(tree, message[3])
+            self.add_parent(tree, curr_tree_name)
+            self.add_element_tree(tree, message[3], version_num)
 
     #adds a new hierarchical property to the current element tree (and creates the corresponding element tree if it doesn't already exist)
     def add_new_hier_property(self, message):

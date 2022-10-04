@@ -826,7 +826,7 @@ class model():
                     path = os.path.join(self.project_path, file_name)
                     new_tree = et.parse(path)
 
-                    self.add_element_tree(new_tree, buff_prop.find('BufferName').text, version)
+                    self.add_element_trees(new_tree, buff_prop.find('BufferName').text, version)
 
     #called either when a tree is first created and the parent needs to be added, or when another reference to an 
     #existing tree is made and the new parent needs to be added

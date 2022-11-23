@@ -25,6 +25,7 @@ import wx.grid as grid
 import logging
 import xml.dom.minidom as md
 import xml.etree.ElementTree as et
+import numpy as np
 
 try:
     import disco
@@ -507,6 +508,10 @@ class DiscoToolAuiManager(wx.Frame):
         self.model.set_project_path(message)
         self.model.add_element_trees(tree, '_DSD', '1')
 
+        listPath = os.path.join(message, 'packageNameList.npy')
+        with open(listPath, 'rb') as my_file:
+            self.model.set_packageNameList(np.load(my_file))
+
         #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
         self.model.set_curr_tree('_DSD')
         new_tree = self.model.get_curr_tree()
@@ -579,6 +584,10 @@ class DiscoToolAuiManager(wx.Frame):
         print("initializing data changed to false")
 
         tree_list = self.model.get_tree_list()
+
+        path = os.path.join(self.model.get_project_path(), "packageNameList.npy")
+        with open(path, 'wb') as my_file:
+            np.save(my_file, self.model.get_packageNameList())
         
         #goes through the list of element trees and adds each one as an xml file to the current project path 
         for tree in tree_list:
@@ -607,6 +616,10 @@ class DiscoToolAuiManager(wx.Frame):
         print("initializing data changed to false")
 
         tree_list = self.model.get_tree_list()
+
+        path = os.path.join(message, "packageNameList.npy")
+        with open(path, 'wb') as my_file:
+            np.save(my_file, self.model.get_packageNameList())
         
         #goes through the list of element trees and adds each one as an xml file to the path the user chose
         for tree in tree_list:

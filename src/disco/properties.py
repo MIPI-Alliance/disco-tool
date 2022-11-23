@@ -217,8 +217,19 @@ class PropertyPanel(wx.Panel):
             return True, msg, val
 
         if data_type == 'BitMap':
-            # Bitmap - '0b' and then up to 32 binary values
+            # Bitmap - '0b' and then up to 32 binary values or a hexadecimal value
+
+            if val == "":
+                return True, msg, val
+
             if val[:2]=="0b":
+                pattern = '^0[bB][0-9a-fA-F]+$'
+                match = re.match(pattern, val)
+
+                if match == None: 
+                    msg = "Bitmap should be 64bit binary value starts with 0b (as a series of 0's or 1's from MSB to LSB) or a hexadecimal value starts with 0x."
+                    return False, msg, val
+
                 pattern = re.compile('[^01]')
                 if len(val[2:])<65 and not len(pattern.findall(val[2:])):
                     valid_data = True
@@ -226,6 +237,13 @@ class PropertyPanel(wx.Panel):
                     msg = "Not a valid binary value."
                     valid_data = False
             elif val[:2]=="0x":
+                pattern = '^0[xX][0-9a-fA-F]+$'
+                match = re.match(pattern, val)
+
+                if match == None: 
+                    msg = "Bitmap should be 64bit binary value starts with 0b (as a series of 0's or 1's from MSB to LSB) or a hexadecimal value starts with 0x.)"
+                    return False, msg, val
+
                 if hex(int(val[2:],16))<hex(int("FFFFFFFF",16)):
                     valid_data = True
                 else:
@@ -238,6 +256,9 @@ class PropertyPanel(wx.Panel):
 
         if data_type == 'Package':
             # Package - a series of values (decimal to hexadecimal) separated by a comma and a space
+
+            if val == "":
+                return True, msg, val
 
             #check the input matches what a package should look like (list of values seperated by a comma and a space)
             # TODO: Allow for {} values since packages could contain more packages
@@ -268,6 +289,10 @@ class PropertyPanel(wx.Panel):
             return True, msg, val
 
         if data_type == 'Boolean':
+
+            if val == "":
+                return True, msg, val
+
             # Boolean - either 1 or 0
             pattern = '^[0-1]$'
             match = re.match(pattern, val)

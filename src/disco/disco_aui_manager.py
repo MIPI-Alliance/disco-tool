@@ -26,6 +26,7 @@ import logging
 import xml.dom.minidom as md
 import xml.etree.ElementTree as et
 import numpy as np
+import json
 
 try:
     import disco
@@ -512,6 +513,11 @@ class DiscoToolAuiManager(wx.Frame):
         with open(listPath, 'rb') as my_file:
             self.model.set_packageNameList(np.load(my_file))
 
+        dictPath = os.path.join(message, 'propertyDict.json')
+        with open(dictPath, 'r') as my_file:
+            object = json.load(my_file)
+            self.model.set_propertyDictionary(object)
+
         #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
         self.model.set_curr_tree('_DSD')
         new_tree = self.model.get_curr_tree()
@@ -588,6 +594,11 @@ class DiscoToolAuiManager(wx.Frame):
         path = os.path.join(self.model.get_project_path(), "packageNameList.npy")
         with open(path, 'wb') as my_file:
             np.save(my_file, self.model.get_packageNameList())
+
+        object = json.dumps(self.model.get_propertyDictionary(), indent=4)
+        path = os.path.join(self.model.get_project_path(), "propertyDict.json")
+        with open(path, "w") as my_file:
+            my_file.write(object)
         
         #goes through the list of element trees and adds each one as an xml file to the current project path 
         for tree in tree_list:
@@ -620,6 +631,11 @@ class DiscoToolAuiManager(wx.Frame):
         path = os.path.join(message, "packageNameList.npy")
         with open(path, 'wb') as my_file:
             np.save(my_file, self.model.get_packageNameList())
+
+        object = json.dumps(self.model.get_propertyDictionary(), indent=4)
+        path = os.path.join(message, "propertyDict.json")
+        with open(path, "w") as my_file:
+            my_file.write(object)
         
         #goes through the list of element trees and adds each one as an xml file to the path the user chose
         for tree in tree_list:

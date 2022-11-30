@@ -66,14 +66,30 @@ class model():
             if root.find('Name').text == name:
                 self.curr_tree = tree
 
+    #gets the property_dictionary array 
+    def get_propertyDictionary(self):
+        print("Getting the property dictionary: ", self.property_dictionary)
+
+        return self.property_dictionary
+
+    #sets the property_dictionary array 
+    def set_propertyDictionary(self, dict):
+        self.property_dictionary = dict
+
+        print("Settings the property dictionary: ", self.property_dictionary)
+
     #gets the packageName_list array 
     def get_packageNameList(self):
+        print("Getting the package Name List: ", self.packageName_list)
+
         return self.packageName_list
 
     #sets the packageName_list array 
     def set_packageNameList(self, list):
         self.packageName_list = list
     
+        print("Setting the package Name List: ", self.packageName_list)
+
     #gets current element tree variable
     def get_curr_tree(self):
         return self.curr_tree
@@ -614,9 +630,6 @@ class model():
         #       if old element tree exists and was shared: delete appropriate parent tag and copy old element tree and use that as base for new one
         #       if old element tree doesnt exist: create a whole new element tree
 
-        print("Package Name List is: ", self.packageName_list)
-        print("Property dictionary is: ", self.property_dictionary)
-
         #collects the hierarchical property name, the new property value, the previous property value, and the current tree name
         name = message[0]
         instance_name = message[1]
@@ -680,6 +693,8 @@ class model():
             #update the packageName_list and property_dictionary to keep track of the hierarchical properties
             name_dictionary = self.property_dictionary[property_name]
             for num_value in name_dictionary.keys():
+                print(self.property_dictionary[property_name][num_value])
+                print((name, old_value))
                 if self.property_dictionary[property_name][num_value] == (name, old_value):
                     self.delete_array_value(self.packageName_list, old_value)
                     self.packageName_list = np.append(self.packageName_list, instance_name)

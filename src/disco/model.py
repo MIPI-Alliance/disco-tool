@@ -18,6 +18,7 @@ import copy
 import os
 import random
 import string
+import numpy as np
 
 #This class manages the app's data. It stores all of the xml files for the current device as ElementTree objects. It
 #defines all of the methods to update these ElementTrees as the user interacts with the GUI. 
@@ -31,7 +32,7 @@ class model():
         self.template_path = None
         self.tree_list = []
         self.property_dictionary = {}
-        self.packageName_list = []
+        self.packageName_list = np.array([])
         
     #sets the current template path variable 
     def set_template_path(self, path):
@@ -64,7 +65,31 @@ class model():
             root = tree.getroot()
             if root.find('Name').text == name:
                 self.curr_tree = tree
+
+    #gets the property_dictionary array 
+    def get_propertyDictionary(self):
+        print("Getting the property dictionary: ", self.property_dictionary)
+
+        return self.property_dictionary
+
+    #sets the property_dictionary array 
+    def set_propertyDictionary(self, dict):
+        self.property_dictionary = dict
+
+        print("Settings the property dictionary: ", self.property_dictionary)
+
+    #gets the packageName_list array 
+    def get_packageNameList(self):
+        print("Getting the package Name List: ", self.packageName_list)
+
+        return self.packageName_list
+
+    #sets the packageName_list array 
+    def set_packageNameList(self, list):
+        self.packageName_list = list
     
+        print("Setting the package Name List: ", self.packageName_list)
+
     #gets current element tree variable
     def get_curr_tree(self):
         return self.curr_tree
@@ -142,7 +167,6 @@ class model():
 
                     #add appropriate hierarchical properties
                     for num in to_add:
-
                         converted_num = num
                         if interpret_value == 'Package':
                             if num[:2]=="0x":
@@ -161,8 +185,13 @@ class model():
                             converted_num = int(converted_num)
                             prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
                             pkg_value_name = str(converted_num)
-                               
-                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.capitalize()  + package.find('PropertyNamePostfix').text
+       
+                        if package.find('PropertyNamePostfix').text == None:
+                            propertyNamePostfix = ""
+                        else:
+                            propertyNamePostfix = package.find('PropertyNamePostfix').text
+
+                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.capitalize()  + propertyNamePostfix
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''
@@ -185,6 +214,11 @@ class model():
         name = None
         num_zeros = 1
         count = 0
+
+        disableAuto = package.find('DisableAutoNameGeneration').text
+        if disableAuto == "1":
+            name = "EnterEntityPackageName"
+            return name
 
         #figure out the number of digits in num
         if num == 0:
@@ -293,7 +327,11 @@ class model():
                 old_value = []
             else: 
                 old_value = old_value.split(", ")
-            value = value.split(", ")
+
+            if value == "":
+                value = []
+            else: 
+                value = value.split(", ")
 
             for val in value: 
                 if val not in old_value: 
@@ -571,6 +609,15 @@ class model():
                                        if self.property_dictionary[property_name][num_value] == (old_name, hier_prop_value):
                                            self.property_dictionary[property_name][num_value] = (name, hier_prop_value)
 
+    #helper function for numpy arrays that deletes the first instance of value in the array
+    def delete_array_value(self, array, value):
+        index = 0
+        for val in array:
+            if val == value:
+                self.packageName_list = np.delete(array, index)
+                break
+            index += 1
+
     #updates the value for a specific hierarchical property when user changes the corresponding grid cell in the View
     def update_hier_property_value(self, message):
         #if new value already belongs to an existing element tree: add the curr_tree as parent of that one and change the correct value in the 
@@ -646,9 +693,11 @@ class model():
             #update the packageName_list and property_dictionary to keep track of the hierarchical properties
             name_dictionary = self.property_dictionary[property_name]
             for num_value in name_dictionary.keys():
+                print(self.property_dictionary[property_name][num_value])
+                print((name, old_value))
                 if self.property_dictionary[property_name][num_value] == (name, old_value):
-                    self.packageName_list.remove(old_value)
-                    self.packageName_list.append(instance_name)
+                    self.delete_array_value(self.packageName_list, old_value)
+                    self.packageName_list = np.append(self.packageName_list, instance_name)
                     self.property_dictionary[property_name][num_value] = (name, instance_name)
 
         #if new value already has an associated element tree, the current element tree is added as a parent to this one
@@ -943,7 +992,7 @@ class model():
                             self.print_tree_list()
 
                         #update the list of package names
-                        self.packageName_list.remove(parent.find('Value').text)
+                        self.delete_array_value(self.packageName_list, parent.find('Value').text)
                         
                         #the hierarchical property is removed from the current etree
                         parent.remove(parent.find('Name'))
@@ -1096,7 +1145,7 @@ class model():
 
 
         #adding the new hierarchical property package name to our list of package names
-        self.packageName_list.append(message[6]);
+        self.packageName_list = np.append(self.packageName_list, message[6]);
 
         #found variable starts as false and represents whether or not the new value is already related to an element tree
         self.found = False

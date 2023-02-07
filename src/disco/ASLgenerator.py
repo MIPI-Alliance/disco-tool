@@ -97,7 +97,7 @@ class ASLgenerator():
             dtype = prop.find('DataType').text
 
             #if user does not enter a value for a property, it is not included in the ASL file
-            if val != None:
+            if (val != None) & (val != ""):
                 if counter == 0:
                     self.asl_file.write('        ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),\n        Package () {\n')
                 counter += 1

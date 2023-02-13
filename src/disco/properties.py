@@ -223,7 +223,7 @@ class PropertyPanel(wx.Panel):
                 return True, msg, val
 
             if val[:2]=="0b":
-                pattern = '^0[bB][0-9a-fA-F]+$'
+                pattern = '^0[bB][0-1]+$'
                 match = re.match(pattern, val)
 
                 if match == None: 

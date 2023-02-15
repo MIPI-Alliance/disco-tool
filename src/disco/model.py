@@ -145,8 +145,13 @@ class model():
                     to_delete = hier_props_lists[1]
 
                     #create the dictionary for the current property if it doesn't already exist (to keep track of its dependent package names)
-                    if name not in self.property_dictionary:
-                        self.property_dictionary[name] = {};
+                    if root.find('Name').text not in self.property_dictionary:
+                        self.property_dictionary[root.find('Name').text] = {}
+
+                    curr_property_dictionary = self.property_dictionary[root.find('Name').text]
+
+                    if name not in curr_property_dictionary:
+                        curr_property_dictionary[name] = {};
 
                     #delete appropriate hierarchical properties
                     for num in to_delete:
@@ -157,10 +162,10 @@ class model():
                                 converted_num = num[2:]
                                 converted_num = int(converted_num, 16)
 
-                        #before calling delete_hier_property, we should update the property_dictionary to get rid of this value
-                        package_name = self.property_dictionary[name][num][1]
-                        property_name = self.property_dictionary[name][num][0]
-                        del self.property_dictionary[name][num]
+                        #before calling delete_hier_property, we should update the curr_property_dictionary to get rid of this value
+                        package_name = curr_property_dictionary[name][num][1]
+                        property_name = curr_property_dictionary[name][num][0]
+                        del curr_property_dictionary[name][num]
 
                         #delete the hierarchical property
                         self.delete_hier_property([property_name, name, pack_name, self.curr_tree])
@@ -191,7 +196,7 @@ class model():
                         else:
                             propertyNamePostfix = package.find('PropertyNamePostfix').text
 
-                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.capitalize()  + propertyNamePostfix
+                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.upper()  + propertyNamePostfix
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''
@@ -202,8 +207,8 @@ class model():
                         message = [property_name, property_data_type, property_required, property_description, property_modify, property_prefix, property_value, property_file, name, pack_name]
                         self.add_new_hier_property(message)
 
-                        #update the property_dictionary to keep track of the hierarchical properties
-                        self.property_dictionary[name][num] = (property_name, package_name);
+                        #update the curr_property_dictionary to keep track of the hierarchical properties
+                        curr_property_dictionary[name][num] = (property_name, package_name);
     
     #when a hierarchical property is automatically created, this function will be called to define the package name based on the dependent package 
     #and the value the user defined for this specific property
@@ -403,19 +408,23 @@ class model():
         old_name = message[1]
         found = False
         value = None
+        root = self.curr_tree.getroot()
 
         #finds the correct property in the current tree and updates its value
-        for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
+        for prop in root.find('Properties').iter('Property'):
             if prop.find('Name').text == old_name:
                 prop.find('Name').text = name
-        for prop_name in self.property_dictionary.keys():
+
+        curr_property_dictionary = self.property_dictionary[root.find('Name').text]
+
+        for prop_name in curr_property_dictionary.keys():
             if prop_name == old_name:
-                value = self.property_dictionary[prop_name]
+                value = curr_property_dictionary[prop_name]
                 found = True
 
         if found == True:
-            self.property_dictionary.pop(old_name)
-            self.property_dictionary[name] = value
+            curr_property_dictionary.pop(old_name)
+            curr_property_dictionary[name] = value
 
     #updates the value for a specific buffer property when user updates it
     def update_buff_val(self, message):
@@ -443,14 +452,17 @@ class model():
         for prop in self.curr_tree.getroot().find('BufferProperties').iter('BufferProperty'):
             if prop.find('PropertyName').text == old_name:
                 prop.find('PropertyName').text = name
-        for prop_name in self.property_dictionary.keys():
+
+        curr_property_dictionary = self.property_dictionary[root.find('Name').text]
+
+        for prop_name in curr_property_dictionary.keys():
             if prop_name == old_name:
-                value = self.property_dictionary[prop_name]
+                value = curr_property_dictionary[prop_name]
                 found = True
 
         if found == True:
-            self.property_dictionary.pop(old_name)
-            self.property_dictionary[name] = value
+            curr_property_dictionary.pop(old_name)
+            curr_property_dictionary[name] = value
 
     #updates the value for a specific buffer property when user changes the corresponding grid cell in the View
     def update_buff_property_value(self, message):
@@ -579,10 +591,11 @@ class model():
     def update_hier_property_name(self, message):
         name = message[0]
         old_name = message[1]
+        root = self.curr_tree.getroot()
 
         #changes the name of the hierarchical property in the current element tree to the new name
         hierProp_found = False
-        for prop in self.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
+        for prop in root.find('HierarchicalProperties').iter('HierarchicalProperty'):
             if prop.find('Name').text == old_name:
                 prop.find('Name').text = name
                 hierProp_found = True
@@ -592,7 +605,7 @@ class model():
         property_name = None
 
         if hierProp_found == False:
-            for prop in self.curr_tree.getroot().find('Properties').iter('Property'):
+            for prop in root.find('Properties').iter('Property'):
                 if prop.find('DependentPackages').iter('Package') != None:
                     for pack in prop.find('DependentPackages').iter('Package'):
                         if pack.find('HierarchicalProperties').iter('HierarchicalProperty') != None:
@@ -603,11 +616,13 @@ class model():
                                    property_name = prop.find('Name').text
                                    hier_prop_value = hier_prop.find('Value').text
 
+                                   curr_property_dictionary = self.property_dictionary[root.find('Name').text]
+
                                    #update the property_dictionary to keep track of the hierarchical properties
-                                   name_dictionary = self.property_dictionary[property_name]
+                                   name_dictionary = curr_property_dictionary[property_name]
                                    for num_value in name_dictionary.keys():
-                                       if self.property_dictionary[property_name][num_value] == (old_name, hier_prop_value):
-                                           self.property_dictionary[property_name][num_value] = (name, hier_prop_value)
+                                       if curr_property_dictionary[property_name][num_value] == (old_name, hier_prop_value):
+                                           curr_property_dictionary[property_name][num_value] = (name, hier_prop_value)
 
     #helper function for numpy arrays that deletes the first instance of value in the array
     def delete_array_value(self, array, value):
@@ -691,14 +706,16 @@ class model():
                                     file_name = pack.find('Filename').text
 
             #update the packageName_list and property_dictionary to keep track of the hierarchical properties
-            name_dictionary = self.property_dictionary[property_name]
+            curr_property_dictionary = self.property_dictionary[self.curr_tree.getroot().find('Name').text]
+            name_dictionary = curr_property_dictionary[property_name]
+
             for num_value in name_dictionary.keys():
-                print(self.property_dictionary[property_name][num_value])
+                print(curr_property_dictionary[property_name][num_value])
                 print((name, old_value))
-                if self.property_dictionary[property_name][num_value] == (name, old_value):
+                if curr_property_dictionary[property_name][num_value] == (name, old_value):
                     self.delete_array_value(self.packageName_list, old_value)
                     self.packageName_list = np.append(self.packageName_list, instance_name)
-                    self.property_dictionary[property_name][num_value] = (name, instance_name)
+                    curr_property_dictionary[property_name][num_value] = (name, instance_name)
 
         #if new value already has an associated element tree, the current element tree is added as a parent to this one
         if self.found_new == True:
@@ -905,9 +922,11 @@ class model():
                         to_delete.append(hier_prop.find('Name').text)
                 
                 if len(to_delete) > 0:
-                    for prop_name in self.property_dictionary.keys():
+                    curr_property_dictionary = self.property_dictionary[root.find('Name').text]
+
+                    for prop_name in curr_property_dictionary.keys():
                         if prop_name == message:
-                            self.property_dictionary.pop(prop_name)
+                            curr_property_dictionary.pop(prop_name)
                             break
 
                 for prop in to_delete:

@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>Sdca_Behaviorset</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-behavior-set-cbn-list</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>This property is a package containing integer entries - one per Class Behavior Number.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+        
+        	<Property>
+			<Name>mipi-sdca-behavior-set-dbn-list</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>This property is a package containing integer entries - one per Detailed Behavior Number.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+	</Properties>
+
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+
+	<BufferProperties>
+	</BufferProperties>
+	
+</Template>

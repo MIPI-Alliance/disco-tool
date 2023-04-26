@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>Sdca_Channel</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-cluster-channel-id</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes the cahnnel id for this channel in the cluster.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>		
+		<Property>
+			<Name>mipi-sdca-cluster-channel-purpose</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes the channel purpose for this channel in the cluster.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<!-- Packages that rely on the value of this property (i.e. this value dictates how many references of the dependent package there will be). If absent, there is no dependent package for this property. -->
+			<DependentPackages></DependentPackages>
+		</Property>	
+		<Property>
+			<Name>mipi-sdca-cluster-channel-relationship</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes the channel relationship for this channel in the cluster.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<!-- Packages that rely on the value of this property (i.e. this value dictates how many references of the dependent package there will be). If absent, there is no dependent package for this property. -->
+			<DependentPackages></DependentPackages>
+		</Property>	
+    </Properties>
+	<HierarchicalProperties>
+
+	</HierarchicalProperties>
+
+	<BufferProperties>
+
+	</BufferProperties>
+</Template>

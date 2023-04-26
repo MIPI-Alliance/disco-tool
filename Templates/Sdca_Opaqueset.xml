@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>Sdca_Opaqueset</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdw-opaqueset-count</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description> This property describes number of permutations of entities and control selectors used in this set.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+	</Properties>
+
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+
+	<BufferProperties>
+	</BufferProperties>
+	
+</Template>

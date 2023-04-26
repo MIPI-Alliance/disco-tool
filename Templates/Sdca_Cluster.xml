@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>Sdca_ClusterId</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-channel-count</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes number of channels in the cluster. ToDo: Ensure that this property aligns with Channel Information (Table 8). </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<!-- Packages that rely on the value of this property (i.e. this value dictates how many references of the dependent package there will be). If absent, there is no dependent package for this property. -->
+			<DependentPackages>
+				<Package>
+					<!-- Dependent package name -->
+					<Name>Sdca_Channel</Name>
+					<!-- Dependent package file name -->
+					<Filename>Sdca_Channel.xml</Filename>
+					<!-- Dependent package description -->
+					<Description>String encoding of a NameString of an object resolving to a package describing properties for the segment. Number of entries shall be equal to mipi-sdca-channel-count. See Error! Reference source not found. for package contents.</Description>
+					<!-- Prefix of the property name used to reference this package -->
+					<PropertyNamePrefix>mipi-sdca-channel-</PropertyNamePrefix>
+					<!-- Postfix of the property name used to reference this package -->
+					<PropertyNamePostfix>-subproperties</PropertyNamePostfix>
+					<!-- Determines whether value will be represented in decimal or hexadecimal in the corresponding hierarchical property name -->
+					<PackageNameDataType>Hex</PackageNameDataType>
+					<!-- Prefix used to reference package-->
+					<PackageNamePrefix>CH</PackageNamePrefix>
+					<!-- How this property value should be interpreted when used to name corresponding hierarchical properties -->
+					<InterpretValue>Integer</InterpretValue>
+					<!-- If set to 1 then automatic name generation for the related hierarchical properties is disabled and the default name E999 is used, which users should replace -->
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
+					<!-- List of hierarchical properties that were dynamically generated for this package based on the above property value -->
+					<HierarchicalProperties>
+					</HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>		
+	</Properties>
+	<HierarchicalProperties>
+
+	</HierarchicalProperties>
+
+	<BufferProperties>
+
+	</BufferProperties>
+</Template>

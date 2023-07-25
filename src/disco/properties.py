@@ -50,7 +50,7 @@ class PropertyPanel(wx.Panel):
 
         # sets the initial sizes for the property grid columns
         self.props_grid.SetColSize(0, (w - 80) / 3)
-        self.props_grid.SetColSize(1, 80)
+        self.props_grid.SetColSize(1, (w - 80) / 3)
         self.props_grid.SetColSize(2, (w - 80) / 3)
 
         self.props_grid.SetColLabelValue(0, "Property Name")
@@ -65,7 +65,7 @@ class PropertyPanel(wx.Panel):
         self.props_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPropsGridRightClick)
         self.props_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPropsGridMouseOver)
 
-        self.addPropBtn = wx.Button(self, label="Add Property", size=(-1, 35))
+        self.addPropBtn = wx.Button(parent=self, label="Add Property", size=(-1, 35))
         app_constants.set_button_font(self.addPropBtn)
         self.addPropBtn.Bind(wx.EVT_BUTTON, self.open_property_frame)
         self.addPropBtn.Disable()
@@ -172,9 +172,9 @@ class PropertyPanel(wx.Panel):
     # called when the user resizes the frame - resizes the properties grid accordingly
     def resize_props_grids(self, event):
         w, h = self.main_window.GetClientSize()
-        self.props_grid.SetColSize(0, (w - 80) / (3))
-        self.props_grid.SetColSize(1, 80)
-        self.props_grid.SetColSize(2, (w - 80) / (3))
+        self.props_grid.SetColSize(0, (w - 500) / (3))
+        self.props_grid.SetColSize(1, (w - 500) / (3))
+        self.props_grid.SetColSize(2, (w - 500) / (3))
         event.Skip()
 
     # called when the user exits the window - does not add any new property

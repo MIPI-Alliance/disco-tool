@@ -52,7 +52,7 @@ class BufferDataPropertyPanel(wx.Panel):
 
         # sets the initial sizes for the hierarchical property grid columns
         self.props_grid.SetColSize(0, (w - 80) / 3)
-        self.props_grid.SetColSize(1, 80)
+        self.props_grid.SetColSize(1, (w - 80) / 3)
         self.props_grid.SetColSize(2, (w - 80) / 3)
 
         self.props_grid.SetColLabelValue(0, "Property Name")
@@ -221,10 +221,10 @@ class BufferDataPropertyPanel(wx.Panel):
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
     def resize_props_grids(self, event):
         try:
-            w, h = self.GetClientSize()
-            self.props_grid.SetColSize(0, (w - 80) / (3))
-            self.props_grid.SetColSize(1, 80)
-            self.props_grid.SetColSize(2, (w - 80) / (3))
+            w, h = self.main_window.GetClientSize()
+            self.props_grid.SetColSize(0, (w - 500) / (3))
+            self.props_grid.SetColSize(1, (w - 500) / (3))
+            self.props_grid.SetColSize(2, (w - 500) / (3))
             event.Skip()
         except:
             print(w)

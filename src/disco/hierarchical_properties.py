@@ -52,7 +52,7 @@ class HierarchicalPropertyPanel(wx.Panel):
 
         # sets the initial sizes for the hierarchical property grid columns
         self.packs_grid.SetColSize(0, (w - 80) / 3)
-        self.packs_grid.SetColSize(1, 80)
+        self.packs_grid.SetColSize(1, (w - 80) / 3)
         self.packs_grid.SetColSize(2, (w - 80) / 3)
 
         self.packs_grid.SetColLabelValue(0, "Property Name")
@@ -165,10 +165,10 @@ class HierarchicalPropertyPanel(wx.Panel):
 
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
     def resize_packs_grids(self, event):
-        w, h = self.GetClientSize()
-        self.packs_grid.SetColSize(0, (w - 80) / (3))
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / (3))
+        w, h = self.main_window.GetClientSize()
+        self.packs_grid.SetColSize(0, (w - 500) / (3))
+        self.packs_grid.SetColSize(1, (w - 500) / (3))
+        self.packs_grid.SetColSize(2, (w - 500) / (3))
         event.Skip()
 
     # called when the user exits the window - does not add any new property

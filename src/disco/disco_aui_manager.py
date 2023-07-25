@@ -162,7 +162,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.properties_panel = PropertyPanel(self.auimainpanel)
         self.properties_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.properties_panel, aui.AuiPaneInfo().
-                                 Name("propertiespanel").BestSize((-1, 350)).MinSize((-1, 350)).
+                                 Name("propertiespanel").BestSize((-1, 250)).MinSize((-1, 250)).
                                  CenterPane().CloseButton(False).MaximizeButton(False).
                                  MinimizeButton(False).
                                  PaneBorder(False).

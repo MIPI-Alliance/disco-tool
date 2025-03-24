@@ -102,23 +102,11 @@ class ASLgenerator():
                     self.asl_file.write('        ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),\n        Package () {\n')
                 counter += 1
 
-                #uses a regular expression to parse a value if it is of type package (user will write that as numbers each with a comma and a space in between)
+                # convert decimals to capitalized hex for values in package list
                 if dtype == 'Package':
-                    x = re.findall('([0-9a-zA-Z]*)', val)
-                    new_val = ""
-                    new_counter = 0
-                    entries = []
-                    for entry in x:
-                        if entry != "":
-                            entries.append(entry)
-                    for entry in entries:
-                        if entry != "":
-                            if new_counter == len(entries)-1:
-                                new_val += entry
-                            else:
-                                new_val += entry+", "
-                        new_counter += 1
-                    self.asl_file.write('           Package (2) {"'+name+'",\n            Package() {'+new_val+'} },\n')
+                    stripped_list = [x.strip() for x in val.split(",")]
+                    converted_list = [hex(int(x))[:2]+hex(int(x))[2:].upper() if x[:2]!="0x" else x for x in stripped_list]
+                    self.asl_file.write('           Package (2) {"'+name+'",\n            Package() {'+" ,".join(converted_list)+'} },\n')
                 
                 #uses values "One" and "Zero" for properties of type boolean
                 elif dtype == 'Boolean':
@@ -136,8 +124,11 @@ class ASLgenerator():
                         val = hex(int(val, 2))
                         self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")
                 
+                # convert decimal values to capitalized hex
                 elif dtype == 'Integer':
-                    self.asl_file.write('           Package (2) {"'+name+'", '+val.lower()+"},\n")
+                    if val[:2]!="0x":
+                        val = hex(int(val))
+                    self.asl_file.write('           Package (2) {"'+name+'", '+val[:2]+val[2:].upper()+"},\n")
 
                 #writes value normally if it is not of type package or boolean 
                 else:

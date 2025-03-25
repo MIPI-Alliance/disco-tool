@@ -375,14 +375,10 @@ class model():
                 old_delta = 0
 
             #concatenates zeros to the old value if it is shorter than the new value (so they are the same length)
-            while (old_delta):
-                old_delta = old_delta - 1
-                old_value = '0' + old_value
+            old_value = old_delta * '0' + old_value
 
             #concatenates zeros to the new value if it is shorter than the old value (so they are the same length)
-            while (new_delta):
-                new_delta = new_delta - 1
-                new_value = '0' + new_value
+            new_value = new_delta * '0' + new_value
 
             #creating two counter variables to use in the following loop
             x = len(new_value) - 1

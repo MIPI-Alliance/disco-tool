@@ -178,25 +178,22 @@ class model():
                                 converted_num = num[2:]
                                 converted_num = int(converted_num, 16)
 
+                        property_name_prefix = package.find('PropertyNamePrefix').text if package.find('PropertyNamePrefix') is not None else f"{name}-"
+                        property_name_postfix = package.find('PropertyNamePostfix').text if package.find('PropertyNamePostfix') is not None else ""
+
                         #call helper function that creates the package name
-                        
                         package_name = self.create_package_name(package, int(converted_num))
                         if package.find('PackageNameDataType').text=="Hex":
                             converted_num = hex(int(converted_num))
-                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            prefix0x = property_name_prefix.split("-")[-1]
                             if prefix0x=="0x" or "0X":
                                 pkg_value_name = (str(converted_num))[2:]
                         else:
                             converted_num = int(converted_num)
-                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            prefix0x = property_name_prefix.split("-")[-1]
                             pkg_value_name = str(converted_num)
-       
-                        if package.find('PropertyNamePostfix').text == None:
-                            propertyNamePostfix = ""
-                        else:
-                            propertyNamePostfix = package.find('PropertyNamePostfix').text
 
-                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.upper()  + propertyNamePostfix
+                        property_name = property_name_prefix + pkg_value_name.upper()  + property_name_postfix
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''

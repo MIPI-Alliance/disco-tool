@@ -139,6 +139,10 @@ class ASLgenerator():
                 elif dtype == 'Integer':
                     self.asl_file.write('           Package (2) {"'+name+'", '+val.lower()+"},\n")
 
+                # pad string values with double quotes
+                elif dtype == "String":
+                    self.asl_file.write('           Package (2) {"'+name+'", "'+val+'"},\n')
+
                 #writes value normally if it is not of type package or boolean 
                 else:
                     self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")

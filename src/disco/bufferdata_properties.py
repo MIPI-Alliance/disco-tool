@@ -67,7 +67,7 @@ class BufferDataPropertyPanel(wx.Panel):
         self.props_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPropsGridRightClick)
         self.props_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPropsGridMouseOver)
 
-        self.addbufferdataBtn = wx.Button(parent=self, label="Add Buffer Properties", size=(-1, 35))
+        self.addbufferdataBtn = wx.Button(parent=self, label="Add Buffer Property", size=(-1, 35))
         app_constants.set_button_font(self.addbufferdataBtn)
         self.addbufferdataBtn.Bind(wx.EVT_BUTTON, self.open_bufferdata_property_frame)
         self.addbufferdataBtn.Disable()
@@ -165,7 +165,7 @@ class BufferDataPropertyPanel(wx.Panel):
     # (where user can add a new buffer prop to the current Element Tree)
     def open_bufferdata_property_frame(self, event):
 
-        new_bufferdata_property = AddBufferDataProperty(self, -1, "Add Buffer Properties", size=(450, 800),
+        new_bufferdata_property = AddBufferDataProperty(self, -1, "Add Buffer Property", size=(450, 800),
                                                             style=wx.DEFAULT_DIALOG_STYLE)
         new_bufferdata_property.CenterOnScreen()
         val = new_bufferdata_property.ShowModal()

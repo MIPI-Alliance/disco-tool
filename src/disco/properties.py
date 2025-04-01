@@ -117,11 +117,11 @@ class PropertyPanel(wx.Panel):
                         # TODO: move the following data validation to the Controller
                         # (checking data type matches what the user entered)
 
-                        #add a check to make sure there's no repeating values in the new list - if there are, show an error and don't update
-
                         # if new value is not the correct data type, an error message is shown and
                         # value won't be updated
-                        ret, msg, value = self.check_type(prop.find('DataType').text, value)
+                        # For properties with dependent packages, check_type does not allow duplicates
+                        has_dependant_packages = bool(prop.find('DependentPackages'))
+                        ret, msg, value = self.check_type(prop.find('DataType').text, value, has_dependant_packages)
                         if ret is not True:
                             wx.MessageBox(message=msg, caption='Property value type check failed.',
                                           style=wx.OK | wx.ICON_ERROR)
@@ -205,11 +205,19 @@ class PropertyPanel(wx.Panel):
             self.main_window.Enable()
             self.Close()
 
-
-    # TODO: move this type checking to the Controller
-    # this function takes in a data type and a value that was just chosen for a property and
-    # will return True if the value is of the correct data type and returns false otherwise
-    def check_type(self, data_type, val):
+    def check_type(self, data_type, val, has_dependent_packages):
+        """
+        Takes a data type and a value that was just chosen for a property and
+        Args:
+            data_type (string): the data type of the value
+            val (any): the value to be validated
+            has_dependent_packages (bool): if a package property has dependent packages, do not allow duplicates in the value
+        Returns:
+            (bool): if the value is valid given the data type
+            msg (string): the error message, if invalid
+            val (any): the value passed in that was checked
+        """
+        # TODO: move this type checking to the Controller
         msg = ""
         valid_data = False
         if data_type == 'String':
@@ -269,22 +277,23 @@ class PropertyPanel(wx.Panel):
                 msg = "Package should list its values with a comma and a space in between each one (i.e. 4, 0x16, 12)"
                 return False, msg, val
 
-            #check there are no repeating values in the list (decimal or hexadecimal)
-            decimal_value = []
-            seen = []
-            value_list = val.split(", ")
-            for value in value_list:
-                if value[:2]=="0x":
-                    value = value[2:]
-                    value = int(value, 16)
-                    decimal_value.append(int(value))
-                else: 
-                    decimal_value.append(int(value))
-            for value in decimal_value:
-                if value in seen:
-                    msg = "Package should not contain two or more of the same value (i.e. 0xA, 12, 10)."
-                    return False, msg, val
-                seen.append(value)
+            if has_dependent_packages:
+                #check there are no repeating values in the list (decimal or hexadecimal)
+                decimal_value = []
+                seen = []
+                value_list = val.split(", ")
+                for value in value_list:
+                    if value[:2]=="0x":
+                        value = value[2:]
+                        value = int(value, 16)
+                        decimal_value.append(int(value))
+                    else:
+                        decimal_value.append(int(value))
+                for value in decimal_value:
+                    if value in seen:
+                        msg = "Package should not contain two or more of the same value (i.e. 0xA, 12, 10)."
+                        return False, msg, val
+                    seen.append(value)
 
             return True, msg, val
 

@@ -312,8 +312,12 @@ class model():
             #converting new and old values to be integers
             if old_value == "":
                 old_value = 0
+            elif old_value[:2] == '0x':
+                old_value = int(old_value, 16)
             if value == "":
                 value = 0
+            elif value[:2] == '0x':
+                value = int(value, 16)
 
             old_value = int(old_value)            
             value = int(value)               

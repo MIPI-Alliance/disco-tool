@@ -30,7 +30,7 @@ Do you want to continue?
 DISCO_STR_GRIDCELL_DUPLICATE_MSG = 'Circular reference found. One of the parent packages has the same name.'
 
 DISCO_STR_GRIDCELL_REUSE_MSG = '''
-is an existing package. Do you want to re-use existing package or rename current package?
+is an existing package. Do you want to re-use existing package or cancel renaming the current package?
 '''
 
 DISCO_STR_GRIDCELL_OLD_SHARED_MSG = '''

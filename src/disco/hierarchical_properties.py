@@ -320,12 +320,15 @@ class HierarchicalPropertyPanel(wx.Panel):
                                 style=wx.OK | wx.ICON_ERROR,
                             )
                         else:
-                            result_new = wx.MessageBox(
+                            dialog = wx.MessageDialog(
+                                self,
                                 message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
                                 caption='Package name warning',
                                 style=wx.YES_NO | wx.ICON_WARNING,
                             )
-                            
+                            dialog.SetYesNoLabels("Re-use existing", "Cancel rename")
+                            result_new = dialog.ShowModal()
+                            dialog.Destroy()
 
                     # Condition when the element tree is found that was associated with the previous value.
                     # Counter variable is used to count how many parents this tree has -
@@ -345,7 +348,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                 # and the user did not reply "no" to any warning messages they might have gotten,
                 # then the hierarchical property is changed in the Model. Otherwise, the property
                 # is not changed in the model and the grid cell value returns to its previous value.
-                if (is_ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
+                if (is_ancestor is False) & (over_four is False) & (result_new != wx.ID_NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
                     print("publishing property " + value)
 

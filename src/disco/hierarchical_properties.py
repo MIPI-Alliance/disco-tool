@@ -348,7 +348,7 @@ class HierarchicalPropertyPanel(wx.Panel):
                 # and the user did not reply "no" to any warning messages they might have gotten,
                 # then the hierarchical property is changed in the Model. Otherwise, the property
                 # is not changed in the model and the grid cell value returns to its previous value.
-                if (is_ancestor is False) & (over_four is False) & (result_new != wx.ID_NO) & (result_old != wx.NO):
+                if (not is_ancestor) & (not over_four) & (result_new != wx.ID_NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
                     print("publishing property " + value)
 

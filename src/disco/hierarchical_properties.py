@@ -360,13 +360,8 @@ class HierarchicalPropertyPanel(wx.Panel):
     # opens a pop up menu with the option to delete that property
     def OnPacksGridRightClick(self, event):
 
-        # gets the current width and height of the window and the position where the user clicked
-        w, h = self.GetClientSize()
+        # gets the position where the user clicked
         point = event.GetPosition()
-
-        # takes the x position of where the user clicked and offsets it by .25*w (to account for tree panel on the left)
-        point.x = (w * 0.25) + point.x
-        point.y = (h * 0.5) + point.y
 
         # finds the name of the property to be deleted (to be used in the delete_property function)
         self.delete_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)

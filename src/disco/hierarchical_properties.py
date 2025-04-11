@@ -366,10 +366,22 @@ class HierarchicalPropertyPanel(wx.Panel):
         # finds the name of the property to be deleted (to be used in the delete_property function)
         self.delete_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
 
+        # do not allow the user to delete hierarchical properties dynamically created from BitMaps in above properties panel
+        enabled = True
+        for template_names, template_values in self.main_window.model.get_propertyDictionary().items():
+            if not enabled: break
+            for property_keys, property_values in template_values.items():
+                if not enabled: break
+                for key, (subproperty_name, subproperty_code) in property_values.items():
+                    if self.delete_property_name == subproperty_name:
+                        enabled = False
+                        break
+
         # creates a pop up menu with the option to delete and opens this menu at the correct screen position
         popUpMenu = wx.Menu()
         deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
         popUpMenu.Append(deleteItem)
+        deleteItem.Enabled = enabled
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_hier_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 

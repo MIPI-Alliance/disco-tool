@@ -151,7 +151,7 @@ class DiscoToolAuiManager(wx.Frame):
                                        wx.TR_DEFAULT_STYLE | wx.NO_BORDER)
         self.tree_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.tree_panel, aui.AuiPaneInfo().
-                                 Name("treepanel").BestSize((200, -1)).MinSize((200, -1)).
+                                 Name("treepanel").BestSize((app_constants.SIDE_PANEL_WIDTH, -1)).MinSize((app_constants.SIDE_PANEL_WIDTH, -1)).
                                  Left().Layer(2).
                                  CloseButton(False).
                                  MaximizeButton(False).
@@ -195,7 +195,7 @@ class DiscoToolAuiManager(wx.Frame):
                                              style=wx.TE_MULTILINE | wx.TE_READONLY)
         app_constants.set_text_font(self.description_panel)
         self.aui_manager.AddPane(self.description_panel, aui.AuiPaneInfo().
-                                 Name("DescriptionPanel").Caption("Description").BestSize((200, -1)).MinSize((200, -1)).
+                                 Name("DescriptionPanel").Caption("Description").BestSize((app_constants.SIDE_PANEL_WIDTH, -1)).MinSize((app_constants.SIDE_PANEL_WIDTH, -1)).
                                  Right().CloseButton(False).MaximizeButton(False).
                                  MinimizeButton(False).PaneBorder(False).Floatable(False))
 

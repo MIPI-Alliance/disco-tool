@@ -51,9 +51,9 @@ class BufferDataPropertyPanel(wx.Panel):
         self.props_grid.CreateGrid(0, 3)
 
         # sets the initial sizes for the hierarchical property grid columns
-        self.props_grid.SetColSize(0, (w - 80) / 3)
-        self.props_grid.SetColSize(1, (w - 80) / 3)
-        self.props_grid.SetColSize(2, (w - 80) / 3)
+        self.props_grid.SetColSize(0, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
+        self.props_grid.SetColSize(1, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
+        self.props_grid.SetColSize(2, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
 
         self.props_grid.SetColLabelValue(0, "Property Name")
         self.props_grid.SetColLabelValue(1, "Data Type")
@@ -222,9 +222,10 @@ class BufferDataPropertyPanel(wx.Panel):
     def resize_props_grids(self, event):
         try:
             w, h = self.main_window.GetClientSize()
-            self.props_grid.SetColSize(0, (w - 500) / (3))
-            self.props_grid.SetColSize(1, (w - 500) / (3))
-            self.props_grid.SetColSize(2, (w - 500) / (3))
+            column_size = (w - (app_constants.SIDE_PANEL_WIDTH * 2 + app_constants.ROW_INDEX_COLUMN_WIDTH + app_constants.SIDE_PANEL_PADDING * 2)) / (app_constants.COLUMN_COUNT)
+            self.props_grid.SetColSize(app_constants.PROPERTY_TYPE_COLUMN_INDEX, column_size)
+            self.props_grid.SetColSize(app_constants.DATA_TYPE_COLUMN_INDEX, column_size)
+            self.props_grid.SetColSize(app_constants.BUFFER_NAME_COLUMN_INDEX, column_size)
             event.Skip()
         except:
             print(w)

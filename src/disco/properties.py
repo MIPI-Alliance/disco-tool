@@ -49,9 +49,9 @@ class PropertyPanel(wx.Panel):
         self.props_grid.CreateGrid(0, 3)
 
         # sets the initial sizes for the property grid columns
-        self.props_grid.SetColSize(0, (w - 80) / 3)
-        self.props_grid.SetColSize(1, (w - 80) / 3)
-        self.props_grid.SetColSize(2, (w - 80) / 3)
+        self.props_grid.SetColSize(0, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
+        self.props_grid.SetColSize(1, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
+        self.props_grid.SetColSize(2, (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT)
 
         self.props_grid.SetColLabelValue(0, "Property Name")
         self.props_grid.SetColLabelValue(1, "Data Type")
@@ -71,13 +71,13 @@ class PropertyPanel(wx.Panel):
         self.addPropBtn.Disable()
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.props_grid, 0, wx.LEFT, 5)
-        self.vbox_main.Add(hbox, 0, wx.TOP, 10)
+        hbox.Add(self.props_grid, 0, wx.LEFT, 0)
+        self.vbox_main.Add(hbox, 0, wx.TOP, 0)
         self.SetSizer(self.vbox_main)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.addPropBtn, 0, wx.LEFT, 5)
-        self.vbox_main.Add(hbox, 0, wx.TOP, 10)
+        hbox.Add(self.addPropBtn, 0, wx.LEFT, 0)
+        self.vbox_main.Add(hbox, 0, wx.TOP, 0)
         self.SetSizer(self.vbox_main)
 
         self.SetAutoLayout(True)
@@ -172,9 +172,10 @@ class PropertyPanel(wx.Panel):
     # called when the user resizes the frame - resizes the properties grid accordingly
     def resize_props_grids(self, event):
         w, h = self.main_window.GetClientSize()
-        self.props_grid.SetColSize(0, (w - 500) / (3))
-        self.props_grid.SetColSize(1, (w - 500) / (3))
-        self.props_grid.SetColSize(2, (w - 500) / (3))
+        column_size = (w - (app_constants.SIDE_PANEL_WIDTH * 2 + app_constants.ROW_INDEX_COLUMN_WIDTH + app_constants.SIDE_PANEL_PADDING * 2)) / (app_constants.COLUMN_COUNT)
+        self.props_grid.SetColSize(app_constants.PROPERTY_TYPE_COLUMN_INDEX, column_size)
+        self.props_grid.SetColSize(app_constants.DATA_TYPE_COLUMN_INDEX, column_size)
+        self.props_grid.SetColSize(app_constants.VALUE_COLUMN_INDEX, column_size)
         event.Skip()
 
     # called when the user exits the window - does not add any new property

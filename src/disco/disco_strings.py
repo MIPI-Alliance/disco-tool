@@ -21,6 +21,8 @@ DISCO_STR_TITLE = u"DisCo Creation Tool"
 
 DISCO_STR_CLOSE_MSG = 'There are some unsaved changes. Would you like to save these before closing the application?'
 
+DISCO_STR_TEMPLATE_ERROR_MSG = "There was an unexpected error loading the XML file. Please verify the contents of the template."
+
 DISCO_STR_GRIDPROP_MSG = '''
 is different than your previous value for this property.
 If you continue, some hierarchical properties and their data may be automatically deleted.

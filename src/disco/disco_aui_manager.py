@@ -428,7 +428,7 @@ class DiscoToolAuiManager(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
 
             path = os.path.join(dlg.GetPath(), "_DSD.xml")
-            f = open(path, 'r')
+            f = open(path, 'r', encoding='utf-8')
 
             with f:
                 data = f.read()
@@ -459,7 +459,7 @@ class DiscoToolAuiManager(wx.Frame):
         status = False
 
         if dlg.ShowModal() == wx.ID_OK:
-            f = open(dlg.GetPath(), 'r')
+            f = open(dlg.GetPath(), 'r', encoding='utf-8')
 
             with f:
                 data = f.read()

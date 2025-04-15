@@ -101,13 +101,13 @@ class HierarchicalPropertyPanel(wx.Panel):
             dataMsg = new_hierarchical_property.data.GetValue()
             messageList.append(dataMsg)
 
-            requiredMsg = new_hierarchical_property.required.GetValue()
+            requiredMsg = 0 # removed from add hierarchical window, see https://github.com/MIPI-Alliance/private-disco-tool/issues/69
             messageList.append(str(int(requiredMsg)))
 
             descriptionMsg = new_hierarchical_property.description.GetValue()
             messageList.append(descriptionMsg)
 
-            modifyMsg = new_hierarchical_property.modify.GetValue()
+            modifyMsg = 0 # removed from add hierarchical window, see https://github.com/MIPI-Alliance/private-disco-tool/issues/69
             messageList.append(str(int(modifyMsg)))
 
             prefixMsg = new_hierarchical_property.prefix.GetValue()
@@ -458,34 +458,6 @@ class AddHierarchicalProperty(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
-        requiredLabel = wx.StaticText(self, label="Required:")
-        app_constants.set_title_font(requiredLabel)
-        self.required = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(requiredLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.required, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        modifyLabel = wx.StaticText(self, label="OEM modifiable:")
-        app_constants.set_title_font(modifyLabel)
-        self.modify = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(modifyLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.modify, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
         prefixLabel = wx.StaticText(self, label="Package name prefix:")
         app_constants.set_title_font(prefixLabel)
         self.prefix = wx.TextCtrl(self, value="", size=(300, -1))
@@ -517,6 +489,7 @@ class AddHierarchicalProperty(wx.Dialog):
         valueLabel = wx.StaticText(self, label="Package Name:")
         app_constants.set_title_font(valueLabel)
         self.value = wx.TextCtrl(self, value="", size=(300, -1))
+        self.value.SetHint("e.g. A001 (must be exactly 4 characters)")
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)

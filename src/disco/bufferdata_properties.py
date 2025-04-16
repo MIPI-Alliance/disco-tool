@@ -353,7 +353,7 @@ class EditBufferDataPropertyValue(wx.Dialog):
 
         valueLabel = wx.StaticText(self, label="Value:")
         app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100))
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100), style=wx.TE_MULTILINE)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)

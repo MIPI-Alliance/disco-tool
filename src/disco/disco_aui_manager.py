@@ -1055,7 +1055,7 @@ class DiscoToolAuiManager(wx.Frame):
         # result variable corresponds to how the user responds to the message box warning
         result = wx.ID_NONE
 
-        if self.data_changed is True:
+        if self.data_changed or self.properties_panel.data_changed:
             result = wx.MessageBox(message='There are some unsaved changes. Would you like to save these before closing the application?', 
                                    caption='Unsaved Changes',
                                    style=wx.YES_NO | wx.ICON_WARNING)

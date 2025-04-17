@@ -17,7 +17,6 @@ import os
 import wx
 import multiprocessing
 import sys
-from tkinter import Tk
 import re
 import wx.grid as grid
 import logging
@@ -128,9 +127,9 @@ class PropertyPanel(wx.Panel):
                             dialog.SetYesNoLabels("Revert and retain input on clipboard", "Revert input")
                             result = dialog.ShowModal()
                             if result == wx.ID_YES:
-                                tk = Tk()
-                                tk.clipboard_clear()
-                                tk.clipboard_append(value)
+                                if wx.TheClipboard.Open():
+                                    wx.TheClipboard.SetData(wx.TextDataObject(value))
+                                    wx.TheClipboard.Close()
                             dialog.Destroy()
                             self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
                         else:

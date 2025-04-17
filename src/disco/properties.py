@@ -17,6 +17,7 @@ import os
 import wx
 import multiprocessing
 import sys
+from tkinter import Tk
 import re
 import wx.grid as grid
 import logging
@@ -123,8 +124,14 @@ class PropertyPanel(wx.Panel):
                         has_dependant_packages = bool(prop.find('DependentPackages'))
                         ret, msg, value = self.check_type(prop.find('DataType').text, value, has_dependant_packages)
                         if ret is not True:
-                            wx.MessageBox(message=msg, caption='Property value type check failed.',
-                                          style=wx.OK | wx.ICON_ERROR)
+                            dialog = wx.MessageDialog(self, message=msg, caption='Property value type check failed.', style=wx.YES_NO | wx.ICON_ERROR)
+                            dialog.SetYesNoLabels("Revert and retain input on clipboard", "Revert input")
+                            result = dialog.ShowModal()
+                            if result == wx.ID_YES:
+                                tk = Tk()
+                                tk.clipboard_clear()
+                                tk.clipboard_append(value)
+                            dialog.Destroy()
                             self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), old_value)
                         else:
                             self.props_grid.SetCellValue(event.GetRow(), event.GetCol(), value)

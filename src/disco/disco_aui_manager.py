@@ -888,14 +888,15 @@ class DiscoToolAuiManager(wx.Frame):
                     message = [add_bufferdata_value.value.GetValue(), prop.find('Name').text]
                     self.model.update_buff_val(message)
 
-                #sets this starting xml file as the current element tree and refreshes both the tree and the tree_list in the View
-                self.model.set_curr_tree('_DSD')
+                # Set the parent node as the current element tree and refresh both the tree and the tree_list in the View
+                self.model.set_curr_tree(tree.find(".//Parent").text)
                 new_tree = self.model.get_curr_tree()
                 self.refresh(new_tree)
                 tree_list = self.model.get_tree_list()
                 self.refresh_tree(tree_list)
 
-                return 
+                return
+
             row_counter += 1
 
         if row_counter < num:
@@ -947,7 +948,7 @@ class DiscoToolAuiManager(wx.Frame):
         # counter is used to keep track of what row the loop is in as properties are added to the grid
         counter = 0
 
-	    # updates hierarchical properties grid with hierarchical properties
+        # updates hierarchical properties grid with hierarchical properties
         # that aren't associated with other properties (these have editable names)
         for hier_prop in root.find('HierarchicalProperties').iter('HierarchicalProperty'):
             name = hier_prop.find('Name').text

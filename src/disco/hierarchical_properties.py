@@ -45,15 +45,17 @@ class HierarchicalPropertyPanel(wx.Panel):
         self.main_window = parent.GetParent()
         self.vbox_main = wx.BoxSizer(wx.VERTICAL)
 
+
         w, h = self.main_window.GetClientSize()
         # adding the hierarchical properties grid and the add hierarchical property button to the properties panel
         self.packs_grid = grid.Grid(self, size=(5000, 300))
         self.packs_grid.CreateGrid(0, 3)
 
         # sets the initial sizes for the hierarchical property grid columns
-        self.packs_grid.SetColSize(0, (w - 80) / 3)
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / 3)
+        column_size = (w - app_constants.ROW_INDEX_COLUMN_WIDTH) / app_constants.COLUMN_COUNT
+        self.packs_grid.SetColSize(app_constants.PROPERTY_NAME_COLUMN_INDEX, column_size)
+        self.packs_grid.SetColSize(app_constants.DATA_TYPE_COLUMN_INDEX, column_size)
+        self.packs_grid.SetColSize(app_constants.PACKAGE_NAME_COLUMN_INDEX, column_size)
 
         self.packs_grid.SetColLabelValue(0, "Property Name")
         self.packs_grid.SetColLabelValue(1, "Data Type")
@@ -165,10 +167,11 @@ class HierarchicalPropertyPanel(wx.Panel):
 
     # called when the user resizes the frame - resizes the hierarchical properties grid accordingly
     def resize_packs_grids(self, event):
-        w, h = self.GetClientSize()
-        self.packs_grid.SetColSize(0, (w - 80) / (3))
-        self.packs_grid.SetColSize(1, 80)
-        self.packs_grid.SetColSize(2, (w - 80) / (3))
+        w, h = self.main_window.GetClientSize()
+        column_size = (w - (app_constants.SIDE_PANEL_WIDTH * 2 + app_constants.ROW_INDEX_COLUMN_WIDTH + app_constants.SIDE_PANEL_PADDING * 2)) / (app_constants.COLUMN_COUNT)
+        self.packs_grid.SetColSize(app_constants.PROPERTY_NAME_COLUMN_INDEX, column_size)
+        self.packs_grid.SetColSize(app_constants.DATA_TYPE_COLUMN_INDEX, column_size)
+        self.packs_grid.SetColSize(app_constants.PACKAGE_NAME_COLUMN_INDEX, column_size)
         event.Skip()
 
     # called when the user exits the window - does not add any new property

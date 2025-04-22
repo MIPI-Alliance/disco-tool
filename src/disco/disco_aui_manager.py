@@ -57,9 +57,9 @@ class DiscoToolAuiManager(wx.Frame):
     """
 
     def __init__(self, parent, ID, argv, title=disco_str.DISCO_STR_TITLE,
-                 pos=wx.DefaultPosition,
-                 size=app_constants.MAIN_FRAME_SIZE_WxH,
-                 style=wx.DEFAULT_FRAME_STYLE | wx.SUNKEN_BORDER):
+                pos=wx.DefaultPosition,
+                size=app_constants.MAIN_FRAME_SIZE_WxH,
+                style=wx.DEFAULT_FRAME_STYLE | wx.SUNKEN_BORDER):
         """
         __init__(self, Window parent,id,title,position,size,style)
             An DisCo tool AUI manager is used to do following tasks:
@@ -136,68 +136,66 @@ class DiscoToolAuiManager(wx.Frame):
         self.headerpanel = HeaderPanel(self.auimainpanel)
 
         self.aui_manager.AddPane(self.headerpanel,
-                                 aui.AuiPaneInfo().Name("top").BestSize((-1, 50)).MinSize((-1, 50)).
-                                 Top().Layer(2).
-                                 CloseButton(False).
-                                 MaximizeButton(False).
-                                 Resizable(False).
-                                 CaptionVisible(visible=False).
-                                 MinimizeButton(False).
-                                 PaneBorder(False).
-                                 Floatable(False).
-                                 PaneBorder(False))
+                                aui.AuiPaneInfo().Name("top").BestSize((-1, 50)).MinSize((-1, 50)).
+                                Top().Layer(2).
+                                CloseButton(False).
+                                MaximizeButton(False).
+                                Resizable(False).
+                                CaptionVisible(visible=False).
+                                MinimizeButton(False).
+                                PaneBorder(False).
+                                Floatable(False).
+                                PaneBorder(False))
 
-        self.tree_panel = wx.TreeCtrl(self.auimainpanel, -1, wx.Point(0, 0), wx.Size(160, 250),
-                                       wx.TR_DEFAULT_STYLE | wx.NO_BORDER)
+        self.tree_panel = wx.TreeCtrl(self.auimainpanel, -1, wx.Point(0, 0), wx.Size(160, 250), wx.TR_DEFAULT_STYLE | wx.NO_BORDER)
         self.tree_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.tree_panel, aui.AuiPaneInfo().
-                                 Name("treepanel").BestSize((200, -1)).MinSize((200, -1)).
-                                 Left().Layer(2).
-                                 CloseButton(False).
-                                 MaximizeButton(False).
-                                 MinimizeButton(False).
-                                 PaneBorder(False).
-                                 Floatable(False))
+                                Name("treepanel").BestSize((200, -1)).MinSize((200, -1)).
+                                Left().Layer(2).
+                                CloseButton(False).
+                                MaximizeButton(False).
+                                MinimizeButton(False).
+                                PaneBorder(False).
+                                Floatable(False))
 
         self.properties_panel = PropertyPanel(self.auimainpanel)
         self.properties_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.properties_panel, aui.AuiPaneInfo().
-                                 Name("propertiespanel").BestSize((-1, 350)).MinSize((-1, 350)).
-                                 CenterPane().CloseButton(False).MaximizeButton(False).
-                                 MinimizeButton(False).
-                                 PaneBorder(False).
-                                 Floatable(False))
+                                Name("propertiespanel").BestSize((-1, 350)).MinSize((-1, 350)).
+                                CenterPane().CloseButton(False).MaximizeButton(False).
+                                MinimizeButton(False).
+                                PaneBorder(False).
+                                Floatable(False))
 
         self.packages_panel = HierarchicalPropertyPanel(self.auimainpanel)
         self.packages_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.packages_panel, aui.AuiPaneInfo().
-                                 Name("packagespanel").BestSize((-1, 250)).MinSize((-1, 250)).
-                                 CenterPane().
-                                 CloseButton(False).
-                                 MaximizeButton(False).
-                                 MinimizeButton(False).
-                                 PaneBorder(False).
-                                 Floatable(False))
+                                Name("packagespanel").BestSize((-1, 250)).MinSize((-1, 250)).
+                                CenterPane().
+                                CloseButton(False).
+                                MaximizeButton(False).
+                                MinimizeButton(False).
+                                PaneBorder(False).
+                                Floatable(False))
 
 
         self.buffprops_panel = BufferDataPropertyPanel(self.auimainpanel)
         self.buffprops_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
         self.aui_manager.AddPane(self.buffprops_panel, aui.AuiPaneInfo().
-                                 Name("packagespanel2").BestSize((-1, 250)).MinSize((-1, 250)).
-                                 CenterPane().
-                                 CloseButton(False).
-                                 MaximizeButton(False).
-                                 MinimizeButton(False).
-                                 PaneBorder(False).
-                                 Floatable(False))
+                                Name("packagespanel2").BestSize((-1, 250)).MinSize((-1, 250)).
+                                CenterPane().
+                                CloseButton(False).
+                                MaximizeButton(False).
+                                MinimizeButton(False).
+                                PaneBorder(False).
+                                Floatable(False))
 
-        self.description_panel = wx.TextCtrl(self.auimainpanel, value="",
-                                             style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.description_panel = wx.TextCtrl(self.auimainpanel, value="", style=wx.TE_MULTILINE | wx.TE_READONLY)
         app_constants.set_text_font(self.description_panel)
         self.aui_manager.AddPane(self.description_panel, aui.AuiPaneInfo().
-                                 Name("DescriptionPanel").Caption("Description").BestSize((200, -1)).MinSize((200, -1)).
-                                 Right().CloseButton(False).MaximizeButton(False).
-                                 MinimizeButton(False).PaneBorder(False).Floatable(False))
+                                Name("DescriptionPanel").Caption("Description").BestSize((200, -1)).MinSize((200, -1)).
+                                Right().CloseButton(False).MaximizeButton(False).
+                                MinimizeButton(False).PaneBorder(False).Floatable(False))
 
         # adding all of the widgets to the tree panel
         self.hier_tree = self.tree_panel
@@ -221,8 +219,7 @@ class DiscoToolAuiManager(wx.Frame):
         result = wx.ID_NONE
 
         if self.data_changed is True:
-            result = wx.MessageBox(message=disco_str.DISCO_STR_CLOSE_MSG,
-                                   caption='Unsaved Changes', style=wx.YES_NO | wx.ICON_WARNING)
+            result = wx.MessageBox(message=disco_str.DISCO_STR_CLOSE_MSG, caption='Unsaved Changes', style=wx.YES_NO | wx.ICON_WARNING)
             if result == wx.YES:
                 # will save to previous location or use a dialog box
                 # to get location from user if files haven't been saved yet

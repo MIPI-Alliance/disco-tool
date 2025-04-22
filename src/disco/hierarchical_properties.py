@@ -29,13 +29,15 @@ try:
     import  disco.disco_constants as app_constants
     import disco.disco_strings as disco_str
     import disco.model as model
+    import disco.panel_base as panel_base
 except:
     import disco_constants as app_constants
     import disco_strings as disco_str
     import model
+    import panel_base
 
 
-class HierarchicalPropertyPanel(wx.Panel):
+class HierarchicalPropertyPanel(wx.Panel, panel_base.PanelBase):
 
     # initializes the Hierarchical Property Frame with the appropriate wxPython widgets
     def __init__(self, parent):
@@ -85,6 +87,8 @@ class HierarchicalPropertyPanel(wx.Panel):
 
         # when user resizes the frame, methods will be called to appropriately resize the grids
         self.packs_grid.Bind(wx.EVT_SIZE, self.resize_packs_grids)
+
+        self.init_grid_vars(self.packs_grid, app_constants.PACKAGE_NAME_COLUMN_INDEX)
 
     # temporarily disables the Main Frame and opens the Hierarchical Property Frame
     # (where user can add a new hier prop to the current Element Tree)

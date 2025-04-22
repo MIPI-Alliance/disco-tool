@@ -29,13 +29,15 @@ try:
     import  disco.disco_constants as app_constants
     import disco.disco_strings as disco_str
     import disco.model as model
+    import disco.panel_base as panel_base
 except:
     import disco_constants as app_constants
     import disco_strings as disco_str
     import model
+    import panel_base
 
 
-class BufferDataPropertyPanel(wx.Panel):
+class BufferDataPropertyPanel(wx.Panel, panel_base.PanelBase):
 
     # initializes the Hierarchical Property Frame with the appropriate wxPython widgets
     def __init__(self, parent):
@@ -84,6 +86,8 @@ class BufferDataPropertyPanel(wx.Panel):
 
         # when user resizes the frame, methods will be called to appropriately resize the grids
         self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
+
+        self.init_grid_vars(self.props_grid, app_constants.BUFFER_NAME_COLUMN_INDEX)
 
     # called when the user changes a cell in the buffer properties grid (the value cell)
     def OnPropsGridCellChange(self, event):

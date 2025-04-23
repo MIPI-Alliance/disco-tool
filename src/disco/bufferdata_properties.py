@@ -186,7 +186,7 @@ class BufferDataPropertyPanel(wx.Panel):
             packagename = new_bufferdata_property.packagename.GetValue()
             messageList.append(packagename)
 
-            filename = new_bufferdata_property.file.GetValue()
+            filename = "Sdca_Buffer.xml"
             messageList.append(filename)
 
             result_new = wx.ID_NONE
@@ -307,20 +307,6 @@ class AddBufferDataProperty(wx.Dialog):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(self.packagename, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        fileLabel = wx.StaticText(self, label="File name:")
-        app_constants.set_title_font(fileLabel)
-        self.file = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(fileLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.file, 0, wx.LEFT, 10)
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 

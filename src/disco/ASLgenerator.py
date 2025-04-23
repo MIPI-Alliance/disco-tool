@@ -130,6 +130,10 @@ class ASLgenerator():
                         val = hex(int(val))
                     self.asl_file.write('           Package (2) {"'+name+'", '+val[:2]+val[2:].upper()+"},\n")
 
+                # pad string values with double quotes
+                elif dtype == "String":
+                    self.asl_file.write('           Package (2) {"'+name+'", "'+val+'"},\n')
+
                 #writes value normally if it is not of type package or boolean 
                 else:
                     self.asl_file.write('           Package (2) {"'+name+'", '+val+"},\n")

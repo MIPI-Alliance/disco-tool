@@ -309,18 +309,23 @@ class model():
             #converting new and old values to be integers
             if old_value == "":
                 old_value = 0
-            else:
-                old_value = int(old_value)
-                        
+            elif old_value[:2] == '0x':
+                old_value = int(old_value, 16)
+            if value == "":
+                value = 0
+            elif value[:2] == '0x':
+                value = int(value, 16)
+
+            old_value = int(old_value)            
             value = int(value)               
 
-            #populates the to_add and to_delete lists accordingly 
-            if value > old_value:
-                for num in range(old_value, value):
-                    to_add.append(num)
+            #populates the to_add and to_delete lists accordingly
+            if old_value == 0:
+                to_add = range(1, value + 1)
+            elif value > old_value:
+                to_add = range(old_value + 1, value + 1)
             else:
-                for num in range (value, old_value):
-                    to_delete.append(num)
+                to_delete = range(value + 1, old_value + 1)
 
         if interpret_value == 'Package':
 

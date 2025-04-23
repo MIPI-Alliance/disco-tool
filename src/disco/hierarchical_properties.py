@@ -291,7 +291,7 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
 
         # initializes variables to starting values
         over_four = False
-        ancestor = False
+        is_ancestor = False
         result_new = wx.ID_NONE
         result_old = wx.ID_NONE
 
@@ -310,8 +310,8 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
                 # the over_four variable is set to true
                 if len(value) > 4:
                     wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
-                                  caption='Package name error',
-                                  style=wx.OK | wx.ICON_ERROR)
+                                caption='Package name error',
+                                style=wx.OK | wx.ICON_ERROR)
                     over_four = True
 
                 # iterates through the current element tree list to see if the new value already has an associated
@@ -326,16 +326,24 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
                     # and send a warning message telling the user
                     # if they use this value, they will be sharing this package among other parents.
                     if tree.getroot().find('Name').text == value:
-                        ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
+                        is_ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
 
-                        if ancestor is True:
-                            wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
-                                          caption='Package name error',
-                                          style=wx.OK | wx.ICON_ERROR)
+                        if is_ancestor:
+                            wx.MessageBox(
+                                message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
+                                caption='Package name error',
+                                style=wx.OK | wx.ICON_ERROR,
+                            )
                         else:
-                            result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
+                            dialog = wx.MessageDialog(
+                                self,
+                                message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
+                                caption='Package name warning',
+                                style=wx.YES_NO | wx.ICON_WARNING,
+                            )
+                            dialog.SetYesNoLabels("Re-use existing", "Cancel rename")
+                            result_new = dialog.ShowModal()
+                            dialog.Destroy()
 
                     # Condition when the element tree is found that was associated with the previous value.
                     # Counter variable is used to count how many parents this tree has -
@@ -348,14 +356,14 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
 
                         if counter > 1:
                             result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_OLD_SHARED_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
+                                                    caption='Package name warning',
+                                                    style=wx.YES_NO | wx.ICON_WARNING)
 
                 # if the new value is not an ancestor of the current tree, has equal or less than four characters,
                 # and the user did not reply "no" to any warning messages they might have gotten,
                 # then the hierarchical property is changed in the Model. Otherwise, the property
                 # is not changed in the model and the grid cell value returns to its previous value.
-                if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
+                if (not is_ancestor) & (not over_four) & (result_new != wx.ID_NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
                     print("publishing property " + value)
 
@@ -375,21 +383,28 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
     # opens a pop up menu with the option to delete that property
     def OnPacksGridRightClick(self, event):
 
-        # gets the current width and height of the window and the position where the user clicked
-        w, h = self.GetClientSize()
+        # gets the position where the user clicked
         point = event.GetPosition()
-
-        # takes the x position of where the user clicked and offsets it by .25*w (to account for tree panel on the left)
-        point.x = (w * 0.25) + point.x
-        point.y = (h * 0.5) + point.y
 
         # finds the name of the property to be deleted (to be used in the delete_property function)
         self.delete_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
+
+        # do not allow the user to delete hierarchical properties dynamically created from BitMaps in above properties panel
+        enabled = True
+        for template_names, template_values in self.main_window.model.get_propertyDictionary().items():
+            if not enabled: break
+            for property_keys, property_values in template_values.items():
+                if not enabled: break
+                for key, (subproperty_name, subproperty_code) in property_values.items():
+                    if self.delete_property_name == subproperty_name:
+                        enabled = False
+                        break
 
         # creates a pop up menu with the option to delete and opens this menu at the correct screen position
         popUpMenu = wx.Menu()
         deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
         popUpMenu.Append(deleteItem)
+        deleteItem.Enabled = enabled
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_hier_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 

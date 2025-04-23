@@ -73,8 +73,13 @@ class model():
         return self.property_dictionary
 
     #sets the property_dictionary array 
-    def set_propertyDictionary(self, dict):
-        self.property_dictionary = dict
+    def set_propertyDictionary(self, dictionary):
+        self.property_dictionary = dictionary
+
+        for template_name, template_dict in dictionary.items():
+            for properties_name, properties_dict in template_dict.items():
+                # integer keys are read from json as strings, convert them back to int
+                dictionary[template_name][properties_name] = {int(key): value for key, value in properties_dict.items()}
 
         print("Settings the property dictionary: ", self.property_dictionary)
 
@@ -178,25 +183,22 @@ class model():
                                 converted_num = num[2:]
                                 converted_num = int(converted_num, 16)
 
+                        property_name_prefix = package.find('PropertyNamePrefix').text if package.find('PropertyNamePrefix') is not None else f"{name}-"
+                        property_name_postfix = package.find('PropertyNamePostfix').text if package.find('PropertyNamePostfix') is not None else ""
+
                         #call helper function that creates the package name
-                        
                         package_name = self.create_package_name(package, int(converted_num))
                         if package.find('PackageNameDataType').text=="Hex":
                             converted_num = hex(int(converted_num))
-                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            prefix0x = property_name_prefix.split("-")[-1]
                             if prefix0x=="0x" or "0X":
                                 pkg_value_name = (str(converted_num))[2:]
                         else:
                             converted_num = int(converted_num)
-                            prefix0x = package.find('PropertyNamePrefix').text.split("-")[-1]
+                            prefix0x = property_name_prefix.split("-")[-1]
                             pkg_value_name = str(converted_num)
-       
-                        if package.find('PropertyNamePostfix').text == None:
-                            propertyNamePostfix = ""
-                        else:
-                            propertyNamePostfix = package.find('PropertyNamePostfix').text
 
-                        property_name = package.find('PropertyNamePrefix').text + pkg_value_name.upper()  + propertyNamePostfix
+                        property_name = property_name_prefix + pkg_value_name.upper()  + property_name_postfix
                         property_data_type = 'String'
                         property_required = ''
                         property_description = ''
@@ -312,18 +314,23 @@ class model():
             #converting new and old values to be integers
             if old_value == "":
                 old_value = 0
-            else:
-                old_value = int(old_value)
-                        
+            elif old_value[:2] == '0x':
+                old_value = int(old_value, 16)
+            if value == "":
+                value = 0
+            elif value[:2] == '0x':
+                value = int(value, 16)
+
+            old_value = int(old_value)            
             value = int(value)               
 
-            #populates the to_add and to_delete lists accordingly 
-            if value > old_value:
-                for num in range(old_value, value):
-                    to_add.append(num)
+            #populates the to_add and to_delete lists accordingly
+            if old_value == 0:
+                to_add = range(1, value + 1)
+            elif value > old_value:
+                to_add = range(old_value + 1, value + 1)
             else:
-                for num in range (value, old_value):
-                    to_delete.append(num)
+                to_delete = range(value + 1, old_value + 1)
 
         if interpret_value == 'Package':
 
@@ -375,30 +382,16 @@ class model():
                 old_delta = 0
 
             #concatenates zeros to the old value if it is shorter than the new value (so they are the same length)
-            while (old_delta):
-                old_delta = old_delta - 1
-                old_value = '0' + old_value
+            old_value += old_delta * '0'
 
             #concatenates zeros to the new value if it is shorter than the old value (so they are the same length)
-            while (new_delta):
-                new_delta = new_delta - 1
-                new_value = '0' + new_value
-
-            #creating two counter variables to use in the following loop
-            x = len(new_value) - 1
-            index = x
+            new_value += new_delta * '0'
 
             #compare each character of the new and old value and if they are different, add the appropriate index to the to_delete
             #or the to_add lists
-            while(x >= 0):
-                if old_value[index-x] != new_value[index-x]:
-                    if new_value[index-x] == "0":
-                        print("delete " + str(x))
-                        to_delete.append(x)
-                    else:
-                        print("add " + str(x))
-                        to_add.append(x)
-                x = x - 1
+            combo_zip = list(zip(old_value, new_value))
+            to_add = [index for index, x in enumerate(combo_zip) if int(x[1]) and not int(x[0])]
+            to_delete = [index for index, x in enumerate(combo_zip) if int(x[0]) and not int(x[1])]
 
         return (to_add, to_delete)
     

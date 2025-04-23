@@ -67,7 +67,7 @@ class BufferDataPropertyPanel(wx.Panel):
         self.props_grid.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnPropsGridRightClick)
         self.props_grid.GetGridWindow().Bind(wx.EVT_MOTION, self.onPropsGridMouseOver)
 
-        self.addbufferdataBtn = wx.Button(parent=self, label="Add Buffer Properties", size=(-1, 35))
+        self.addbufferdataBtn = wx.Button(parent=self, label="Add Buffer Property", size=(-1, 35))
         app_constants.set_button_font(self.addbufferdataBtn)
         self.addbufferdataBtn.Bind(wx.EVT_BUTTON, self.open_bufferdata_property_frame)
         self.addbufferdataBtn.Disable()
@@ -165,7 +165,7 @@ class BufferDataPropertyPanel(wx.Panel):
     # (where user can add a new buffer prop to the current Element Tree)
     def open_bufferdata_property_frame(self, event):
 
-        new_bufferdata_property = AddBufferDataProperty(self, -1, "Add Buffer Properties", size=(450, 800),
+        new_bufferdata_property = AddBufferDataProperty(self, -1, "Add Buffer Property", size=(450, 800),
                                                             style=wx.DEFAULT_DIALOG_STYLE)
         new_bufferdata_property.CenterOnScreen()
         val = new_bufferdata_property.ShowModal()
@@ -185,7 +185,7 @@ class BufferDataPropertyPanel(wx.Panel):
             packagename = new_bufferdata_property.packagename.GetValue()
             messageList.append(packagename)
 
-            filename = new_bufferdata_property.file.GetValue()
+            filename = "Sdca_Buffer.xml"
             messageList.append(filename)
 
             result_new = wx.ID_NONE
@@ -308,20 +308,6 @@ class AddBufferDataProperty(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
-        fileLabel = wx.StaticText(self, label="File name:")
-        app_constants.set_title_font(fileLabel)
-        self.file = wx.TextCtrl(self, value="", size=(300, -1))
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(fileLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.file, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
         line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
         vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
 
@@ -353,7 +339,7 @@ class EditBufferDataPropertyValue(wx.Dialog):
 
         valueLabel = wx.StaticText(self, label="Value:")
         app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100))
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100), style=wx.TE_MULTILINE)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)

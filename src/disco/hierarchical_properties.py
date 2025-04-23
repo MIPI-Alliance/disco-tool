@@ -101,13 +101,13 @@ class HierarchicalPropertyPanel(wx.Panel):
             dataMsg = new_hierarchical_property.data.GetValue()
             messageList.append(dataMsg)
 
-            requiredMsg = new_hierarchical_property.required.GetValue()
+            requiredMsg = 0 # removed from add hierarchical window, see https://github.com/MIPI-Alliance/private-disco-tool/issues/69
             messageList.append(str(int(requiredMsg)))
 
             descriptionMsg = new_hierarchical_property.description.GetValue()
             messageList.append(descriptionMsg)
 
-            modifyMsg = new_hierarchical_property.modify.GetValue()
+            modifyMsg = 0 # removed from add hierarchical window, see https://github.com/MIPI-Alliance/private-disco-tool/issues/69
             messageList.append(str(int(modifyMsg)))
 
             prefixMsg = new_hierarchical_property.prefix.GetValue()
@@ -276,7 +276,7 @@ class HierarchicalPropertyPanel(wx.Panel):
 
         # initializes variables to starting values
         over_four = False
-        ancestor = False
+        is_ancestor = False
         result_new = wx.ID_NONE
         result_old = wx.ID_NONE
 
@@ -295,8 +295,8 @@ class HierarchicalPropertyPanel(wx.Panel):
                 # the over_four variable is set to true
                 if len(value) > 4:
                     wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_MAXCHAR_MSG,
-                                  caption='Package name error',
-                                  style=wx.OK | wx.ICON_ERROR)
+                                caption='Package name error',
+                                style=wx.OK | wx.ICON_ERROR)
                     over_four = True
 
                 # iterates through the current element tree list to see if the new value already has an associated
@@ -311,16 +311,24 @@ class HierarchicalPropertyPanel(wx.Panel):
                     # and send a warning message telling the user
                     # if they use this value, they will be sharing this package among other parents.
                     if tree.getroot().find('Name').text == value:
-                        ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
+                        is_ancestor = self.is_ancestor(tree, self.main_window.curr_tree)
 
-                        if ancestor is True:
-                            wx.MessageBox(message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
-                                          caption='Package name error',
-                                          style=wx.OK | wx.ICON_ERROR)
+                        if is_ancestor:
+                            wx.MessageBox(
+                                message=disco_str.DISCO_STR_GRIDCELL_DUPLICATE_MSG,
+                                caption='Package name error',
+                                style=wx.OK | wx.ICON_ERROR,
+                            )
                         else:
-                            result_new = wx.MessageBox(message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
+                            dialog = wx.MessageDialog(
+                                self,
+                                message=value + disco_str.DISCO_STR_GRIDCELL_REUSE_MSG,
+                                caption='Package name warning',
+                                style=wx.YES_NO | wx.ICON_WARNING,
+                            )
+                            dialog.SetYesNoLabels("Re-use existing", "Cancel rename")
+                            result_new = dialog.ShowModal()
+                            dialog.Destroy()
 
                     # Condition when the element tree is found that was associated with the previous value.
                     # Counter variable is used to count how many parents this tree has -
@@ -333,14 +341,14 @@ class HierarchicalPropertyPanel(wx.Panel):
 
                         if counter > 1:
                             result_old = wx.MessageBox(message=old_value + disco_str.DISCO_STR_GRIDCELL_OLD_SHARED_MSG,
-                                                       caption='Package name warning',
-                                                       style=wx.YES_NO | wx.ICON_WARNING)
+                                                    caption='Package name warning',
+                                                    style=wx.YES_NO | wx.ICON_WARNING)
 
                 # if the new value is not an ancestor of the current tree, has equal or less than four characters,
                 # and the user did not reply "no" to any warning messages they might have gotten,
                 # then the hierarchical property is changed in the Model. Otherwise, the property
                 # is not changed in the model and the grid cell value returns to its previous value.
-                if (ancestor is False) & (over_four is False) & (result_new != wx.NO) & (result_old != wx.NO):
+                if (not is_ancestor) & (not over_four) & (result_new != wx.ID_NO) & (result_old != wx.NO):
                     # Print statement for debugging purposes:
                     print("publishing property " + value)
 
@@ -458,34 +466,6 @@ class AddHierarchicalProperty(wx.Dialog):
         vbox_main.Add(hbox, 0, wx.LEFT, 10)
         self.SetSizer(vbox_main)
 
-        requiredLabel = wx.StaticText(self, label="Required:")
-        app_constants.set_title_font(requiredLabel)
-        self.required = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(requiredLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.required, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
-        modifyLabel = wx.StaticText(self, label="OEM modifiable:")
-        app_constants.set_title_font(modifyLabel)
-        self.modify = wx.CheckBox(self)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(modifyLabel, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
-        self.SetSizer(vbox_main)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.modify, 0, wx.LEFT, 10)
-        vbox_main.Add(hbox, 0, wx.LEFT, 10)
-        self.SetSizer(vbox_main)
-
         prefixLabel = wx.StaticText(self, label="Package name prefix:")
         app_constants.set_title_font(prefixLabel)
         self.prefix = wx.TextCtrl(self, value="", size=(300, -1))
@@ -517,6 +497,7 @@ class AddHierarchicalProperty(wx.Dialog):
         valueLabel = wx.StaticText(self, label="Package Name:")
         app_constants.set_title_font(valueLabel)
         self.value = wx.TextCtrl(self, value="", size=(300, -1))
+        self.value.SetHint("e.g. A001 (must be exactly 4 characters)")
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)

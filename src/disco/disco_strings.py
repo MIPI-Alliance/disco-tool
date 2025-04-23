@@ -21,6 +21,8 @@ DISCO_STR_TITLE = u"DisCo Creation Tool"
 
 DISCO_STR_CLOSE_MSG = 'There are some unsaved changes. Would you like to save these before closing the application?'
 
+DISCO_STR_TEMPLATE_ERROR_MSG = "There was an unexpected error loading the XML file. Please verify the contents of the template."
+
 DISCO_STR_GRIDPROP_MSG = '''
 is different than your previous value for this property.
 If you continue, some hierarchical properties and their data may be automatically deleted.
@@ -30,7 +32,7 @@ Do you want to continue?
 DISCO_STR_GRIDCELL_DUPLICATE_MSG = 'Circular reference found. One of the parent packages has the same name.'
 
 DISCO_STR_GRIDCELL_REUSE_MSG = '''
-is an existing package. Do you want to re-use existing package or rename current package?
+is an existing package. Do you want to re-use existing package or cancel renaming the current package?
 '''
 
 DISCO_STR_GRIDCELL_OLD_SHARED_MSG = '''

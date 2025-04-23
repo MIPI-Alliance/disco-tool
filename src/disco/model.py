@@ -73,8 +73,13 @@ class model():
         return self.property_dictionary
 
     #sets the property_dictionary array 
-    def set_propertyDictionary(self, dict):
-        self.property_dictionary = dict
+    def set_propertyDictionary(self, dictionary):
+        self.property_dictionary = dictionary
+
+        for template_name, template_dict in dictionary.items():
+            for properties_name, properties_dict in template_dict.items():
+                # integer keys are read from json as strings, convert them back to int
+                dictionary[template_name][properties_name] = {int(key): value for key, value in properties_dict.items()}
 
         print("Settings the property dictionary: ", self.property_dictionary)
 

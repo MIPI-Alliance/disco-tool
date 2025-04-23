@@ -213,10 +213,13 @@ class DiscoToolAuiManager(wx.Frame):
         # main frame events
         self._bind_mainframe_events()
 
-    # called when the user closes the main window: if there are any unsaved changes
-    # the tool will ask the user if they want to save these before
-    # exiting and will call "Save" in the controller if they say yes
     def close_main_window(self, event):
+        """
+        Called when the user closes the main window: if there are any unsaved changes,
+        the tool will ask the user if they want to save these before exiting
+        and calls "Save" in the controller if they say yes
+        """
+
         # result variable corresponds to how the user responds to the message box warning
         result = wx.ID_NONE
 
@@ -232,17 +235,19 @@ class DiscoToolAuiManager(wx.Frame):
                     self.save_files(message=None)
         self.Destroy()
 
-    # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_property(self, event):
+        """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.property_deleted(message=self.properties_panel.delete_property_name)
 
-    # called if user right clicks on a property and chooses "delete" from the pop up menu
     def delete_hier_property(self, event):
+        """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
 
-    # called when the user single clicks on an item in the treectrl
     def OnTreeItemSelectionChanged(self, event):
-        # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
+        """
+        Called when the user single clicks on an item in the treectrl.
+        Collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
+        """
         text = self.hier_tree.GetItemText(event.GetItem())
         root = self.hier_tree.GetRootItem()
 
@@ -250,8 +255,8 @@ class DiscoToolAuiManager(wx.Frame):
         self.ExpandAndColorTreeItem(root, text)
         self.hier_tree.SetFocusedItem(event.GetItem())
 
-    # called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages
     def OnTreeItemActivated(self, event):
+        """Called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages"""
         # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
         text = self.hier_tree.GetItemText(event.GetItem())
         root = self.hier_tree.GetRootItem()
@@ -263,8 +268,8 @@ class DiscoToolAuiManager(wx.Frame):
         # sends message to the Controller that a new item in the treeCtrl was chosen
         self.new_tree_chosen(message=text)
 
-    # Expands and colors green the treeCtrl item that corresponds to the text value passed in and its children
     def ExpandAndColorTreeItem(self, root, text):
+        """Expands and colors green the treeCtrl item that corresponds to the text value passed in and its children"""
 
         # finds the child of the current root
         child, cookie = self.hier_tree.GetFirstChild(root)
@@ -283,9 +288,11 @@ class DiscoToolAuiManager(wx.Frame):
             self.ExpandAndColorTreeItem(child, text)
             child, cookie = self.hier_tree.GetNextChild(child, cookie)
 
-    # helper function for OnPacksGridCellChange -
-    # returns true if higher_tree is an ancestor of lower_tree and returns false otherwise
     def is_ancestor(self, higher_tree, lower_tree):
+        """
+        Helper function for OnPacksGridCellChange.
+        Returns True if higher_tree is an ancestor of lower_tree
+        """
 
         higher_name = higher_tree.getroot().find('Name').text
         lower_name = lower_tree.getroot().find('Name').text
@@ -310,10 +317,12 @@ class DiscoToolAuiManager(wx.Frame):
         return False
 
     # TODO: move this type checking to the Controller
-    # this function takes in a data type and a value that was just chosen for a property
-    # and will return True if the value is of the correct
-    # data type and returns false otherwise
     def check_type(self, data_type, val):
+        """
+        Takes in a data type and a value that was just chosen for a property
+        Returns (True, "") if the value is of the correct data type,
+        or (False, error_message) otherwise
+        """
         msg = ""
         if data_type == 'String':
             # String - do we need a regex here?
@@ -373,8 +382,8 @@ class DiscoToolAuiManager(wx.Frame):
                 msg = "Integer should be entered in decimal (12) or hexidecimal (0xF)"
                 return False, msg
 
-    # enables the buttons and certain menu items in the main window, disables other menu items in the main window
     def enable_buttons(self):
+        """Enables the buttons and certain menu items in the main window, disables other menu items in the main window"""
         self.packages_panel.addHierPropBtn.Enable()
         self.properties_panel.addPropBtn.Enable()
         self.buffprops_panel.addbufferdataBtn.Enable()
@@ -384,8 +393,8 @@ class DiscoToolAuiManager(wx.Frame):
         self.item_new.Enable(False)
         self.item_open.Enable(False)
 
-    # defines what function the program calls when a particular menu item is chosen
     def menuHandler(self, event):
+        """Defines what function the program calls when a particular menu item is chosen"""
         id = event.GetId()
         if id == wx.ID_ABOUT:
             about = DisCoInfo(self)
@@ -418,9 +427,11 @@ class DiscoToolAuiManager(wx.Frame):
             # when user closes main window, the tool will first check if their data is saved
             # self.Bind(wx.EVT_CLOSE, self.close_main_window)
 
-    # opens the file dialog where the user chooses the directory with all of the intermediate files for the project
-    # the user wants to continue editing. This directory's path is then sent in a message to the rest of the program.
     def open_dir_dialog(self):
+        """
+        Opens the file dialog where the user chooses the directory with all of the intermediate files for the project
+        the user wants to continue editing. This directory's path is then sent in a message to the rest of the program.
+        """
         status = False
 
         dlg = wx.DirDialog(self, "Choose existing project", style=wx.DD_DEFAULT_STYLE)
@@ -439,9 +450,11 @@ class DiscoToolAuiManager(wx.Frame):
         dlg.Destroy()
         return status
 
-    # opens a file dialog where the user chooses where they want to save their project
-    # (when they are doing save as or save for the first time)
     def save_dir_dialog(self):
+        """
+        Opens a file dialog where the user chooses where they want to save their project
+        (when they 'save as' or 'save' for the first time)
+        """
 
         dlg = wx.DirDialog(self, "Choose directory to save to", style=wx.DD_DEFAULT_STYLE)
 
@@ -451,9 +464,11 @@ class DiscoToolAuiManager(wx.Frame):
 
         dlg.Destroy()
 
-    # opens the file dialog where the user chooses the xml file to use as the starting template. This file's path
-    # is then sent in a message to the rest of the program.
     def open_file_dialog(self):
+        """
+        Opens the file dialog where the user chooses the xml file to use as the starting template.
+        This file's path is then sent in a message to the rest of the program.
+        """
         wildcard = "XML Files (*.xml)|*.xml"
         dlg = wx.FileDialog(self, "Open file", os.getcwd(), "", wildcard, wx.FD_OPEN)
         status = False
@@ -469,8 +484,8 @@ class DiscoToolAuiManager(wx.Frame):
         dlg.Destroy()
         return status
 
-    #called when the starting xml template is chosen by the user - updates model's data and view's UI with this data (message is the file path)
     def new_file_chosen(self, message):
+        """Called when the starting xml template is chosen by the user. Updates model's data and view's UI with this data (message is the file path)"""
         self.properties_panel.set_data_changed(True)
         print("setting data changed to true")
 
@@ -495,9 +510,11 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when an existing project is chosen by the user to continue working on - updates model's data and view's UI with this data and adds
-    #any existing element trees in the intermediate xml files (message is the directory path)
     def new_project_chosen(self, message):
+        """
+        Called when an existing project is chosen by the user to continue working on.
+        Updates model's data and view's UI with this data and adds any existing element trees in the intermediate xml files (message is the directory path)
+        """
         #finds the starting template in this directory
         path = os.path.join(message, '_DSD.xml')
         tree = et.parse(path)
@@ -525,15 +542,21 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when the user clicks on a new package in the hierarchy on the left of the screen - changes the current tree and refreshes the view.
-    #message is the name of the new package chosen.
     def new_tree_chosen(self, message):
+        """
+        Called when the user clicks on a new package in the hierarchy on the left of the screen.
+        Changes the current tree and refreshes the view.
+        message is the name of the new package chosen.
+        """
         self.model.set_curr_tree(message)
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-    #called when a new property is added by the user - updates model's data and view's UI with this data
     def property_added(self, message):
+        """
+        Called when a new property is added by the user.
+        Updates model's data and view's UI with this data
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -542,8 +565,11 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-    #called when a new buffer property is added by the user - updates model's data and view's UI with this data
     def buff_property_added(self, message):
+        """
+        Called when a new buffer property is added by the user.
+        Updates model's data and view's UI with this data
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -555,8 +581,11 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when user inputs a value for a hierarchical property - updates model's data and view's UI with this data
     def hier_property_value_changed(self, message):
+        """
+        Called when user inputs a value for a hierarchical property.
+        Updates model's data and view's UI with this data
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -569,8 +598,11 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when user inputs a value for a buffer property - updates model's data and view's UI with this data
     def buff_property_value_changed(self, message):
+        """
+        Called when user inputs a value for a buffer property.
+        Updates model's data and view's UI with this data
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -583,8 +615,11 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when user presses the 'save' button (saves all element trees as files named with their template names)
     def save_files(self, message):
+        """
+        Called when user presses the 'save' button.
+        Saves all element trees as files named with their template names
+        """
         #changes the set_data_changed variable to False because we just saved
         self.set_data_changed(False)
         print("initializing data changed to false")
@@ -620,8 +655,10 @@ class DiscoToolAuiManager(wx.Frame):
                 tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
                 my_file.write(tree_str_pretty)
 
-    #called when user presses the "save as" button or when they save their work for the first time (message is the path the user chose to save to)
     def save_as(self, message):
+        """
+        Called when user presses the "save as" button or when they save their work for the first time (message is the path the user chose to save to)
+        """
         #changes the set_data_changed variable to False because we just saved
         self.set_data_changed(False)
         print("initializing data changed to false")
@@ -660,9 +697,12 @@ class DiscoToolAuiManager(wx.Frame):
         #updating the project path to be the path the user just chose
         self.model.set_project_path(message)
 
-    #called when the user is adding a NEW hierarchical property - message consists of property name/data type/required
-    #/description/OEMmodify/packagenameprefix/value/filename
     def new_hier_property_added(self, message):
+        """
+        Called when the user is adding a new hierarchical property.
+        message consists of property name/data type/required/description/OEMmodify/packagenameprefix/value/filename
+        """
+
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -674,8 +714,11 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when the user deletes a property - message consists of that property's name
     def property_deleted(self, message):
+        """
+        Called when the user deletes a property.
+        Message consists of that property's name
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -687,9 +730,12 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    #called when the user deletes a hierarchical property - message consists of property name, property location, package location, current tree (locations will be None
-    # if the hierarchical property does not come from a property's dependent package)
     def hier_property_deleted(self, message):
+        """
+        Called when the user deletes a hierarchical property.
+        message consists of property name, property location, package location, current tree
+        (locations will be None if the hierarchical property does not come from a property's dependent package)
+        """
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -701,8 +747,8 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree_list = self.model.get_tree_list()
         self.refresh_tree(new_tree_list)
 
-    #called when the user changes the name of a property (message = value, old_value)
     def property_name_changed(self, message):
+        """Called when the user changes the name of a property (message = value, old_value)"""
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -711,8 +757,8 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-    #called when the user changes the name of a hierarchical property (message = value, old_value)
     def hier_property_name_changed(self, message):
+        """Called when the user changes the name of a hierarchical property (message = value, old_value)"""
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -724,8 +770,8 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree_list = self.model.get_tree_list()
         self.refresh_tree(new_tree_list)
 
-    #called when the user changes the name of a buffer property (message = value, old_value)
     def buff_property_name_changed(self, message):
+        """Called when the user changes the name of a buffer property (message = value, old_value)"""
         #Print statement for debugging purposes:
         self.set_data_changed(True)
         print("setting data changed to true")
@@ -734,20 +780,23 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-    #updates the value of data_changed variable - called when some data is updated by user
     def set_data_changed(self, value):
+        """Updates the value of data_changed variable. Called when some data is updated by user"""
         self.data_changed = value
         print("data changed set to "+ str(value))    
 
-    #called when the View needs to get the current tree list
     def get_tree_list(self, message):
+        """Called when the View needs to get the current tree list"""
         self.model.get_tree_list()
 
-    # updates the hierarchy of packages (in the form of a treeCtrl) on the left side of the screen -
-    # starts by clearing this treeCtrl,then adds _DSD as the root, then recursively adds new packages 
-    # based on hierarchical properties. Also adjusts the package labels,
-    # color and expansion based on the current element tree selected.
     def refresh_tree(self, tree_list):
+        """
+        Updates the hierarchy of packages (in the form of a treeCtrl) on the left side of the screen.
+        Starts by clearing this treeCtrl,then adds _DSD as the root, then recursively adds new packages 
+        based on hierarchical properties. Also adjusts the package labels,
+        color and expansion based on the current element tree selected.
+        """
+
         # updates the tree_list variable for the View
         self.tree_list = tree_list
 
@@ -776,10 +825,10 @@ class DiscoToolAuiManager(wx.Frame):
         # expands the root and colors it green to show it is the current tree selected
         self.ExpandAndColorTreeItem(self.root, self.curr_tree.getroot().find('Name').text)
 
-    # recursive helper function for refresh_tree -
-    # adds hierarchical properties of the curr_tree as children nodes to the treeCtrl
     def add_tree_items(self, curr_root, curr_tree, curr_tree_list, visible):
-
+        """
+        Recursive helper function for refresh_tree. Adds hierarchical properties of the curr_tree as children nodes to the treeCtrl
+        """
         # iterate through the current tree's hierarchical properties found-
         # within the dependent packages section of other properties
         for prop in curr_tree.getroot().find('Properties').iter('Property'):
@@ -863,8 +912,8 @@ class DiscoToolAuiManager(wx.Frame):
                     # and EnsureVisible set to new value
                     self.add_tree_items(new_tree_item, tree, curr_tree_list, EnsureVisible)
 
-    # updates the Main Window UI to display the current Element Tree's properties and hierarchical properties
     def refresh(self, tree):
+        """Updates the Main Window UI to display the current Element Tree's properties and hierarchical properties"""
         # updates the curr_tree variable
         self.curr_tree = tree
 

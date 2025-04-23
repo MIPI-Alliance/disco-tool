@@ -477,9 +477,14 @@ class DiscoToolAuiManager(wx.Frame):
             f = open(dlg.GetPath(), 'r', encoding='utf-8')
 
             with f:
-                data = f.read()
-                self.new_file_chosen(message=dlg.GetPath())
-                status = True
+                try:
+                    data = f.read()
+                    self.new_file_chosen(message=dlg.GetPath())
+                except Exception as e:
+                    wx.MessageBox(message=disco_str.DISCO_STR_TEMPLATE_ERROR_MSG, caption='Error reading template', style=wx.OK | wx.ICON_WARNING)
+                    self.Destroy()
+
+            status = True
 
         dlg.Destroy()
         return status
@@ -491,7 +496,6 @@ class DiscoToolAuiManager(wx.Frame):
 
         #starting file template name is always set to _DSD
         templateName = '_DSD'
-        #new_mssg = message
 
         #gets directory name for the file the user just chose
         new_mssg = os.path.dirname(message)

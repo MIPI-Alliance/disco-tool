@@ -1,32 +1,46 @@
 import wx
 
-try:
-    import  disco.disco_constants as app_constants
-except:
-    import disco_constants as app_constants
+class PanelBase(wx.Panel):
+    """
+    PanelBase hosts shared functionality between panels.
+    """
 
-class PanelBase(object):
+    def __init__(self, *args, **kw):
+        # ensure the required properties are overridden when instantiated
+        self.edit_column_index
+        self.grid
 
-    def __init__(self):
-        self.grid = None
-        self.edit_column_index = -1
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
-    def init_grid_vars(self, grid, edit_column_index):
-        self.grid = grid
-        self.edit_column_index = edit_column_index
-        self.grid.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+    @property
+    def edit_column_index(self):
+        """
+        The index (0- based) of the main column edited by the user.
+        """
+        raise TypeError("Not implemented - you must override this property in the child class")
+
+    @property
+    def grid(self):
+        """
+        The wx.Grid object that is contained within the panel.
+        """
+        raise TypeError("Not implemented - you must override this property in the child class")
 
     def OnKeyDown(self, event):
+        """
+        Event that handles keystrokes while focus is in the grid.
+        TAB/shift-TAB functionality overwritten to instead move vertically to the next/previous row,
+        if focus is currently in the main edit column (see edit_column_index).
+        """
         keyCode = event.GetKeyCode()
         row = self.grid.GetGridCursorRow()
         col = self.grid.GetGridCursorCol()
 
-        #TODO ENTER keystroke not handling, add appropriate event.Skip()
-        #TODO also enable grid movement via arrow keys
         if keyCode == wx.WXK_TAB:
-            # If TAB is pressed while focus is in the value column, move up/down to next/prev value column
             if col == self.edit_column_index:
                 if event.ShiftDown() and row > 0:
                     self.grid.SetGridCursor(row - 1, self.edit_column_index)
                 elif not event.ShiftDown() and row < self.grid.GetNumberRows() - 1:
                     self.grid.SetGridCursor(row + 1, self.edit_column_index)
+        else:
+            event.Skip()

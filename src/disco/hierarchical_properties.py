@@ -37,7 +37,7 @@ except:
     import panel_base
 
 
-class HierarchicalPropertyPanel(wx.Panel, panel_base.PanelBase):
+class HierarchicalPropertyPanel(panel_base.PanelBase):
 
     # initializes the Hierarchical Property Frame with the appropriate wxPython widgets
     def __init__(self, parent):
@@ -88,7 +88,15 @@ class HierarchicalPropertyPanel(wx.Panel, panel_base.PanelBase):
         # when user resizes the frame, methods will be called to appropriately resize the grids
         self.packs_grid.Bind(wx.EVT_SIZE, self.resize_packs_grids)
 
-        self.init_grid_vars(self.packs_grid, app_constants.PACKAGE_NAME_COLUMN_INDEX)
+        super().__init__()
+
+    @property
+    def edit_column_index(self):
+        return app_constants.PACKAGE_NAME_COLUMN_INDEX
+
+    @property
+    def grid(self):
+        return self.packs_grid
 
     # temporarily disables the Main Frame and opens the Hierarchical Property Frame
     # (where user can add a new hier prop to the current Element Tree)

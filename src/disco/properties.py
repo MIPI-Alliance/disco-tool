@@ -34,7 +34,7 @@ except:
     import model
     import panel_base
 
-class PropertyPanel(wx.Panel, panel_base.PanelBase):
+class PropertyPanel(panel_base.PanelBase):
 
     # initializes the Property Frame with the appropriate wxPython widgets
     def __init__(self, parent):
@@ -86,7 +86,15 @@ class PropertyPanel(wx.Panel, panel_base.PanelBase):
         self.SetAutoLayout(True)
         self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
 
-        self.init_grid_vars(self.props_grid, app_constants.VALUE_COLUMN_INDEX)
+        super().__init__()
+
+    @property
+    def edit_column_index(self):
+        return app_constants.VALUE_COLUMN_INDEX
+
+    @property
+    def grid(self):
+        return self.props_grid
 
     # called when the user changes a cell in the properties grid (the value cell)
     def OnPropsGridCellChange(self, event):

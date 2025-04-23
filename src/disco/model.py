@@ -377,30 +377,16 @@ class model():
                 old_delta = 0
 
             #concatenates zeros to the old value if it is shorter than the new value (so they are the same length)
-            while (old_delta):
-                old_delta = old_delta - 1
-                old_value = '0' + old_value
+            old_value += old_delta * '0'
 
             #concatenates zeros to the new value if it is shorter than the old value (so they are the same length)
-            while (new_delta):
-                new_delta = new_delta - 1
-                new_value = '0' + new_value
-
-            #creating two counter variables to use in the following loop
-            x = len(new_value) - 1
-            index = x
+            new_value += new_delta * '0'
 
             #compare each character of the new and old value and if they are different, add the appropriate index to the to_delete
             #or the to_add lists
-            while(x >= 0):
-                if old_value[index-x] != new_value[index-x]:
-                    if new_value[index-x] == "0":
-                        print("delete " + str(x))
-                        to_delete.append(x)
-                    else:
-                        print("add " + str(x))
-                        to_add.append(x)
-                x = x - 1
+            combo_zip = list(zip(old_value, new_value))
+            to_add = [index for index, x in enumerate(combo_zip) if int(x[1]) and not int(x[0])]
+            to_delete = [index for index, x in enumerate(combo_zip) if int(x[0]) and not int(x[1])]
 
         return (to_add, to_delete)
     

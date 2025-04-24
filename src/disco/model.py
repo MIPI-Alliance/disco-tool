@@ -387,11 +387,17 @@ class model():
             #concatenates zeros to the new value if it is shorter than the old value (so they are the same length)
             new_value += new_delta * '0'
 
-            #compare each character of the new and old value and if they are different, add the appropriate index to the to_delete
-            #or the to_add lists
-            combo_zip = list(zip(old_value, new_value))
-            to_add = [index for index, x in enumerate(combo_zip) if int(x[1]) and not int(x[0])]
-            to_delete = [index for index, x in enumerate(combo_zip) if int(x[0]) and not int(x[1])]
+            # create a list of tuples to compare the (old, new) bits
+            # i.e. (0, 1) means a bit was added, (1, 0) means the bit was removed, and (1, 1) or (0, 0) is no change
+            compare_zip = list(zip(old_value, new_value))
+
+            # the "len(compare_zip) - index - 1" converts index, which is left->right, to bit ordering index, which is left<-right
+            # e.g. given 0010, the index of '1' would be 2, but the bit ordered index would be 1
+            to_add = [len(compare_zip) - index - 1 for index, (old, new) in enumerate(compare_zip) if int(new) and not int(old)]
+            to_delete = [len(compare_zip) - index - 1 for index, (old, new) in enumerate(compare_zip) if int(old) and not int(new)]
+
+            # Sort so that the items are added from LSB to MSB
+            to_add.sort()
 
         return (to_add, to_delete)
     

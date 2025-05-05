@@ -1,0 +1,81 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name>_DSD</Name>
+
+	<Header>
+		<TemplateType>Test</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification></Specification>
+		<Author></Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+	
+		<Property>
+			<Name>property-1</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<Property>
+			<Name>property-2</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		
+		<Property>
+			<Name>property-3</Name>
+			<DataType>BitMap</DataType>
+			<Required>0</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages>
+				<Package>
+					<Name>DPn_Sink</Name>
+					<Filename>DPn.xml</Filename>
+					<Description>Package description</Description>
+					<PropertyNamePrefix>mipi-sdw-dp-</PropertyNamePrefix>
+					<PropertyNamePostfix>-sink-subproperties</PropertyNamePostfix>
+					<PackageNamePrefix>SK</PackageNamePrefix>
+					<InterpretValue>BitMap</InterpretValue>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>
+		
+	</Properties>
+	
+	<HierarchicalProperties>
+
+		<HierarchicalProperty>
+			<Name>hier-property-1</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>Property description</Description>
+			<OEMModify>0</OEMModify>
+			<PackageNamePrefix>DP</PackageNamePrefix>
+			<Value></Value>
+			<Filename>DP0.xml</Filename>
+		</HierarchicalProperty>
+		
+	</HierarchicalProperties>
+
+</Template>

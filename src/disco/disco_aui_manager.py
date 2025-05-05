@@ -203,6 +203,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.hier_tree.SetFont(wx.Font(13, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
         self.hier_tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.hier_tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelectionChanged)
+        self.hier_tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnTreeRightClick)
         self.Show()
 
         # tell the manager to 'commit' all the changes just made
@@ -265,6 +266,18 @@ class DiscoToolAuiManager(wx.Frame):
 
         # sends message to the Controller that a new item in the treeCtrl was chosen
         self.new_tree_chosen(message=text)
+
+    def OnTreeRightClick(self, event):
+        """
+        Called when an item in the tree pane is right clicked.
+        Creates a popup menu with an option to set a nickname for the element in the tree.
+        """
+        popUpMenu = wx.Menu()
+        renameItem = wx.MenuItem(popUpMenu, wx.NewId(), "Set Nickname")
+        popUpMenu.Append(renameItem)
+        renameItem.Enabled = True
+        # TODO popUpMenu.Bind(wx.EVT_MENU, self.main_window.rename_hier_tree_item, renameItem)
+        self.PopupMenu(popUpMenu)
 
     def ExpandAndColorTreeItem(self, root, text):
         """Expands and colors green the treeCtrl item that corresponds to the text value passed in and its children"""

@@ -86,6 +86,8 @@ class PropertyPanel(panel_base.PanelBase):
         self.SetAutoLayout(True)
         self.props_grid.Bind(wx.EVT_SIZE, self.resize_props_grids)
 
+        self.data_changed = False
+
         super().__init__()
 
     @property

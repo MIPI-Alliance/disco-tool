@@ -242,6 +242,10 @@ class DiscoToolAuiManager(wx.Frame):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
 
+    def nickname_tree_item(self, event, tree_item_name):
+        """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
+        self.tree_item_nicknamed(message=[self, tree_item_name])
+
     def OnTreeItemSelectionChanged(self, event):
         """
         Called when the user single clicks on an item in the treectrl.
@@ -276,7 +280,8 @@ class DiscoToolAuiManager(wx.Frame):
         renameItem = wx.MenuItem(popUpMenu, wx.NewId(), "Set Nickname")
         popUpMenu.Append(renameItem)
         renameItem.Enabled = True
-        # TODO popUpMenu.Bind(wx.EVT_MENU, self.main_window.rename_hier_tree_item, renameItem)
+        item = event.GetItem()
+        popUpMenu.Bind(wx.EVT_MENU, lambda event: self.nickname_tree_item(event, self.hier_tree.GetItemText(item)), renameItem)
         self.PopupMenu(popUpMenu)
 
     def ExpandAndColorTreeItem(self, root, text):
@@ -795,6 +800,30 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
+    def tree_item_nicknamed(self, message):
+        """
+        Called when the user sets the nickname of a node in the tree.
+        message: [panel, nickname, None, tree]
+        """
+        auimanager = message[0]
+        tree_item_name = message[1]
+
+        edit_nickname_dailog = EditTreeNicknameDialog(self, -1, "", f"Set Nickname for {tree_item_name}", size=(450, 800), style=wx.DEFAULT_DIALOG_STYLE)
+        edit_nickname_dailog.CenterOnScreen()
+        nickname_result = edit_nickname_dailog.ShowModal()
+
+        if nickname_result == wx.ID_OK:
+            nickname = edit_nickname_dailog.value.GetValue()
+
+            for tree in self.tree_list:
+                root = tree.getroot()
+                if root.find('Name').text == tree_item_name:
+                    # TODO visually update the tree item with the nickname
+                    #root.find('Name').text = nickname
+                    #self.refresh(tree)
+                    break
+
+
     def set_data_changed(self, value):
         """Updates the value of data_changed variable. Called when some data is updated by user"""
         self.data_changed = value
@@ -1153,6 +1182,51 @@ class DiscoToolAuiManager(wx.Frame):
             app_constants.MAIN_FRAME_SIZE_WxH = mainframesize
             self.aui_manager.Update()
         event.Skip()
+
+
+class EditTreeNicknameDialog(wx.Dialog):
+
+    def __init__(self, parent, ID, currValue, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        valueLabel = wx.StaticText(self, label="Nickname:")
+        app_constants.set_title_font(valueLabel)
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100), style=wx.TE_MULTILINE)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(valueLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.value, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
+        vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)
+        vbox_main.Fit(self)
+
 
 class DescriptionPanel(wx.Panel):
 

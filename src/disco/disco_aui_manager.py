@@ -803,10 +803,12 @@ class DiscoToolAuiManager(wx.Frame):
     def tree_item_nicknamed(self, message):
         """
         Called when the user sets the nickname of a node in the tree.
-        message: [panel, nickname, None, tree]
+        message: TODO document this
         """
         auimanager = message[0]
         tree_item_name = message[1]
+
+        tree_item_name = tree_item_name[:4]
 
         edit_nickname_dailog = EditTreeNicknameDialog(self, -1, "", f"Set Nickname for {tree_item_name}", size=(450, 800), style=wx.DEFAULT_DIALOG_STYLE)
         edit_nickname_dailog.CenterOnScreen()
@@ -818,9 +820,9 @@ class DiscoToolAuiManager(wx.Frame):
             for tree in self.tree_list:
                 root = tree.getroot()
                 if root.find('Name').text == tree_item_name:
-                    # TODO visually update the tree item with the nickname
-                    #root.find('Name').text = nickname
-                    #self.refresh(tree)
+                    # TODO breaks ability to navigate nicknamed items
+                    root.find('Name').set("nickname", nickname)
+                    self.refresh_tree(self.model.get_tree_list())
                     break
 
 
@@ -888,7 +890,11 @@ class DiscoToolAuiManager(wx.Frame):
                             # sets EnsureVisible variable (which keeps track of whether or
                             # not the loop has reached the current element tree or not - if so,
                             # EnsureVisible is True and method will set all of the following children to be expanded)
-                            new_tree_item = self.hier_tree.AppendItem(curr_root, name)
+                            nickname = tree.getroot().find('Name').get("nickname", "")
+                            tree_label = name
+                            if nickname:
+                                tree_label += f" ({nickname})"
+                            new_tree_item = self.hier_tree.AppendItem(curr_root, tree_label)
                             EnsureVisible = visible
 
                             # if the loop has reached the current element tree,

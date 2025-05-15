@@ -244,14 +244,14 @@ class DiscoToolAuiManager(wx.Frame):
 
     def nickname_tree_item(self, event, tree_item_name):
         """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
-        self.tree_item_nicknamed(message=[self, tree_item_name])
+        self.tree_item_nicknamed(tree_item_name)
 
     def OnTreeItemSelectionChanged(self, event):
         """
         Called when the user single clicks on an item in the treectrl.
         Collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
         """
-        text = self.hier_tree.GetItemText(event.GetItem())
+        text = self.hier_tree.GetItemText(event.GetItem())[:4]
         root = self.hier_tree.GetRootItem()
 
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
@@ -261,7 +261,7 @@ class DiscoToolAuiManager(wx.Frame):
     def OnTreeItemActivated(self, event):
         """Called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages"""
         # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
-        text = self.hier_tree.GetItemText(event.GetItem())
+        text = self.hier_tree.GetItemText(event.GetItem())[:4]
         root = self.hier_tree.GetRootItem()
 
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
@@ -281,7 +281,7 @@ class DiscoToolAuiManager(wx.Frame):
         popUpMenu.Append(renameItem)
         renameItem.Enabled = True
         item = event.GetItem()
-        popUpMenu.Bind(wx.EVT_MENU, lambda event: self.nickname_tree_item(event, self.hier_tree.GetItemText(item)), renameItem)
+        popUpMenu.Bind(wx.EVT_MENU, lambda event: self.nickname_tree_item(event, self.hier_tree.GetItemText(item)[:4]), renameItem)
         self.PopupMenu(popUpMenu)
 
     def ExpandAndColorTreeItem(self, root, text):
@@ -800,15 +800,10 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
-    def tree_item_nicknamed(self, message):
+    def tree_item_nicknamed(self, tree_item_name):
         """
         Called when the user sets the nickname of a node in the tree.
-        message: TODO document this
         """
-        auimanager = message[0]
-        tree_item_name = message[1]
-
-        tree_item_name = tree_item_name[:4]
 
         edit_nickname_dailog = EditTreeNicknameDialog(self, -1, "", f"Set Nickname for {tree_item_name}", size=(450, 800), style=wx.DEFAULT_DIALOG_STYLE)
         edit_nickname_dailog.CenterOnScreen()
@@ -820,7 +815,6 @@ class DiscoToolAuiManager(wx.Frame):
             for tree in self.tree_list:
                 root = tree.getroot()
                 if root.find('Name').text == tree_item_name:
-                    # TODO breaks ability to navigate nicknamed items
                     root.find('Name').set("nickname", nickname)
                     self.refresh_tree(self.model.get_tree_list())
                     break
@@ -1155,7 +1149,7 @@ class DiscoToolAuiManager(wx.Frame):
         # result variable corresponds to how the user responds to the message box warning
         result = wx.ID_NONE
 
-        if self.data_changed or self.properties_panel.data_changed:
+        if self.data_changed:
             result = wx.MessageBox(message='There are some unsaved changes. Would you like to save these before closing the application?', 
                                    caption='Unsaved Changes',
                                    style=wx.YES_NO | wx.ICON_WARNING)
@@ -1203,7 +1197,7 @@ class EditTreeNicknameDialog(wx.Dialog):
 
         valueLabel = wx.StaticText(self, label="Nickname:")
         app_constants.set_title_font(valueLabel)
-        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100), style=wx.TE_MULTILINE)
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100))
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(valueLabel, 0, wx.LEFT, 10)

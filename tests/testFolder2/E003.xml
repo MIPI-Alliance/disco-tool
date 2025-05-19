@@ -1,0 +1,370 @@
+<?xml version="1.0" ?>
+<Template>
+	<Name>E003</Name>
+	<Header>
+		<TemplateType>Sdca_Entity</TemplateType>
+		<Parents>
+			<Parent>_DSD</Parent>
+		</Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath/>
+	</Header>
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-entity-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes entity type. Encoding is defined in the SDCA Specification, Table entitled Enumeration Values for DisCo Property: mipi-sdca-entity-type.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-entity-label</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>This property contains the label corresponding with the entity label shown in the SDCA topology diagram for the audio function. E.g. “OT12”, “XU99”</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>An integer containing one bit for each control selector present in this entity.
+Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages>
+				<Package>
+					<Name>Sdca_ControlSelector</Name>
+					<Filename>Sdca_ControlSelector.xml</Filename>
+					<Description>String encoding of a NameString of an object resolving to a package describing properties for each control selector. n is encoded as a hexadecimal integer. n equals to each bit that bit that is set in mipi-sdca-control-selector-list, encoded as a capitalized hex number without any leading zeros (i.e. %X not %8X or %8x). See Table 19 Control Descriptor for package contents.
+</Description>
+					<PropertyNamePrefix>mipi-sdca-control-0x</PropertyNamePrefix>
+					<PropertyNamePostfix>-subproperties</PropertyNamePostfix>
+					<PackageNameDataType>Hex</PackageNameDataType>
+					<PackageNamePrefix>C</PackageNamePrefix>
+					<InterpretValue>BitMap</InterpretValue>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
+					<HierarchicalProperties/>
+				</Package>
+			</DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-input-pin-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>This property describes the connected input pins for this Entity.
+Bin N is set to indicate a connection on pin N. Bit 0 is always 0.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages>
+				<Package>
+					<Name>Sdca_Entity</Name>
+					<Filename>Sdca_Entity.xml</Filename>
+					<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package connected to pin n. n is encoded as a decimal integer (with no leading zeros), for each non-zero bit in mipi-sdca-input-pin-list.
+For a Clock Selector (CX), this is either a Clock Source or another Clock Selector.
+</Description>
+					<PropertyNamePrefix>mipi-sdca-input-pin-</PropertyNamePrefix>
+					<PropertyNamePostfix/>
+					<PackageNameDataType>Dec</PackageNameDataType>
+					<PackageNamePrefix>E</PackageNamePrefix>
+					<InterpretValue>BitMap</InterpretValue>
+					<DisableAutoNameGeneration>1</DisableAutoNameGeneration>
+					<HierarchicalProperties/>
+				</Package>
+			</DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes the terminal type as described in SDCA specification in the tables
+entitled Enumeration Values for DisCo Property mipi-sdca-terminal-type.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-reference-number</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>An integer representing jack number to which this IT/OT is connected.
+This property shall only be used when the terminal is connected to a jack input (see SDCA spec for details).
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-clock-connection</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package for the clock entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this terminal. 
+This property is required if a clock input pin connection is present.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-connector-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>An integer representing connector type to which this IT/OT is connected. This property shall only be used when the terminal has a connector as described in SDCA specification in the tables entitled TODO:Add reference here.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-transducer-count</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-microphone-snr</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-microphone-sensitivity</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-cs-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property indicates whether the Clock Source is synchronous or asynchronous to the bus clock. 
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-clock-valid-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property reports the maximum delay that software needs to wait for clock to be valid.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-powerdomain-managed-list</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>A package containing one integer entry for each entity ID managed by this PDE.
+e.g. Package() {0x1, 0x3, 0x4, 0x15, 0x8, 0x11}
+Note- PDEs do not manage other PDEs.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-powerdomain-transition-typical-delay</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>This property describes typical time it takes to transition from one power state to another. The Package has triplets of integers in the form of From_PS, To_PS, Time(us).
+e.g.
+Package()
+{
+   3, 0, 350 ,
+   0, 3, 50,
+   2, 0, 150,
+   0, 2, 50
+}
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-powerdomain-transition-max-delay</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>This property describes the maximum time it takes to transition from one power state to another. The Package has triplets of integers in the form of From_PS, To_PS, Time(us).
+e.g.
+Package()
+{
+   3, 0, 500,
+   0, 3, 200,
+   2, 0, 500,
+   0, 2, 200
+}
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-ge-managed-terminal-reference-number</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property maps to the value contained in the mipi-sdca-terminal-reference-number within an IT or OT Entity Descriptor.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-smpu-trigger-ready-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-empty-fifo-count</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-tone-nominal-frequency</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property specifies the base frequency for the tone generator.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-HIDTx-supported-report-ids</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>A package containing one integer entry for each report id transmitted by this HIDE Tx.
+e.g. {1, 2, 5}</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-HIDRx-supported-report-ids</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>A package containing one integer entry for each report id transmitted by this HIDE Rx.
+e.g. {1, 2, 5}</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-hide-related-audio-function-list</Name>
+			<DataType>Package</DataType>
+			<Required>1</Required>
+			<Description>A package containing one integer entry for each audio function number within this device that is sending/receiving the messages in this HIDE.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+	</Properties>
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+	<BufferProperties>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-microphone-array-geometry</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName/>
+			<Value/>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-ge-selectedmode-controls-affected</PropertyName>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>This property lists each control that will be affected by when a particular mode is selected. n is encoded as a decimal integer and there shall be one entry for each selected mode. The list of available modes is provided by the mipi-sdca-control-number-range property in the Control Selector Descriptor shown in Table
+Contents of the buffer contains data in following format. (need more description here)
+Buffer()
+{
+  0x04,  // Mode Count (1-n)
+  0x00,  // Mode 0 (follows)
+    0x03,  // Control Count 
+      // Entity ID 0 (byte)
+      // Control Selector 0 (byte)
+      // Control Number 0 (byte)
+      // Control Value 0 (4 bytes)
+      // Entity ID 1(byte)
+      // Control Selector 1 (byte)
+      // Control Number 1 (byte)
+      // Control Value 1 (4 bytes)
+      // Entity ID 2 (byte)
+      // Control Selector 2 (byte)
+      // Control Number 2 (byte)
+      // Control Value 2 (4 bytes)
+  0x03,  // Mode 3 (follows)
+    0x01,  // Control Count 
+...
+  0x11,  // Mode 17 (follows)
+    0x02,  // Control Count 
+...
+}
+</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName/>
+			<Value/>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+	</BufferProperties>
+</Template>

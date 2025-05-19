@@ -1,13 +1,15 @@
 <?xml version="1.0" ?>
 <Template>
-	<Name>_DSD</Name>
+	<Name>HP03</Name>
 	<Header>
 		<TemplateType>_DSD</TemplateType>
-		<Parents/>
+		<Parents>
+			<Parent>_DSD</Parent>
+		</Parents>
 		<Version>1</Version>
 		<Specification>DisCo for Soundwire 1.1</Specification>
 		<Author>MIPI</Author>
-		<TemplatePath>C:\Users\keith\dev\MIPI\private-disco-tool\Templates</TemplatePath>
+		<TemplatePath/>
 	</Header>
 	<Properties>
 		<Property>
@@ -45,7 +47,7 @@ This property is required if any optional features are supported by this functio
 			<Description>An integer containing one bit for each control selector present in this entity.
 Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.</Description>
 			<OEMModify>0</OEMModify>
-			<Value>0x03</Value>
+			<Value/>
 			<Default/>
 			<DependentPackages>
 				<Package>
@@ -58,28 +60,7 @@ Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.</Desc
 					<PackageNamePrefix>C</PackageNamePrefix>
 					<InterpretValue>BitMap</InterpretValue>
 					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
-					<HierarchicalProperties>
-						<HierarchicalProperty>
-							<Name>mipi-sdca-control-0x0-subproperties</Name>
-							<DataType>String</DataType>
-							<Required/>
-							<Description/>
-							<OEMModify/>
-							<PackageNamePrefix>C</PackageNamePrefix>
-							<Value>C000</Value>
-							<Filename>Sdca_ControlSelector.xml</Filename>
-						</HierarchicalProperty>
-						<HierarchicalProperty>
-							<Name>mipi-sdca-control-0x1-subproperties</Name>
-							<DataType>String</DataType>
-							<Required/>
-							<Description/>
-							<OEMModify/>
-							<PackageNamePrefix>C</PackageNamePrefix>
-							<Value>C001</Value>
-							<Filename>Sdca_ControlSelector.xml</Filename>
-						</HierarchicalProperty>
-					</HierarchicalProperties>
+					<HierarchicalProperties/>
 				</Package>
 			</DependentPackages>
 		</Property>
@@ -91,7 +72,7 @@ Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.</Desc
 e.g.Package() {0x1, 0x3, 0x4, 0x15, 0x8, 0x11}
 </Description>
 			<OEMModify>0</OEMModify>
-			<Value>1, 2, 3</Value>
+			<Value/>
 			<Default/>
 			<DependentPackages>
 				<Package>
@@ -104,38 +85,7 @@ e.g.Package() {0x1, 0x3, 0x4, 0x15, 0x8, 0x11}
 					<PackageNamePrefix>E</PackageNamePrefix>
 					<InterpretValue>Package</InterpretValue>
 					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
-					<HierarchicalProperties>
-						<HierarchicalProperty>
-							<Name>mipi-sdca-entity-id-0x1-subproperties</Name>
-							<DataType>String</DataType>
-							<Required/>
-							<Description/>
-							<OEMModify/>
-							<PackageNamePrefix>E</PackageNamePrefix>
-							<Value>E001</Value>
-							<Filename>Sdca_Entity.xml</Filename>
-						</HierarchicalProperty>
-						<HierarchicalProperty>
-							<Name>mipi-sdca-entity-id-0x2-subproperties</Name>
-							<DataType>String</DataType>
-							<Required/>
-							<Description/>
-							<OEMModify/>
-							<PackageNamePrefix>E</PackageNamePrefix>
-							<Value>E002</Value>
-							<Filename>Sdca_Entity.xml</Filename>
-						</HierarchicalProperty>
-						<HierarchicalProperty>
-							<Name>mipi-sdca-entity-id-0x3-subproperties</Name>
-							<DataType>String</DataType>
-							<Required/>
-							<Description/>
-							<OEMModify/>
-							<PackageNamePrefix>E</PackageNamePrefix>
-							<Value>E003</Value>
-							<Filename>Sdca_Entity.xml</Filename>
-						</HierarchicalProperty>
-					</HierarchicalProperties>
+					<HierarchicalProperties/>
 				</Package>
 			</DependentPackages>
 		</Property>
@@ -279,36 +229,6 @@ e.g. Package() {0x1, 0x3, 0x4, 0x15, 0x8, 0x11}
 			<PackageNamePrefix>EX</PackageNamePrefix>
 			<Value/>
 			<Filename>Sdca_Expansion.xml</Filename>
-		</HierarchicalProperty>
-		<HierarchicalProperty>
-			<Name>hier-property-1</Name>
-			<DataType>String</DataType>
-			<Required>0</Required>
-			<Description/>
-			<OEMModify>0</OEMModify>
-			<PackageNamePrefix>HP</PackageNamePrefix>
-			<Value>HP01</Value>
-			<Filename>_DSD.xml</Filename>
-		</HierarchicalProperty>
-		<HierarchicalProperty>
-			<Name>hier-property-2</Name>
-			<DataType>String</DataType>
-			<Required>0</Required>
-			<Description/>
-			<OEMModify>0</OEMModify>
-			<PackageNamePrefix>HP</PackageNamePrefix>
-			<Value>HP02</Value>
-			<Filename>_DSD.xml</Filename>
-		</HierarchicalProperty>
-		<HierarchicalProperty>
-			<Name>hier-property-3</Name>
-			<DataType>String</DataType>
-			<Required>0</Required>
-			<Description/>
-			<OEMModify>0</OEMModify>
-			<PackageNamePrefix>HP</PackageNamePrefix>
-			<Value>HP03</Value>
-			<Filename>_DSD.xml</Filename>
 		</HierarchicalProperty>
 	</HierarchicalProperties>
 	<BufferProperties>

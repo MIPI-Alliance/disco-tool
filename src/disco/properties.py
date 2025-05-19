@@ -185,7 +185,7 @@ class PropertyPanel(panel_base.PanelBase):
 
     # updates the value of data_changed variable - called when some data is updated by user
     def set_data_changed(self, value):
-        self.data_changed = value
+        self.main_window.data_changed = value
         print("data changed set to " + str(value))
 
     # called when the user resizes the frame - resizes the properties grid accordingly

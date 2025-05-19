@@ -203,6 +203,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.hier_tree.SetFont(wx.Font(13, wx.DEFAULT, wx.NORMAL, wx.NORMAL, 0, "Intel Clear"))
         self.hier_tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated)
         self.hier_tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeItemSelectionChanged)
+        self.hier_tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnTreeRightClick)
         self.Show()
 
         # tell the manager to 'commit' all the changes just made
@@ -241,12 +242,16 @@ class DiscoToolAuiManager(wx.Frame):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
 
+    def nickname_tree_item(self, event, tree_item_name):
+        """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
+        self.tree_item_nicknamed(tree_item_name)
+
     def OnTreeItemSelectionChanged(self, event):
         """
         Called when the user single clicks on an item in the treectrl.
         Collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
         """
-        text = self.hier_tree.GetItemText(event.GetItem())
+        text = self.hier_tree.GetItemText(event.GetItem())[:4]
         root = self.hier_tree.GetRootItem()
 
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
@@ -256,7 +261,7 @@ class DiscoToolAuiManager(wx.Frame):
     def OnTreeItemActivated(self, event):
         """Called when the user double clicks or uses keyboard on a new item in the hierarchical list of packages"""
         # collects the text of the treeCtrl item that was clicked on as well as the root of the treeCtrl
-        text = self.hier_tree.GetItemText(event.GetItem())
+        text = self.hier_tree.GetItemText(event.GetItem())[:4]
         root = self.hier_tree.GetRootItem()
 
         # expands and colors the treeCtrl item that was clicked on and sets the focus (highlight) to that item as well
@@ -265,6 +270,19 @@ class DiscoToolAuiManager(wx.Frame):
 
         # sends message to the Controller that a new item in the treeCtrl was chosen
         self.new_tree_chosen(message=text)
+
+    def OnTreeRightClick(self, event):
+        """
+        Called when an item in the tree pane is right clicked.
+        Creates a popup menu with an option to set a nickname for the element in the tree.
+        """
+        popUpMenu = wx.Menu()
+        renameItem = wx.MenuItem(popUpMenu, wx.NewId(), "Set Nickname")
+        popUpMenu.Append(renameItem)
+        renameItem.Enabled = True
+        item = event.GetItem()
+        popUpMenu.Bind(wx.EVT_MENU, lambda event: self.nickname_tree_item(event, self.hier_tree.GetItemText(item)[:4]), renameItem)
+        self.PopupMenu(popUpMenu)
 
     def ExpandAndColorTreeItem(self, root, text):
         """Expands and colors green the treeCtrl item that corresponds to the text value passed in and its children"""
@@ -782,6 +800,26 @@ class DiscoToolAuiManager(wx.Frame):
         new_tree = self.model.get_curr_tree()
         self.refresh(new_tree)
 
+    def tree_item_nicknamed(self, tree_item_name):
+        """
+        Called when the user sets the nickname of a node in the tree.
+        """
+
+        edit_nickname_dailog = EditTreeNicknameDialog(self, -1, "", f"Set Nickname for {tree_item_name}", size=(450, 800), style=wx.DEFAULT_DIALOG_STYLE)
+        edit_nickname_dailog.CenterOnScreen()
+        nickname_result = edit_nickname_dailog.ShowModal()
+
+        if nickname_result == wx.ID_OK:
+            nickname = edit_nickname_dailog.value.GetValue()
+
+            for tree in self.tree_list:
+                root = tree.getroot()
+                if root.find('Name').text == tree_item_name:
+                    root.find('Name').set("nickname", nickname)
+                    self.refresh_tree(self.model.get_tree_list())
+                    break
+
+
     def set_data_changed(self, value):
         """Updates the value of data_changed variable. Called when some data is updated by user"""
         self.data_changed = value
@@ -846,7 +884,11 @@ class DiscoToolAuiManager(wx.Frame):
                             # sets EnsureVisible variable (which keeps track of whether or
                             # not the loop has reached the current element tree or not - if so,
                             # EnsureVisible is True and method will set all of the following children to be expanded)
-                            new_tree_item = self.hier_tree.AppendItem(curr_root, name)
+                            nickname = tree.getroot().find('Name').get("nickname", "")
+                            tree_label = name
+                            if nickname:
+                                tree_label += f" ({nickname})"
+                            new_tree_item = self.hier_tree.AppendItem(curr_root, tree_label)
                             EnsureVisible = visible
 
                             # if the loop has reached the current element tree,
@@ -1107,7 +1149,7 @@ class DiscoToolAuiManager(wx.Frame):
         # result variable corresponds to how the user responds to the message box warning
         result = wx.ID_NONE
 
-        if self.data_changed or self.properties_panel.data_changed:
+        if self.data_changed:
             result = wx.MessageBox(message='There are some unsaved changes. Would you like to save these before closing the application?', 
                                    caption='Unsaved Changes',
                                    style=wx.YES_NO | wx.ICON_WARNING)
@@ -1140,6 +1182,51 @@ class DiscoToolAuiManager(wx.Frame):
             app_constants.MAIN_FRAME_SIZE_WxH = mainframesize
             self.aui_manager.Update()
         event.Skip()
+
+
+class EditTreeNicknameDialog(wx.Dialog):
+
+    def __init__(self, parent, ID, currValue, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        valueLabel = wx.StaticText(self, label="Nickname:")
+        app_constants.set_title_font(valueLabel)
+        self.value = wx.TextCtrl(self, value=currValue, size=(300, 100))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(valueLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.value, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        line = wx.StaticLine(self, -1, size=(500, -1), style=wx.LI_HORIZONTAL)
+        vbox_main.Add(line, 0, wx.GROW | wx.RIGHT | wx.TOP, 15)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)
+        vbox_main.Fit(self)
+
 
 class DescriptionPanel(wx.Panel):
 

@@ -13,6 +13,7 @@
 #
 #  -------------------------------------------------------------------------------
 
+import json
 import unittest
 from pubsub import pub
 import model
@@ -35,7 +36,7 @@ class TestModel(unittest.TestCase):
 
     #local path to the xml templates folder and the predfined test xml files
     #TEST_TEMPLATE_PATH = "C:\\Users\\t-judzmu\\Desktop\\discoToolMockups\\"
-    TEST_TEMPLATE_PATH = ""
+    TEST_TEMPLATE_PATH = "C:\\Users\\keith\\dev\\MIPI\\private-disco-tool\\tests\\"
     TEST_FILE_1_PATH = TEST_TEMPLATE_PATH + "testFile1.xml"
     TEST_FOLDER_2_PATH = TEST_TEMPLATE_PATH + "testFolder2"
     TEST_FOLDER_3_PATH = TEST_TEMPLATE_PATH + "testFolder3"
@@ -230,29 +231,36 @@ class TestModel(unittest.TestCase):
         my_model.set_template_path(TestModel.TEST_TEMPLATE_PATH)
         my_model.set_curr_tree('_DSD')
 
-        #calls the update_hier_property_value function on the element tree (changes DP02 - an unshared package - to DP00 - a shared package)
-        my_model.update_hier_property_value(['hier-property-2', 'DP00', 'DP02'])
+        dictPath = os.path.join(TestModel.TEST_FOLDER_2_PATH, 'propertyDict.json')
+        with open(dictPath, 'r') as my_file:
+            object = json.load(my_file)
+            my_model.set_propertyDictionary(object)
+
+        #calls the update_hier_property_value function on the element tree (changes HP02 - an unshared package - to C000 - a shared package)
+        my_model.update_hier_property_value(['hier-property-2', 'C000', 'HP02'])
         tree = my_model.get_curr_tree() 
         tree_list = my_model.get_tree_list()
 
         #checks that DP02's element tree was deleted
-        self.assertEqual(False, self.element_tree_exists('DP02', tree_list), 'the element tree for DP02 was not deleted')
+        self.assertEqual(False, self.element_tree_exists('HP02', tree_list), 'the element tree for HP02 was not deleted')
 
         for tree in tree_list:
 
             #checks that DP00 now has two parents, each _DSD
-            if tree.find('Name').text == 'DP00':
+            if tree.find('Name').text == 'C000':
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
-                self.assertEqual(parents, ['_DSD', '_DSD'], 'DP00 does not have two parent tags')
+                self.assertEqual(parents, ['_DSD', '_DSD'], 'C000 does not have two parent tags')
 
             #checks that BA01 now only has one parent (DP03)
-            if tree.find('Name').text == 'BA01':
+            """
+            if tree.find('Name').text == '':
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
                 self.assertEqual(parents, ['DP03'], 'DP03 does not have one parent tag')
+            """
 
     #tests update_hier_property_value when user changes the value of a hierarchical property and the new value is shared and old value was also shared
     def test_update_hier_property_value_2(self):

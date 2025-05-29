@@ -253,15 +253,6 @@ class TestModel(unittest.TestCase):
                     parents.append(p.text)
                 self.assertEqual(parents, ['_DSD', '_DSD'], 'C000 does not have two parent tags')
 
-            #checks that BA01 now only has one parent (DP03)
-            """
-            if tree.find('Name').text == '':
-                parents = []
-                for p in tree.find('Header').find('Parents').iter('Parent'):
-                    parents.append(p.text)
-                self.assertEqual(parents, ['DP03'], 'DP03 does not have one parent tag')
-            """
-
     #tests update_hier_property_value when user changes the value of a hierarchical property and the new value is shared and old value was also shared
     def test_update_hier_property_value_2(self):
 
@@ -514,17 +505,17 @@ class TestModel(unittest.TestCase):
         my_model.set_curr_tree('_DSD')
 
         #calls the add_hier_property function on the element tree
-        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'DP', 'DP01', 'DP0.xml', None, None])
+        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'HP', 'HP01', 'DP0.xml', None, None])
         tree = my_model.get_curr_tree()
         tree_list = my_model.get_tree_list()
 
         for tree in tree_list:
-            #checks that DP01 now has two parents (both _DSD)
-            if tree.find('Name').text == 'DP01':
+            #checks that HP01 now has two parents (both _DSD)
+            if tree.find('Name').text == 'HP01':
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
-                self.assertEqual(parents, ['_DSD', '_DSD'], 'DP01 does not have two parent tags')
+                self.assertEqual(parents, ['_DSD', '_DSD'], 'HP01 does not have two parent tags')
 
     #test the add_new_hier_property function when tool needs to add a hierarchical property to an existing property's hierarchicalProperties tag
     def test_add_new_hier_property_3(self):

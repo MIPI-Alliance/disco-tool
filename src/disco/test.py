@@ -127,6 +127,16 @@ class TestModel(unittest.TestCase):
         my_model.set_template_path(TestModel.TEST_TEMPLATE_PATH)
         my_model.set_curr_tree('_DSD')
 
+        my_model.set_propertyDictionary(
+            {
+                "_DSD": {
+                    "property-1": {
+                        "0": ["my-test-property", "T000"]
+                    }
+                }
+            }
+        )
+
         #calls the update_property_name function on the element tree
         my_model.update_property_name(['new-name', 'property-1'])
         tree = my_model.get_curr_tree()
@@ -532,7 +542,7 @@ class TestModel(unittest.TestCase):
         my_model.set_curr_tree('_DSD')
 
         #calls the add_hier_property function on the element tree
-        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'MS', 'MS02', 'Master.xml', 'mipi-sdw-master-count', 'SDW_Master'])
+        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'MS', 'MS02', 'Master.xml', 'mipi-sdca-control-list', 'Sdca_ControlSelector'])
         tree = my_model.get_curr_tree()
         tree_list = my_model.get_tree_list()
 
@@ -542,7 +552,7 @@ class TestModel(unittest.TestCase):
         #found variable will be True if MS02 was added as a hierarchical property to the right tag in the current element tree (this should be True)
         found = False
         for prop in tree.getroot().find('Properties').iter('Property'):
-            if prop.find('Name').text == 'mipi-sdw-master-count':
+            if prop.find('Name').text == 'mipi-sdca-control-list':
                 for hier_prop in prop.find('DependentPackages').find('Package').find('HierarchicalProperties').iter('HierarchicalProperty'):
                     if hier_prop.find('Value').text == 'MS02':
                         found = True

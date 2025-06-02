@@ -40,6 +40,8 @@ class TestModel(unittest.TestCase):
     TEST_FILE_1_PATH = TEST_TEMPLATE_PATH + "testFile1.xml"
     TEST_FOLDER_2_PATH = TEST_TEMPLATE_PATH + "testFolder2"
     TEST_FOLDER_3_PATH = TEST_TEMPLATE_PATH + "testFolder3"
+    TEST_FOLDER_4_PATH = TEST_TEMPLATE_PATH + "testFolder4"
+    TEST_FOLDER_5_PATH = TEST_TEMPLATE_PATH + "testFolder5"
 
     #tests create_hier_props_list when the interpret type is integer
     def test_create_hier_props_list_1(self):
@@ -268,35 +270,46 @@ class TestModel(unittest.TestCase):
 
         my_model = model.model()
 
-        #uploads existing element trees from the given path and sets DP03 as the current tree
-        path = os.path.join(TestModel.TEST_FOLDER_2_PATH, '_DSD.xml')
+        #uploads existing element trees from the given path and sets HP04 as the current tree
+        path = os.path.join(TestModel.TEST_FOLDER_4_PATH, '_DSD.xml')
         tree = et.parse(path)
-        my_model.set_project_path(TestModel.TEST_FOLDER_2_PATH)
+        my_model.set_project_path(TestModel.TEST_FOLDER_4_PATH)
         my_model.add_element_trees(tree, '_DSD', '1')
 
         my_model.set_template_path(TestModel.TEST_TEMPLATE_PATH)
-        my_model.set_curr_tree('DP03')
+        my_model.set_curr_tree('PP03')
 
-        #calls the update_hier_property_value function on the element tree (changes BA01 - a shared package - to BA00 - another shared package)
-        my_model.update_hier_property_value(['mipi-sdw-port-bra-mode-m', 'BA00', 'BA01'])
+        dictPath = os.path.join(TestModel.TEST_FOLDER_4_PATH, 'propertyDict.json')
+        with open(dictPath, 'r') as my_file:
+            object = json.load(my_file)
+            my_model.set_propertyDictionary(object)
+
+        #calls the update_hier_property_value function on the element tree (changes C001 - a shared package - to C003 - another shared package)
+        my_model.update_hier_property_value(['shared-prop-2b', 'SP01', 'SP02'])
         tree = my_model.get_curr_tree() 
         tree_list = my_model.get_tree_list()
 
+        checked_sp01 = False
+        checked_sp02 = False
         for tree in tree_list:
 
-            #checks that BA00 now has three parents
-            if tree.find('Name').text == 'BA00':
+            #checks that SP01 now has three parents
+            if tree.find('Name').text == 'SP01':
+                checked_sp01 = True
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
-                self.assertEqual(parents, ['DP01', 'DP00', 'DP03'], 'BA00 does not have three parent tags')
+                self.assertEqual(parents, ['PP01', 'PP02', 'PP03'], 'SP01 does not have three parent tags')
 
-            #checks that BA01 now only has one parent
-            if tree.find('Name').text == 'BA01':
+            #checks that SP02 now only has one parent
+            if tree.find('Name').text == 'SP02':
+                checked_sp02 = True
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
-                self.assertEqual(parents, ['DP02'], 'BA01 does not have one parent tag')
+                self.assertEqual(parents, ['PP02'], 'SP02 does not have one parent tag')
+
+        self.assertTrue(checked_sp01 and checked_sp02, "Unable to find either SP01 or SP02")
 
     #tests update_hier_property_value when user changes the value of a hierarchical property and the new value is unshared and old value was also unshared
     def test_update_hier_property_value_3(self):
@@ -312,22 +325,25 @@ class TestModel(unittest.TestCase):
         my_model.set_template_path(TestModel.TEST_TEMPLATE_PATH)
         my_model.set_curr_tree('_DSD')
 
-        #calls the update_hier_property_value function on the element tree (changes BA01 - a shared package - to BA00 - another shared package)
-        my_model.update_hier_property_value(['hier-property-1', 'DP04', 'DP01'])
+        #calls the update_hier_property_value function on the element tree
+        my_model.update_hier_property_value(['hier-property-1', 'HP03', 'HP02'])
         tree = my_model.get_curr_tree() 
         tree_list = my_model.get_tree_list()
 
         #checks that DP01's element tree was deleted
-        self.assertEqual(False, self.element_tree_exists('DP01', tree_list), 'the element tree for DP01 was not deleted')
+        self.assertEqual(False, self.element_tree_exists('HP02', tree_list), 'the element tree for DP01 was not deleted')
 
+        checked_hp03 = False
         for tree in tree_list:
 
-            #checks that DP04 now exists and still has BA00 as its only hierarchical property
-            if tree.find('Name').text == 'DP04':
+            #checks that HP03 now exists and still has BA00 as its only hierarchical property
+            if tree.find('Name').text == 'HP03':
+                checked_hp03 = True
                 hier_props = []
                 for h in tree.find('HierarchicalProperties').iter('HierarchicalProperty'):
                     hier_props.append(h.find('Value').text)
-                self.assertEqual(hier_props, ['BA00'], 'the element tree for DP04 was not created correctly')
+                self.assertEqual(hier_props, ['EX00'], 'the element tree for HP03 was not created correctly')
+        self.assertTrue(checked_hp03, "Unable to check HP03")
 
     #tests update_hier_property_value when user changes the value of a hierarchical property and the new value is unshared but the old value was shared
     def test_update_hier_property_value_4(self):
@@ -335,33 +351,39 @@ class TestModel(unittest.TestCase):
         my_model = model.model()
 
         #uploads existing element trees from the given path and sets DP03 as the current tree
-        path = os.path.join(TestModel.TEST_FOLDER_2_PATH, '_DSD.xml')
+        path = os.path.join(TestModel.TEST_FOLDER_5_PATH, '_DSD.xml')
         tree = et.parse(path)
-        my_model.set_project_path(TestModel.TEST_FOLDER_2_PATH)
+        my_model.set_project_path(TestModel.TEST_FOLDER_5_PATH)
         my_model.add_element_trees(tree, '_DSD', '1')
 
         my_model.set_template_path(TestModel.TEST_TEMPLATE_PATH)
-        my_model.set_curr_tree('DP00')
+        my_model.set_curr_tree('P001')
 
-        #calls the update_hier_property_value function on the element tree (changes BA00 - a shared package - to BA02 - a new package)
-        my_model.update_hier_property_value(['mipi-sdw-port-bra-mode-m', 'BA02', 'BA00'])
+        #calls the update_hier_property_value function on the element tree (changes C001 - a shared package - to C002 - a new package)
+        my_model.update_hier_property_value(['child-prop-1', 'C002', 'C001'])
         tree = my_model.get_curr_tree() 
         tree_list = my_model.get_tree_list()
 
+        checked_c001 = False
+        checked_c002 = False
         for tree in tree_list:
             
-            #checks that BA00 now has one parent
-            if tree.find('Name').text == 'BA00':
+            #checks that C001 now has one parent
+            if tree.find('Name').text == 'C001':
+                checked_c001 = True
                 parents = []
                 for p in tree.find('Header').find('Parents').iter('Parent'):
                     parents.append(p.text)
-                self.assertEqual(parents, ['DP01'], 'BA00 does not have one parent')
+                self.assertEqual(parents, ['P002'], 'C001 does not have one parent')
 
-            #checks that BA02 now exists and has the same data as BA00
-            if tree.find('Name').text == 'BA02':
+            #checks that C002 now exists and has the same data as BA00
+            if tree.find('Name').text == 'C002':
+                checked_c002 = True
                 for prop in tree.find('Properties').iter('Property'):
-                    if prop.find('Name').text == 'mipi-sdw-bra-mode-max-bus-frequency':
-                        self.assertEqual('1', prop.find('Value').text, 'the element tree for BA02 was not created correctly')
+                    if prop.find('Name').text == 'mipi-sdw-sw-interface-revision':
+                        self.assertEqual('1', prop.find('Value').text, 'the element tree for C002 was not created correctly')
+
+        self.assertTrue(checked_c001 and checked_c002, "Unable to check either C001 or C002")
 
     #tests the delete_property function when the property does not have any dependent packages associated with it
     def test_delete_property_1(self):

@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+
+	<Name></Name>
+
+	<Header>
+		<TemplateType>Sdca_Extension</TemplateType>
+		<Parents>
+			<Parent>HP03</Parent>
+			<Parent>HP04</Parent>
+		</Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-function-expansion-subsystem-id</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes a subsystem ID to be used to determine the correct function expansion driver to be installed/loaded. This value is vendor-specific.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-function-expansion-subsystem-revision-id</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>This optional property provides a subsystem revision ID to be used to determine the correct function expansion driver to be installed/loaded. This value is vendor-specific.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>		
+		<Property>
+			<Name>mid-*</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>Vendor may add any vendor specific properties to this descriptor. This is the only descriptor in SDCA where Vendor can specify implementation defined properties. 
+Note that the vendor prefix represented by mid is the vendor's MIPI Manufacturer ID, a four-digit hexadecimal number. E.g. 0339-sample-property for a Dell-defined property.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>	
+    </Properties>
+    
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+
+	<BufferProperties>
+	</BufferProperties>
+	
+
+</Template>

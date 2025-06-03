@@ -52,7 +52,7 @@ class TestModel(unittest.TestCase):
         to_delete = result[1]
 
         self.assertEqual(to_add, [], "incorrect list of hierarchical properties to add (interpret type = Integer)")
-        self.assertEqual(to_delete, [3, 4], "incorrect list of hierarchical properties to delete (interpret type = Integer)")
+        self.assertEqual(to_delete, [4, 5], "incorrect list of hierarchical properties to delete (interpret type = Integer)")
     
     #tests create_hier_props_list when the interpret type is package 
     def test_create_hier_props_list_2(self):
@@ -62,14 +62,14 @@ class TestModel(unittest.TestCase):
         to_add = result[0]
         to_delete = result[1]
 
-        self.assertEqual(to_add, [6, 2], "incorrect list of hierarchical properties to add (interpret type = Package)")
-        self.assertEqual(to_delete, [7, 8, 9], "incorrect list of hierarchical properties to delete (interpret type = Package)")
+        self.assertEqual(to_add, ['6', '2'], "incorrect list of hierarchical properties to add (interpret type = Package)")
+        self.assertEqual(to_delete, ['7', '8', '9'], "incorrect list of hierarchical properties to delete (interpret type = Package)")
     
     #tests create_hier_props_list when the interpret type is bitmap 
     def test_create_hier_props_list_3(self):
         my_model = model.model()
 
-        result = my_model.create_hier_props_lists('BitMap', '1110', '01')
+        result = my_model.create_hier_props_lists('BitMap', '1110', '0001')
         to_add = result[0]
         to_delete = result[1]
 
@@ -109,7 +109,7 @@ class TestModel(unittest.TestCase):
 
         #calls the update_property_value function twice on the element tree
         my_model.update_property_value(["property-3", "1110", ""])
-        my_model.update_property_value(["property-3", "010", "1110"])
+        my_model.update_property_value(["property-3", "0010", "1110"])
         tree = my_model.get_curr_tree()
         tree_list = my_model.get_tree_list()
 

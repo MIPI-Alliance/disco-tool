@@ -35,8 +35,7 @@ import sys
 class TestModel(unittest.TestCase):
 
     #local path to the xml templates folder and the predfined test xml files
-    #TEST_TEMPLATE_PATH = "C:\\Users\\t-judzmu\\Desktop\\discoToolMockups\\"
-    TEST_TEMPLATE_PATH = "C:\\Users\\keith\\dev\\MIPI\\private-disco-tool\\tests\\"
+    TEST_TEMPLATE_PATH = os.path.join(os.getcwd(), "private-disco-tool\\tests\\")
     TEST_FILE_1_PATH = TEST_TEMPLATE_PATH + "testFile1.xml"
     TEST_FOLDER_2_PATH = TEST_TEMPLATE_PATH + "testFolder2"
     TEST_FOLDER_3_PATH = TEST_TEMPLATE_PATH + "testFolder3"

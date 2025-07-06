@@ -36,6 +36,7 @@ try:
     from disco.properties import PropertyPanel
     from disco.hierarchical_properties import HierarchicalPropertyPanel
     from disco.bufferdata_properties import BufferDataPropertyPanel, EditBufferDataPropertyValue
+    from disco.template_properties import TemplatePropertiesPanel
     from disco.ASLgenerator import GenerateASLFrame
     from disco.disco_help import DisCoInfo
 except:
@@ -45,6 +46,7 @@ except:
     from properties import PropertyPanel
     from hierarchical_properties import HierarchicalPropertyPanel
     from bufferdata_properties import BufferDataPropertyPanel, EditBufferDataPropertyValue
+    from template_properties import TemplatePropertiesPanel
     from ASLgenerator import GenerateASLFrame
     from disco_help import DisCoInfo
 
@@ -97,6 +99,8 @@ class DiscoToolAuiManager(wx.Frame):
         # setting up the menu bar at the top of the window that has a list of buttons the user can click to start a new
         # project/open an existing project/save/save as/generate ASL
         menuBar = wx.MenuBar()
+
+        # File menu
         fileMenu = wx.Menu()
         menuBar.Append(fileMenu, "&File")
 
@@ -112,7 +116,14 @@ class DiscoToolAuiManager(wx.Frame):
         fileMenu.Append(self.item_generate_asl)
         fileMenu.Append(wx.MenuItem(fileMenu, wx.ID_EXIT, text="E&xit"))
 
-        #Help menu
+        # Template Editor
+        templateMenu = wx.Menu()
+        menuBar.Append(templateMenu, "&Template")
+
+        self.template_new = wx.MenuItem(templateMenu, app_constants.ID_TEMPLATE_MODE, "&Enter Template Mode", "Enters template editing mode")
+        templateMenu.Append(self.template_new)
+
+        # Help menu
         helpMenu = wx.Menu()
         menuBar.Append(helpMenu, "&Help")        
         self.item_about = wx.MenuItem(helpMenu, wx.ID_ABOUT, "&About DisCo", "About DisCo creation tool")
@@ -196,6 +207,35 @@ class DiscoToolAuiManager(wx.Frame):
                                 Name("DescriptionPanel").Caption("Description").BestSize((app_constants.SIDE_PANEL_WIDTH, -1)).MinSize((app_constants.SIDE_PANEL_WIDTH, -1)).
                                 Right().CloseButton(False).MaximizeButton(False).
                                 MinimizeButton(False).PaneBorder(False).Floatable(False))
+
+        self.project_panels = []
+        self.project_panels.append(self.tree_panel)
+        self.project_panels.append(self.properties_panel)
+        self.project_panels.append(self.packages_panel)
+        self.project_panels.append(self.buffprops_panel)
+        self.project_panels.append(self.description_panel)
+
+        ### Template Panes - hidden unless in template mode
+        self.template_properties_panel = TemplatePropertiesPanel(self.auimainpanel)
+        self.template_properties_panel.SetBackgroundColour(app_constants.COLOR_WHITE)
+        self.aui_manager.AddPane(
+            self.template_properties_panel,
+            aui.AuiPaneInfo()
+                .Name("template_properties_panel")
+                .BestSize((-1, 250))
+                .MinSize((-1, 250))
+                .CenterPane().CloseButton(False)
+                .MaximizeButton(False)
+                .MinimizeButton(False)
+                .PaneBorder(False)
+                .Floatable(False)
+        )
+
+        self.template_panels = []
+        self.template_panels.append(self.template_properties_panel)
+
+        for template_panel in self.template_panels:
+            self.aui_manager.ShowPane(template_panel, False)
 
 
         # adding all of the widgets to the tree panel
@@ -438,10 +478,21 @@ class DiscoToolAuiManager(wx.Frame):
             self.Disable()
             new_frame = GenerateASLFrame(self)
             new_frame.Show()
+        if id == app_constants.ID_TEMPLATE_MODE:
+            self.enter_template_mode()
         if id == wx.ID_EXIT:
             self.Close()
             # when user closes main window, the tool will first check if their data is saved
             # self.Bind(wx.EVT_CLOSE, self.close_main_window)
+
+    def enter_template_mode(self):
+        #hide the panels
+        for panel in self.project_panels:
+            self.aui_manager.ShowPane(panel, False)
+        #show template panels
+        for panel in self.template_panels:
+            self.aui_manager.ShowPane(panel, True)
+        #disable certain menu items
 
     def open_dir_dialog(self):
         """

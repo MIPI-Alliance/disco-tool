@@ -358,9 +358,6 @@ class PropertyPanel(panel_base.PanelBase):
         w, h = self.GetClientSize()
         point = event.GetPosition()
 
-        # takes the x position of where the user clicked and offsets it by .25*w (to account for tree panel on the left)
-        point.x = (w * 0.25) + point.x
-
         # finds the name of the property to be deleted (to be used in the delete_property function)
         self.delete_property_name = self.props_grid.GetCellValue(event.GetRow(), 0)
 

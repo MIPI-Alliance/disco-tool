@@ -234,9 +234,17 @@ class DiscoToolAuiManager(wx.Frame):
                     self.save_files(message=None)
         self.Destroy()
 
+    def toggle_required(self, event):
+        """Called if user right clicks on a property and chooses to toggle "Required" from the pop up menu"""
+        self.toggled_required(message=self.properties_panel.rightlick_edit_property_name)
+
+    def toggle_oemmodify(self, event):
+        """Called if user right clicks on a property and chooses to toggle "OEMModify" from the pop up menu"""
+        self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name)
+
     def delete_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
-        self.property_deleted(message=self.properties_panel.delete_property_name)
+        self.property_deleted(message=self.properties_panel.rightlick_edit_property_name)
 
     def delete_hier_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
@@ -733,6 +741,22 @@ class DiscoToolAuiManager(wx.Frame):
 
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
+
+    def toggled_required(self, message):
+        """
+        Called when the user toggles 'required' on a property.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        self.model.toggle_required(message)
+
+    def toggled_oemmodify(self, message):
+        """
+        Called when the user toggles 'OEMModify' on a property.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        self.model.toggle_oemmodify(message)
 
     def property_deleted(self, message):
         """

@@ -358,13 +358,32 @@ class PropertyPanel(panel_base.PanelBase):
         w, h = self.GetClientSize()
         point = event.GetPosition()
 
-        # finds the name of the property to be deleted (to be used in the delete_property function)
-        self.delete_property_name = self.props_grid.GetCellValue(event.GetRow(), 0)
+        # finds the name of the property to be edited to be used in the various functions bound below
+        self.rightlick_edit_property_name = self.props_grid.GetCellValue(event.GetRow(), 0)
+
+        # finds the property that was right-clicked
+        for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
+            if prop.find('Name').text == self.rightlick_edit_property_name:
+                is_currently_required = prop.find('Required').text == "1"
+                is_currently_OEMModify = prop.find('OEMModify').text == "1"
 
         # creates a pop up menu with the option to delete and opens this menu at the correct screen position
         popUpMenu = wx.Menu()
-        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
+
+        requiredToggle = wx.MenuItem(popUpMenu, wx.NewId(), "Required", kind=wx.ITEM_CHECK)
+        oemmodifyToggle = wx.MenuItem(popUpMenu, wx.NewId(), "OEMModify", kind=wx.ITEM_CHECK)
+        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.rightlick_edit_property_name)
+
+        popUpMenu.Append(requiredToggle)
+        requiredToggle.Check(is_currently_required)
+
+        popUpMenu.Append(oemmodifyToggle)
+        oemmodifyToggle.Check(is_currently_OEMModify)
+
         popUpMenu.Append(deleteItem)
+
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_required, requiredToggle)
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_oemmodify, oemmodifyToggle)
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 

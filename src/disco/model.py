@@ -901,6 +901,36 @@ class model():
         child = et.SubElement(parents, "Parent")
         child.text = parent_name
 
+    def toggle_required(self, message):
+        """
+        Toggles the 'Required' value of a property
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('Properties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('Property'):
+            if parent.find('Name').text == message:
+
+                # flip required
+                required = parent.find('Required').text
+                parent.find('Required').text = "0" if required == "1" else "1"
+
+    def toggle_oemmodify(self, message):
+        """
+        Toggles the 'OEMModify' value of a property
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('Properties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('Property'):
+            if parent.find('Name').text == message:
+
+                # flip OEMModify
+                required = parent.find('OEMModify').text
+                parent.find('OEMModify').text = "0" if required == "1" else "1"
+
     #deletes a normal property from current element tree
     def delete_property(self, message):
         root = self.curr_tree.getroot()

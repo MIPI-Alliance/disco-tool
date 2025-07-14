@@ -372,6 +372,7 @@ class PropertyPanel(panel_base.PanelBase):
 
         requiredToggle = wx.MenuItem(popUpMenu, wx.NewId(), "Required", kind=wx.ITEM_CHECK)
         oemmodifyToggle = wx.MenuItem(popUpMenu, wx.NewId(), "OEMModify", kind=wx.ITEM_CHECK)
+        editDescription = wx.MenuItem(popUpMenu, wx.NewId(), "Edit Description")
         deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.rightlick_edit_property_name)
 
         popUpMenu.Append(requiredToggle)
@@ -380,10 +381,12 @@ class PropertyPanel(panel_base.PanelBase):
         popUpMenu.Append(oemmodifyToggle)
         oemmodifyToggle.Check(is_currently_OEMModify)
 
+        popUpMenu.Append(editDescription)
         popUpMenu.Append(deleteItem)
 
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_required, requiredToggle)
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_oemmodify, oemmodifyToggle)
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.edit_description_modal, editDescription)
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 
@@ -452,7 +455,20 @@ class PropertyPanel(panel_base.PanelBase):
                               caption='Property error', style=wx.OK | wx.ICON_ERROR)
             else:
                 self.main_window.property_added(message=messageList)
-                
+
+    def open_property_description_frame(self, message):
+
+        for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
+            if prop.find('Name').text == message:
+                description = prop.find('Description').text
+
+        dlg = EditPropertyDescriptionDialog(self, -1, "Edit Description", size=(520, 500), style=wx.DEFAULT_DIALOG_STYLE, description=description)
+        dlg.CenterOnScreen()
+        val = dlg.ShowModal()
+
+        if val == wx.ID_OK:
+            return dlg.description.GetValue()
+
 class AddProperty(wx.Dialog):
 
     def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE):
@@ -567,5 +583,42 @@ class AddProperty(wx.Dialog):
         vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
-                
-                
+
+class EditPropertyDescriptionDialog(wx.Dialog):
+
+    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE, description=""):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        descriptionLabel = wx.StaticText(self, label="Description:")
+        app_constants.set_title_font(descriptionLabel)
+        self.description = wx.TextCtrl(self, -1, value=description, size=(400, 400), style=wx.TE_MULTILINE)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(descriptionLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.description, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)

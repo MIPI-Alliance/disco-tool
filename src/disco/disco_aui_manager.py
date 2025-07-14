@@ -242,6 +242,10 @@ class DiscoToolAuiManager(wx.Frame):
         """Called if user right clicks on a property and chooses to toggle "OEMModify" from the pop up menu"""
         self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name)
 
+    def edit_description_modal(self, event):
+        """Called if user right clicks on a property and chooses to toggle "Edit Description" from the pop up menu"""
+        self.edited_description_modal(message=self.properties_panel.rightlick_edit_property_name)
+
     def delete_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.property_deleted(message=self.properties_panel.rightlick_edit_property_name)
@@ -757,6 +761,16 @@ class DiscoToolAuiManager(wx.Frame):
         """
         self.set_data_changed(True)
         self.model.toggle_oemmodify(message)
+
+    def edited_description_modal(self, message):
+        """
+        Called when the user edits the description via rightclick on a property.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        description = self.properties_panel.open_property_description_frame(message)
+        if description:
+            self.model.edit_description_from_modal(message, description)
 
     def property_deleted(self, message):
         """

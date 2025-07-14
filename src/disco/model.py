@@ -931,8 +931,22 @@ class model():
                 required = parent.find('OEMModify').text
                 parent.find('OEMModify').text = "0" if required == "1" else "1"
 
-    #deletes a normal property from current element tree
+    def edit_description_from_modal(self, message, description):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('Properties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('Property'):
+            if parent.find('Name').text == message:
+                parent.find('Description').text = description
+
     def delete_property(self, message):
+        """
+        Deletes a normal property from current element tree
+        """
         root = self.curr_tree.getroot()
         propsTag = root.find('Properties')
 

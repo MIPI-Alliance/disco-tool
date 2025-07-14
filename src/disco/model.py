@@ -901,37 +901,39 @@ class model():
         child = et.SubElement(parents, "Parent")
         child.text = parent_name
 
-    def toggle_required(self, message):
+    def toggle_required(self, message, panel):
         """
         Toggles the 'Required' value of a property
         """
         root = self.curr_tree.getroot()
-        propsTag = root.find('Properties')
+        propsTag = root.find(panel)
+        singularTag = panel[:-3] + "y" # Propert + y, HierarchicalPropert + y, BufferPropert + y
 
         #finds the property that the user wants to update
-        for parent in propsTag.iter('Property'):
+        for parent in propsTag.iter(singularTag):
             if parent.find('Name').text == message:
 
                 # flip required
                 required = parent.find('Required').text
                 parent.find('Required').text = "0" if required == "1" else "1"
 
-    def toggle_oemmodify(self, message):
+    def toggle_oemmodify(self, message, panel):
         """
         Toggles the 'OEMModify' value of a property
         """
         root = self.curr_tree.getroot()
-        propsTag = root.find('Properties')
+        propsTag = root.find(panel)
+        singularTag = panel[:-3] + "y" # Propert + y, HierarchicalPropert + y, BufferPropert + y
 
         #finds the property that the user wants to update
-        for parent in propsTag.iter('Property'):
+        for parent in propsTag.iter(singularTag):
             if parent.find('Name').text == message:
 
                 # flip OEMModify
                 required = parent.find('OEMModify').text
                 parent.find('OEMModify').text = "0" if required == "1" else "1"
 
-    def edit_description_from_modal(self, message, description):
+    def edit_property_from_modal(self, message, description):
         """
         Changes a property's description, as set from the Edit Description modal
         """
@@ -942,6 +944,20 @@ class model():
         for parent in propsTag.iter('Property'):
             if parent.find('Name').text == message:
                 parent.find('Description').text = description
+
+    def edit_hier_property_from_modal(self, message, description, prefix, file):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('HierarchicalProperties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('HierarchicalProperty'):
+            if parent.find('Name').text == message:
+                parent.find('Description').text = description
+                parent.find('PackageNamePrefix').text = prefix
+                parent.find('Filename').text = file
 
     def delete_property(self, message):
         """

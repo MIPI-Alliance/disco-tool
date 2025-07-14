@@ -372,7 +372,7 @@ class PropertyPanel(panel_base.PanelBase):
 
         requiredToggle = wx.MenuItem(popUpMenu, wx.NewId(), "Required", kind=wx.ITEM_CHECK)
         oemmodifyToggle = wx.MenuItem(popUpMenu, wx.NewId(), "OEMModify", kind=wx.ITEM_CHECK)
-        editDescription = wx.MenuItem(popUpMenu, wx.NewId(), "Edit Description")
+        editDescription = wx.MenuItem(popUpMenu, wx.NewId(), "Edit")
         deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.rightlick_edit_property_name)
 
         popUpMenu.Append(requiredToggle)
@@ -456,13 +456,13 @@ class PropertyPanel(panel_base.PanelBase):
             else:
                 self.main_window.property_added(message=messageList)
 
-    def open_property_description_frame(self, message):
+    def open_property_edit_frame(self, message):
 
         for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
             if prop.find('Name').text == message:
                 description = prop.find('Description').text
 
-        dlg = EditPropertyDescriptionDialog(self, -1, "Edit Description", size=(520, 500), style=wx.DEFAULT_DIALOG_STYLE, description=description)
+        dlg = EditPropertyDescriptionDialog(self, -1, "Edit Property", size=(520, 500), style=wx.DEFAULT_DIALOG_STYLE, description=description)
         dlg.CenterOnScreen()
         val = dlg.ShowModal()
 

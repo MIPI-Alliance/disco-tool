@@ -236,15 +236,27 @@ class DiscoToolAuiManager(wx.Frame):
 
     def toggle_required(self, event):
         """Called if user right clicks on a property and chooses to toggle "Required" from the pop up menu"""
-        self.toggled_required(message=self.properties_panel.rightlick_edit_property_name)
+        self.toggled_required(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
 
     def toggle_oemmodify(self, event):
         """Called if user right clicks on a property and chooses to toggle "OEMModify" from the pop up menu"""
-        self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name)
+        self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
 
     def edit_description_modal(self, event):
         """Called if user right clicks on a property and chooses to toggle "Edit Description" from the pop up menu"""
-        self.edited_description_modal(message=self.properties_panel.rightlick_edit_property_name)
+        self.edited_property_modal(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
+
+    def toggle_hier_required(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "Required" from the pop up menu"""
+        self.toggled_required(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
+
+    def toggle_hier_oemmodify(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "OEMModify" from the pop up menu"""
+        self.toggled_oemmodify(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
+
+    def edit_hier_description_modal(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "Edit Description" from the pop up menu"""
+        self.edited_property_modal(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
 
     def delete_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
@@ -252,7 +264,7 @@ class DiscoToolAuiManager(wx.Frame):
 
     def delete_hier_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
-        self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
+        self.hier_property_deleted(message=[self.packages_panel.rightlick_edit_property_name, None, None, self.curr_tree])
 
     def nickname_tree_item(self, event, tree_item_name):
         """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
@@ -746,31 +758,36 @@ class DiscoToolAuiManager(wx.Frame):
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
 
-    def toggled_required(self, message):
+    def toggled_required(self, message, panel):
         """
         Called when the user toggles 'required' on a property.
         Message consists of that property's name
         """
         self.set_data_changed(True)
-        self.model.toggle_required(message)
+        self.model.toggle_required(message, panel)
 
-    def toggled_oemmodify(self, message):
+    def toggled_oemmodify(self, message, panel):
         """
         Called when the user toggles 'OEMModify' on a property.
         Message consists of that property's name
         """
         self.set_data_changed(True)
-        self.model.toggle_oemmodify(message)
+        self.model.toggle_oemmodify(message, panel)
 
-    def edited_description_modal(self, message):
+    def edited_property_modal(self, message, panel):
         """
-        Called when the user edits the description via rightclick on a property.
+        Called when the user edits a property via rightclick.
         Message consists of that property's name
         """
         self.set_data_changed(True)
-        description = self.properties_panel.open_property_description_frame(message)
-        if description:
-            self.model.edit_description_from_modal(message, description)
+        if panel == "Properties":
+            description = self.properties_panel.open_property_edit_frame(message)
+            self.model.edit_property_from_modal(message, description)
+        elif panel == "HierarchicalProperties":
+            description, prefix, file = self.packages_panel.open_hier_property_edit_frame(message)
+            self.model.edit_hier_property_from_modal(message, description, prefix, file)
+        elif panel == "BufferProperties":
+            description = self.buffprops_panel.open_property_description_frame(message)
 
     def property_deleted(self, message):
         """

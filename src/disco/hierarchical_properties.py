@@ -471,6 +471,8 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
 
         if val == wx.ID_OK:
             return dlg.description.GetValue(), dlg.prefix.GetValue(), dlg.file.GetValue()
+        else:
+            return None, None, None
 
 class AddHierarchicalProperty(wx.Dialog):
 

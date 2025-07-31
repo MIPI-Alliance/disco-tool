@@ -243,7 +243,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
 
     def edit_description_modal(self, event):
-        """Called if user right clicks on a property and chooses to toggle "Edit Description" from the pop up menu"""
+        """Called if user right clicks on a property and chooses to toggle "Edit" from the pop up menu"""
         self.edited_property_modal(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
 
     def toggle_hier_required(self, event):
@@ -255,7 +255,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.toggled_oemmodify(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
 
     def edit_hier_description_modal(self, event):
-        """Called if user right clicks on a hierarchical property and chooses to toggle "Edit Description" from the pop up menu"""
+        """Called if user right clicks on a hierarchical property and chooses to toggle "Edit" from the pop up menu"""
         self.edited_property_modal(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
 
     def delete_property(self, event):
@@ -265,6 +265,10 @@ class DiscoToolAuiManager(wx.Frame):
     def delete_hier_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
         self.hier_property_deleted(message=[self.packages_panel.rightlick_edit_property_name, None, None, self.curr_tree])
+
+    def edit_buffer_description_modal(self, event):
+        """Called if user right clicks on a buffer property and chooses to toggle "Edit" from the pop up menu"""
+        self.edited_property_modal(message=self.buffprops_panel.rightlick_edit_property_name, panel="BufferProperties")
 
     def nickname_tree_item(self, event, tree_item_name):
         """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
@@ -782,12 +786,16 @@ class DiscoToolAuiManager(wx.Frame):
         self.set_data_changed(True)
         if panel == "Properties":
             description = self.properties_panel.open_property_edit_frame(message)
-            self.model.edit_property_from_modal(message, description)
+            if description is not None:
+                self.model.edit_property_from_modal(message, description)
         elif panel == "HierarchicalProperties":
             description, prefix, file = self.packages_panel.open_hier_property_edit_frame(message)
-            self.model.edit_hier_property_from_modal(message, description, prefix, file)
+            if description is not None:
+                self.model.edit_hier_property_from_modal(message, description, prefix, file)
         elif panel == "BufferProperties":
-            description = self.buffprops_panel.open_property_description_frame(message)
+            description = self.buffprops_panel.open_buff_property_edit_frame(message)
+            if description is not None:
+                self.model.edit_buff_property_from_modal(message, description)
 
     def property_deleted(self, message):
         """

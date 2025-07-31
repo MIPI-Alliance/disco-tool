@@ -959,6 +959,18 @@ class model():
                 parent.find('PackageNamePrefix').text = prefix
                 parent.find('Filename').text = file
 
+    def edit_buff_property_from_modal(self, message, description):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('BufferProperties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('BufferProperty'):
+            if parent.find('PropertyName').text == message:
+                parent.find('Description').text = description
+
     def delete_property(self, message):
         """
         Deletes a normal property from current element tree

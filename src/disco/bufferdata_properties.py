@@ -249,11 +249,38 @@ class BufferDataPropertyPanel(panel_base.PanelBase):
         self.Destroy()
 
     def OnPropsGridRightClick(self, event):
-        pass
 
+        # gets the position where the user clicked
+        point = event.GetPosition()
+
+        # finds the name of the property to be changed
+        self.rightlick_edit_property_name = self.props_grid.GetCellValue(event.GetRow(), 0)
+
+        # creates a pop up menu and opens this menu at the correct screen position
+        popUpMenu = wx.Menu()
+
+        editDescription = wx.MenuItem(popUpMenu, wx.NewId(), "Edit")
+
+        popUpMenu.Append(editDescription)
+
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.edit_buffer_description_modal, editDescription)
+        self.PopupMenu(popUpMenu, point)
 
     def onPropsGridMouseOver(self, event):
         pass
+
+    def open_buff_property_edit_frame(self, message):
+
+        for prop in self.main_window.curr_tree.getroot().find('BufferProperties').iter('BufferProperty'):
+            if prop.find('PropertyName').text == message:
+                description = prop.find('Description').text
+
+        dlg = EditBufferPropertyDescriptionDialog(self, -1, "Edit Buffer Property", size=(520, 700), style=wx.DEFAULT_DIALOG_STYLE, description=description)
+        dlg.CenterOnScreen()
+        val = dlg.ShowModal()
+
+        if val == wx.ID_OK:
+            return dlg.description.GetValue()
 
 class AddBufferDataProperty(wx.Dialog):
 
@@ -382,6 +409,42 @@ class EditBufferDataPropertyValue(wx.Dialog):
         vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
-                    
-                    
-                    
+
+class EditBufferPropertyDescriptionDialog(wx.Dialog):
+
+    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE, description=""):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        descriptionLabel = wx.StaticText(self, label="Description:")
+        app_constants.set_title_font(descriptionLabel)
+        self.description = wx.TextCtrl(self, -1, value=description, size=(400, 400), style=wx.TE_MULTILINE)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(descriptionLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.description, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)

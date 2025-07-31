@@ -267,7 +267,28 @@ class BufferDataPropertyPanel(panel_base.PanelBase):
         self.PopupMenu(popUpMenu, point)
 
     def onPropsGridMouseOver(self, event):
-        pass
+        # gets position of the mouse on the screen and converts this to row and column
+        x, y = self.props_grid.CalcUnscrolledPosition(event.GetX(), event.GetY())
+        coordinates = self.props_grid.XYToCell(x, y)
+        row = coordinates[0]
+        column = coordinates[1]
+
+        # gets the total number of rows and columns
+        num_rows = self.props_grid.GetNumberRows()
+        num_cols = self.props_grid.GetNumberCols()
+
+        # if the mouse is over an actual row and column in the grid, find that row's property and
+        # data type and display its description to the user
+        if (column >= 0) & (column < num_cols) & (row >= 0) & (row < num_rows):
+            prop_name = self.props_grid.GetCellValue(row, 0)
+            tree_root = self.main_window.curr_tree.getroot()
+            for prop in tree_root.find('BufferProperties').iter('BufferProperty'):
+                if prop.find('PropertyName').text == prop_name:
+                    description = prop.find('Description').text
+                    if description is None:
+                        description = ""
+                    msg = description + ":" + "\n\n" + "Buffer string may be entered as up to 4 characters"
+                    self.main_window.description_panel.SetValue(msg)
 
     def open_buff_property_edit_frame(self, message):
 

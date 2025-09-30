@@ -108,6 +108,8 @@ class DiscoToolAuiManager(wx.Frame):
         fileMenu.Append(self.item_save)
         self.item_save_as = wx.MenuItem(fileMenu, wx.ID_SAVEAS, "Save &As...", "Save project in new location")
         fileMenu.Append(self.item_save_as)
+        self.item_save_as_template = wx.MenuItem(fileMenu, wx.ID_EDIT, "Save As &Template...", "Save as template file")
+        fileMenu.Append(self.item_save_as_template)
         self.item_generate_asl = wx.MenuItem(fileMenu, wx.ID_NEW, "&Generate ASL", "Generate ASL")
         fileMenu.Append(self.item_generate_asl)
         fileMenu.Append(wx.MenuItem(fileMenu, wx.ID_EXIT, text="E&xit"))
@@ -121,6 +123,7 @@ class DiscoToolAuiManager(wx.Frame):
         
         self.item_save.Enable(False)
         self.item_save_as.Enable(False)
+        self.item_save_as_template.Enable(False)
         self.item_generate_asl.Enable(False)
 
         self.SetMenuBar(menuBar)
@@ -433,6 +436,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.buffprops_panel.addbufferdataBtn.Enable()
         self.item_save.Enable(True)
         self.item_save_as.Enable(True)
+        self.item_save_as_template.Enable(True)
         self.item_generate_asl.Enable(True)
         self.item_new.Enable(False)
         self.item_open.Enable(False)
@@ -460,6 +464,8 @@ class DiscoToolAuiManager(wx.Frame):
                 self.save_files(message=None)
         if id == wx.ID_SAVEAS:
             self.save_dir_dialog()
+        if id == wx.ID_EDIT:
+            self.save_template_dir_dialog()
         if id == wx.ID_NEW:
             # open up an ASL generator window where user enters the device name/_HID or _CID or _ADR
             # and then ASL is generated
@@ -505,6 +511,19 @@ class DiscoToolAuiManager(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             self.has_project_path = True
             self.save_as(message=dlg.GetPath())
+
+        dlg.Destroy()
+
+    def save_template_dir_dialog(self):
+        """
+        Opens a file dialog where the user chooses where they want to save their template
+        """
+
+        dlg = wx.DirDialog(self, "Choose directory to save to", style=wx.DD_DEFAULT_STYLE)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.has_project_path = True
+            self.save_as(message=dlg.GetPath(), as_template=True)
 
         dlg.Destroy()
 
@@ -703,7 +722,7 @@ class DiscoToolAuiManager(wx.Frame):
                 tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
                 my_file.write(tree_str_pretty)
 
-    def save_as(self, message):
+    def save_as(self, message, as_template=False):
         """
         Called when user presses the "save as" button or when they save their work for the first time (message is the path the user chose to save to)
         """
@@ -713,14 +732,15 @@ class DiscoToolAuiManager(wx.Frame):
 
         tree_list = self.model.get_tree_list()
 
-        path = os.path.join(message, "packageNameList.npy")
-        with open(path, 'wb') as my_file:
-            np.save(my_file, self.model.get_packageNameList())
+        if not as_template:
+            path = os.path.join(message, "packageNameList.npy")
+            with open(path, 'wb') as my_file:
+                np.save(my_file, self.model.get_packageNameList())
 
-        object = json.dumps(self.model.get_propertyDictionary(), indent=4)
-        path = os.path.join(message, "propertyDict.json")
-        with open(path, "w") as my_file:
-            my_file.write(object)
+            object = json.dumps(self.model.get_propertyDictionary(), indent=4)
+            path = os.path.join(message, "propertyDict.json")
+            with open(path, "w") as my_file:
+                my_file.write(object)
         
         #goes through the list of element trees and adds each one as an xml file to the path the user chose
         for tree in tree_list:
@@ -732,6 +752,10 @@ class DiscoToolAuiManager(wx.Frame):
 
             #converting element tree to xml (adjust indents/newlines accordingly)
             tree_str = et.tostring(root)
+
+            if as_template:
+                tree_str = re.sub('<Value>[^>]+<\/Value>', '<Value/>', tree_str)
+
             tree_str_parsed = md.parseString(tree_str)
 
             path = os.path.join(message, file_name)

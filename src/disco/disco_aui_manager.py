@@ -751,7 +751,7 @@ class DiscoToolAuiManager(wx.Frame):
             print("FILE NAME:" + file_name)
 
             #converting element tree to xml (adjust indents/newlines accordingly)
-            tree_str = et.tostring(root)
+            tree_str = et.tostring(root, encoding="unicode")
 
             if as_template:
                 tree_str = re.sub('<Value>[^>]+<\/Value>', '<Value/>', tree_str)

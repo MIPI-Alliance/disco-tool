@@ -518,8 +518,8 @@ class DiscoToolAuiManager(wx.Frame):
         """
         Opens a file dialog where the user chooses where they want to save their template
         """
-
-        dlg = wx.DirDialog(self, "Choose directory to save to", style=wx.DD_DEFAULT_STYLE)
+        wildcard = "XML Files (*.xml)|*.xml"
+        dlg = wx.FileDialog(self, "Save as Template", wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
         if dlg.ShowModal() == wx.ID_OK:
             self.has_project_path = True
@@ -758,7 +758,7 @@ class DiscoToolAuiManager(wx.Frame):
 
             tree_str_parsed = md.parseString(tree_str)
 
-            path = os.path.join(message, file_name)
+            path = message if as_template else os.path.join(message, file_name)
 
             #with open(message + "\\" + file_name,'w') as my_file:
             with open(path, 'w', encoding="utf-8") as my_file:

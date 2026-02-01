@@ -86,11 +86,21 @@ class DiscoToolAuiManager(wx.Frame):
         uirealpath = os.path.realpath(app_filepath)
         self.app_data_path = os.path.dirname(uirealpath)
         try:
-            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+            self.SetIcon(
+                wx.Icon(
+                    resource_path("images", "MIPIfavicon.ico"),
+                    wx.BITMAP_TYPE_ICO
+            )
+)
         except:
             self.app_data_path = os.path.dirname(disco.__file__)
             self.app_data_path = os.path.join(self.app_data_path, "disco")
-            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+            self.SetIcon(
+                wx.Icon(
+                    resource_path("images", "MIPIfavicon.ico"),
+                    wx.BITMAP_TYPE_ICO
+            )
+)
 
         self.statusBar = self.CreateStatusBar(1)
 
@@ -1460,7 +1470,8 @@ class HeaderPanel(wx.Panel):
         self.frame_width = mainframesize[0]
         self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-        bmplogo = wx.Image(os.path.join(self.aui_mainframe.app_data_path, "images", "Stacked.bmp"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+
+        bmplogo = wx.Bitmap(resource_path("images/Stacked.bmp"))
 
         self.app_name = wx.StaticText(self, -1, "DisCo Creation Tool                            ",
                                       wx.DefaultPosition,
@@ -1509,6 +1520,12 @@ class DiscoToolApp(wx.App):
         disco_frame.CenterOnScreen()
         return True
 
+def resource_path(*relative_parts):
+    if getattr(sys, "frozen", False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, *relative_parts)
 
 def main():
     app = DiscoToolApp(redirect=False)

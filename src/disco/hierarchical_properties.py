@@ -390,6 +390,8 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
         self.rightlick_edit_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
 
         # finds the property that was right-clicked
+        is_currently_required = False
+        is_currently_OEMModify = False
         for prop in self.main_window.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
             if prop.find('Name').text == self.rightlick_edit_property_name:
                 is_currently_required = prop.find('Required').text == "1"
@@ -459,20 +461,39 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
 
     def open_hier_property_edit_frame(self, message):
 
+        description, prefix, filename = '', '', ''
+        hier_prop_found = False
+        is_subproperty = False
         for prop in self.main_window.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
             if prop.find('Name').text == message:
                 description = prop.find('Description').text
                 prefix = prop.find('PackageNamePrefix').text
                 filename = prop.find('Filename').text
+                hier_prop_found = True
+
+        if not hier_prop_found:
+            # may be a dependent package, so search for that in Properties instead
+            for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
+                try:
+                    if (
+                        prop.find('DependentPackages').find("Package").find("PropertyNamePrefix").text == re.split(r"\d+", message)[0]
+                        and prop.find('DependentPackages').find("Package").find("PropertyNamePostfix").text == re.split(r"\d+", message)[1]
+                    ):
+                        description = prop.find('DependentPackages').find("Package").find('Description').text
+                        prefix = prop.find('DependentPackages').find("Package").find('PackageNamePrefix').text
+                        filename = prop.find('DependentPackages').find("Package").find('Filename').text
+                        is_subproperty = True
+                except:
+                    pass
 
         dlg = EditHierPropertyDialog(self, -1, "Edit Hierarchical Property", size=(520, 700), style=wx.DEFAULT_DIALOG_STYLE, description=description, prefix=prefix, filename=filename)
         dlg.CenterOnScreen()
         val = dlg.ShowModal()
 
         if val == wx.ID_OK:
-            return dlg.description.GetValue(), dlg.prefix.GetValue(), dlg.file.GetValue()
+            return dlg.description.GetValue(), dlg.prefix.GetValue(), dlg.file.GetValue(), is_subproperty
         else:
-            return None, None, None
+            return None, None, None, False
 
 class AddHierarchicalProperty(wx.Dialog):
 

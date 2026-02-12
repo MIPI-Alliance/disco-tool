@@ -13,6 +13,7 @@
 #
 #  -------------------------------------------------------------------------------
 
+import re
 import xml.etree.ElementTree as et
 import copy
 import os
@@ -945,19 +946,33 @@ class model():
             if parent.find('Name').text == message:
                 parent.find('Description').text = description
 
-    def edit_hier_property_from_modal(self, message, description, prefix, file):
+    def edit_hier_property_from_modal(self, message, description, prefix, file, is_subproperty):
         """
         Changes a property's description, as set from the Edit Description modal
         """
         root = self.curr_tree.getroot()
-        propsTag = root.find('HierarchicalProperties')
+        hierPropsTag = root.find('HierarchicalProperties')
+        propsTag = root.find('Properties')
 
         #finds the property that the user wants to update
-        for parent in propsTag.iter('HierarchicalProperty'):
-            if parent.find('Name').text == message:
-                parent.find('Description').text = description
-                parent.find('PackageNamePrefix').text = prefix
-                parent.find('Filename').text = file
+        if is_subproperty:
+            for parent in propsTag.iter('Property'):
+                try:
+                    if (
+                        parent.find('DependentPackages').find("Package").find("PropertyNamePrefix").text == re.split(r"\d+", message)[0]
+                        and parent.find('DependentPackages').find("Package").find("PropertyNamePostfix").text == re.split(r"\d+", message)[1]
+                    ):
+                        parent.find('DependentPackages').find("Package").find('Description').text = description
+                        parent.find('DependentPackages').find("Package").find('PackageNamePrefix').text = prefix
+                        parent.find('DependentPackages').find("Package").find('Filename').text = file
+                except:
+                    pass
+        else:
+            for parent in hierPropsTag.iter('HierarchicalProperty'):
+                if parent.find('Name').text == message:
+                    parent.find('Description').text = description
+                    parent.find('PackageNamePrefix').text = prefix
+                    parent.find('Filename').text = file
 
     def edit_buff_property_from_modal(self, message, description):
         """

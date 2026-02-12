@@ -757,6 +757,10 @@ class DiscoToolAuiManager(wx.Frame):
             root = tree.getroot()
             file_name = root.find('Name').text + '.xml'
 
+            if as_template and file_name != '_DSD.xml':
+                # if we are saving as a template, we only want to save the parent tree
+                continue
+
             #Print statement for debugging purposes:
             print("FILE NAME:" + file_name)
 
@@ -765,6 +769,7 @@ class DiscoToolAuiManager(wx.Frame):
 
             if as_template:
                 tree_str = re.sub('<Value>[^>]+<\/Value>', '<Value/>', tree_str)
+                tree_str = re.sub('<HierarchicalProperties>[\S\s]+?<\/HierarchicalProperties>', '<HierarchicalProperties/>', tree_str)
 
             tree_str_parsed = md.parseString(tree_str)
 
@@ -823,9 +828,9 @@ class DiscoToolAuiManager(wx.Frame):
             if description is not None:
                 self.model.edit_property_from_modal(message, description)
         elif panel == "HierarchicalProperties":
-            description, prefix, file = self.packages_panel.open_hier_property_edit_frame(message)
+            description, prefix, file, is_subproperty = self.packages_panel.open_hier_property_edit_frame(message)
             if description is not None:
-                self.model.edit_hier_property_from_modal(message, description, prefix, file)
+                self.model.edit_hier_property_from_modal(message, description, prefix, file, is_subproperty)
         elif panel == "BufferProperties":
             description = self.buffprops_panel.open_buff_property_edit_frame(message)
             if description is not None:

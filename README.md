@@ -18,3 +18,7 @@ may be appropriate.
 python -m pip install git+https://github.com/MIPI-Alliance/private-disco-tool.git
 #Windows
 py -m pip install git+https://github.com/MIPI-Alliance/private-disco-tool.git
+
+
+# Compiling into single .exe using pyinstaller
+pyinstaller --onefile --console --clean --collect-all wx --add-data=".\private-disco-tool\src\disco\images;images"  .\private-disco-tool\src\disco\disco_aui_manager.py

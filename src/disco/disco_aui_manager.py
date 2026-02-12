@@ -86,11 +86,21 @@ class DiscoToolAuiManager(wx.Frame):
         uirealpath = os.path.realpath(app_filepath)
         self.app_data_path = os.path.dirname(uirealpath)
         try:
-            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+            self.SetIcon(
+                wx.Icon(
+                    resource_path("images", "MIPIfavicon.ico"),
+                    wx.BITMAP_TYPE_ICO
+            )
+)
         except:
             self.app_data_path = os.path.dirname(disco.__file__)
             self.app_data_path = os.path.join(self.app_data_path, "disco")
-            self.SetIcon(wx.Icon(os.path.join(self.app_data_path,"images", "MIPIfavicon.ico"), wx.BITMAP_TYPE_ICO))
+            self.SetIcon(
+                wx.Icon(
+                    resource_path("images", "MIPIfavicon.ico"),
+                    wx.BITMAP_TYPE_ICO
+            )
+)
 
         self.statusBar = self.CreateStatusBar(1)
 
@@ -108,6 +118,8 @@ class DiscoToolAuiManager(wx.Frame):
         fileMenu.Append(self.item_save)
         self.item_save_as = wx.MenuItem(fileMenu, wx.ID_SAVEAS, "Save &As...", "Save project in new location")
         fileMenu.Append(self.item_save_as)
+        self.item_save_as_template = wx.MenuItem(fileMenu, wx.ID_EDIT, "Save As &Template...", "Save as template file")
+        fileMenu.Append(self.item_save_as_template)
         self.item_generate_asl = wx.MenuItem(fileMenu, wx.ID_NEW, "&Generate ASL", "Generate ASL")
         fileMenu.Append(self.item_generate_asl)
         fileMenu.Append(wx.MenuItem(fileMenu, wx.ID_EXIT, text="E&xit"))
@@ -121,6 +133,7 @@ class DiscoToolAuiManager(wx.Frame):
         
         self.item_save.Enable(False)
         self.item_save_as.Enable(False)
+        self.item_save_as_template.Enable(False)
         self.item_generate_asl.Enable(False)
 
         self.SetMenuBar(menuBar)
@@ -234,13 +247,41 @@ class DiscoToolAuiManager(wx.Frame):
                     self.save_files(message=None)
         self.Destroy()
 
+    def toggle_required(self, event):
+        """Called if user right clicks on a property and chooses to toggle "Required" from the pop up menu"""
+        self.toggled_required(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
+
+    def toggle_oemmodify(self, event):
+        """Called if user right clicks on a property and chooses to toggle "OEMModify" from the pop up menu"""
+        self.toggled_oemmodify(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
+
+    def edit_description_modal(self, event):
+        """Called if user right clicks on a property and chooses to toggle "Edit" from the pop up menu"""
+        self.edited_property_modal(message=self.properties_panel.rightlick_edit_property_name, panel="Properties")
+
+    def toggle_hier_required(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "Required" from the pop up menu"""
+        self.toggled_required(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
+
+    def toggle_hier_oemmodify(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "OEMModify" from the pop up menu"""
+        self.toggled_oemmodify(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
+
+    def edit_hier_description_modal(self, event):
+        """Called if user right clicks on a hierarchical property and chooses to toggle "Edit" from the pop up menu"""
+        self.edited_property_modal(message=self.packages_panel.rightlick_edit_property_name, panel="HierarchicalProperties")
+
     def delete_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
-        self.property_deleted(message=self.properties_panel.delete_property_name)
+        self.property_deleted(message=self.properties_panel.rightlick_edit_property_name)
 
     def delete_hier_property(self, event):
         """Called if user right clicks on a property and chooses "delete" from the pop up menu"""
-        self.hier_property_deleted(message=[self.packages_panel.delete_property_name, None, None, self.curr_tree])
+        self.hier_property_deleted(message=[self.packages_panel.rightlick_edit_property_name, None, None, self.curr_tree])
+
+    def edit_buffer_description_modal(self, event):
+        """Called if user right clicks on a buffer property and chooses to toggle "Edit" from the pop up menu"""
+        self.edited_property_modal(message=self.buffprops_panel.rightlick_edit_property_name, panel="BufferProperties")
 
     def nickname_tree_item(self, event, tree_item_name):
         """Called if user right clicks on a property and chooses "Set Nickname" from the pop up menu"""
@@ -405,6 +446,7 @@ class DiscoToolAuiManager(wx.Frame):
         self.buffprops_panel.addbufferdataBtn.Enable()
         self.item_save.Enable(True)
         self.item_save_as.Enable(True)
+        self.item_save_as_template.Enable(True)
         self.item_generate_asl.Enable(True)
         self.item_new.Enable(False)
         self.item_open.Enable(False)
@@ -432,6 +474,8 @@ class DiscoToolAuiManager(wx.Frame):
                 self.save_files(message=None)
         if id == wx.ID_SAVEAS:
             self.save_dir_dialog()
+        if id == wx.ID_EDIT:
+            self.save_template_dir_dialog()
         if id == wx.ID_NEW:
             # open up an ASL generator window where user enters the device name/_HID or _CID or _ADR
             # and then ASL is generated
@@ -477,6 +521,19 @@ class DiscoToolAuiManager(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             self.has_project_path = True
             self.save_as(message=dlg.GetPath())
+
+        dlg.Destroy()
+
+    def save_template_dir_dialog(self):
+        """
+        Opens a file dialog where the user chooses where they want to save their template
+        """
+        wildcard = "XML Files (*.xml)|*.xml"
+        dlg = wx.FileDialog(self, "Save as Template", wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.has_project_path = True
+            self.save_as(message=dlg.GetPath(), as_template=True)
 
         dlg.Destroy()
 
@@ -675,7 +732,7 @@ class DiscoToolAuiManager(wx.Frame):
                 tree_str_pretty = os.linesep.join([s for s in tree_str_pretty.splitlines() if s.strip()])
                 my_file.write(tree_str_pretty)
 
-    def save_as(self, message):
+    def save_as(self, message, as_template=False):
         """
         Called when user presses the "save as" button or when they save their work for the first time (message is the path the user chose to save to)
         """
@@ -685,28 +742,38 @@ class DiscoToolAuiManager(wx.Frame):
 
         tree_list = self.model.get_tree_list()
 
-        path = os.path.join(message, "packageNameList.npy")
-        with open(path, 'wb') as my_file:
-            np.save(my_file, self.model.get_packageNameList())
+        if not as_template:
+            path = os.path.join(message, "packageNameList.npy")
+            with open(path, 'wb') as my_file:
+                np.save(my_file, self.model.get_packageNameList())
 
-        object = json.dumps(self.model.get_propertyDictionary(), indent=4)
-        path = os.path.join(message, "propertyDict.json")
-        with open(path, "w") as my_file:
-            my_file.write(object)
+            object = json.dumps(self.model.get_propertyDictionary(), indent=4)
+            path = os.path.join(message, "propertyDict.json")
+            with open(path, "w") as my_file:
+                my_file.write(object)
         
         #goes through the list of element trees and adds each one as an xml file to the path the user chose
         for tree in tree_list:
             root = tree.getroot()
             file_name = root.find('Name').text + '.xml'
 
+            if as_template and file_name != '_DSD.xml':
+                # if we are saving as a template, we only want to save the parent tree
+                continue
+
             #Print statement for debugging purposes:
             print("FILE NAME:" + file_name)
 
             #converting element tree to xml (adjust indents/newlines accordingly)
-            tree_str = et.tostring(root)
+            tree_str = et.tostring(root, encoding="unicode")
+
+            if as_template:
+                tree_str = re.sub('<Value>[^>]+<\/Value>', '<Value/>', tree_str)
+                tree_str = re.sub('<HierarchicalProperties>[\S\s]+?<\/HierarchicalProperties>', '<HierarchicalProperties/>', tree_str)
+
             tree_str_parsed = md.parseString(tree_str)
 
-            path = os.path.join(message, file_name)
+            path = message if as_template else os.path.join(message, file_name)
 
             #with open(message + "\\" + file_name,'w') as my_file:
             with open(path, 'w', encoding="utf-8") as my_file:
@@ -733,6 +800,41 @@ class DiscoToolAuiManager(wx.Frame):
 
         tree_list = self.model.get_tree_list()
         self.refresh_tree(tree_list)
+
+    def toggled_required(self, message, panel):
+        """
+        Called when the user toggles 'required' on a property.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        self.model.toggle_required(message, panel)
+
+    def toggled_oemmodify(self, message, panel):
+        """
+        Called when the user toggles 'OEMModify' on a property.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        self.model.toggle_oemmodify(message, panel)
+
+    def edited_property_modal(self, message, panel):
+        """
+        Called when the user edits a property via rightclick.
+        Message consists of that property's name
+        """
+        self.set_data_changed(True)
+        if panel == "Properties":
+            description = self.properties_panel.open_property_edit_frame(message)
+            if description is not None:
+                self.model.edit_property_from_modal(message, description)
+        elif panel == "HierarchicalProperties":
+            description, prefix, file, is_subproperty = self.packages_panel.open_hier_property_edit_frame(message)
+            if description is not None:
+                self.model.edit_hier_property_from_modal(message, description, prefix, file, is_subproperty)
+        elif panel == "BufferProperties":
+            description = self.buffprops_panel.open_buff_property_edit_frame(message)
+            if description is not None:
+                self.model.edit_buff_property_from_modal(message, description)
 
     def property_deleted(self, message):
         """
@@ -1373,7 +1475,8 @@ class HeaderPanel(wx.Panel):
         self.frame_width = mainframesize[0]
         self.vbox = wx.BoxSizer(wx.VERTICAL)
 
-        bmplogo = wx.Image(os.path.join(self.aui_mainframe.app_data_path, "images", "Stacked.bmp"), wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+
+        bmplogo = wx.Bitmap(resource_path("images/Stacked.bmp"))
 
         self.app_name = wx.StaticText(self, -1, "DisCo Creation Tool                            ",
                                       wx.DefaultPosition,
@@ -1422,6 +1525,12 @@ class DiscoToolApp(wx.App):
         disco_frame.CenterOnScreen()
         return True
 
+def resource_path(*relative_parts):
+    if getattr(sys, "frozen", False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, *relative_parts)
 
 def main():
     app = DiscoToolApp(redirect=False)

@@ -15,6 +15,6 @@ may be appropriate.
 
 #how to install disco
 #linux
-python -m pip install git+https://github.com/MIPI-Alliance/private-disco-tool.git
+python -m pip install git+https://github.com/MIPI-Alliance/disco-tool.git
 #Windows
-py -m pip install git+https://github.com/MIPI-Alliance/private-disco-tool.git
+py -m pip install git+https://github.com/MIPI-Alliance/disco-tool.git

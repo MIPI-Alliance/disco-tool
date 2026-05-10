@@ -116,18 +116,6 @@ This property shall only be used when the terminal is connected to a jack input 
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
-			<Name>mipi-sdca-terminal-clock-connection</Name>
-			<DataType>String</DataType>
-			<Required>1</Required>
-			<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package for the clock entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this terminal. 
-This property is required if a clock input pin connection is present.
-</Description>
-			<OEMModify>0</OEMModify>
-			<Value></Value>
-			<Default></Default>
-			<DependentPackages></DependentPackages>
-		</Property>
-		<Property>
 			<Name>mipi-sdca-terminal-connector-type</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
@@ -324,6 +312,18 @@ e.g. {1, 2, 5}</Description>
 	</Properties>
 
 	<HierarchicalProperties>
+		<HierarchicalProperty>
+			<Name>mipi-sdca-terminal-clock-connection</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package for the clock entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this terminal. 
+This property is required if a clock input pin connection is present.
+</Description>
+			<OEMModify>0</OEMModify>
+			<PackageNamePrefix>TC</PackageNamePrefix>
+			<Value></Value>
+			<Filename>Sdca_Placeholder.xml</Filename>
+		</HierarchicalProperty>
 	</HierarchicalProperties>
 
 	<BufferProperties>

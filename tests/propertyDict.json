@@ -1,0 +1,28 @@
+{
+    "_DSD": {
+        "mipi-sdca-control-list": {
+            "0": [
+                "mipi-sdca-control-0x0-subproperties",
+                "C000"
+            ],
+            "1": [
+                "mipi-sdca-control-0x1-subproperties",
+                "C001"
+            ]
+        },
+        "mipi-sdca-entity-id-list": {
+            "1": [
+                "mipi-sdca-entity-id-0x1-subproperties",
+                "E001"
+            ],
+            "2": [
+                "mipi-sdca-entity-id-0x2-subproperties",
+                "E002"
+            ],
+            "3": [
+                "mipi-sdca-entity-id-0x3-subproperties",
+                "E003"
+            ]
+        }
+    }
+}

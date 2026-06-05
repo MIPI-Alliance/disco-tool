@@ -1,0 +1,122 @@
+<?xml version="1.0" ?>
+<Template>
+	<Name>C001</Name>
+	<Header>
+		<TemplateType>Sdca_ControlSelector</TemplateType>
+		<Parents>
+			<Parent>_DSD</Parent>
+		</Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath/>
+	</Header>
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-control-access-layer</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>This property describes which hardware/software layers will be using all controls within this control selector. See SDCA Specification for value of each bit.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-access-mode</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property describes which access mode all control numbers within this control will use. See SDCA Specification for value of each access mode.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-deferrable</Name>
+			<DataType>Boolean</DataType>
+			<Required>0</Required>
+			<Description>False: All control numbers within this control are non-deferrable. 
+True (nonzero): All control numbers within this control are deferrable.
+When this property is not present, it is assumed that all control numbers within this control are non-deferrable. 
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-interrupt-position</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>Bit position in the SDCA interrupt registers for this control. This property is required for all controls that generate interrupts. If this control does not generate interrupts, this property is not present.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-cn-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>An integer containing one bit for each control number implemented by this control. Bit 0 maps to control number 0, bit 18 maps to control number 18, etc. 
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-dc-value</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>If control has an access mode of DC, this property is required and specifies the DC value of the control. This property shall be used if there is a single control number, or all control numbers have the same DC value.</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-default-value</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>This property specifies a system-preferred value of the control. The default value is only applicable to controls with access mode values of RW or Dual.
+This property shall be used if there is a single control number, or all control numbers have the same default value.
+</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-fixed-value</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>TBD</Description>
+			<OEMModify>0</OEMModify>
+			<Value/>
+			<Default/>
+			<DependentPackages/>
+		</Property>
+	</Properties>
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+	<BufferProperties>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-control-range</PropertyName>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>This value is interpreted in accordance with the section Data Types and Ranges for Controls in the SDCA Specification.
+This property shall be used if there is a single control, or all control numbers implement the same range.
+See SDCA Specification for range formats (all little-endian).
+</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName/>
+			<Value/>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+	</BufferProperties>
+</Template>

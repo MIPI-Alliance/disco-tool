@@ -53,10 +53,12 @@
 					<Filename>DPn.xml</Filename>
 					<Description>Package description</Description>
 					<PropertyNamePrefix>mipi-sdw-dp-</PropertyNamePrefix>
+					<PackageNameDataType>Hex</PackageNameDataType>
 					<PropertyNamePostfix>-sink-subproperties</PropertyNamePostfix>
 					<PackageNamePrefix>SK</PackageNamePrefix>
 					<InterpretValue>BitMap</InterpretValue>
 					<HierarchicalProperties></HierarchicalProperties>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
 				</Package>
 			</DependentPackages>
 		</Property>

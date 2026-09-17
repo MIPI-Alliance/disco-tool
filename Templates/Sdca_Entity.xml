@@ -15,23 +15,23 @@
 	</Header>
 	
 	<Properties>
+
 		<Property>
 			<Name>mipi-sdca-entity-type</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property describes entity type. Encoding is defined in the SDCA Specification, Table entitled Enumeration Values for DisCo Property: mipi-sdca-entity-type.
-</Description>
+			<Description>This Property shall contain the Entity Type for this Entity.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
 			<DependentPackages></DependentPackages>
 		</Property>
-        
-        	<Property>
+
+        <Property>
 			<Name>mipi-sdca-entity-label</Name>
 			<DataType>String</DataType>
 			<Required>1</Required>
-			<Description>This property contains the label corresponding with the entity label shown in the SDCA topology diagram for the audio function. E.g. “OT12”, “XU99”</Description>
+			<Description>This Property shall contain the Label for this Entity.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -42,9 +42,8 @@
 			<Name>mipi-sdca-control-list</Name>
 			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>An integer containing one bit for each control selector present in this entity.
-Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.
-</Description>
+			<Description>This Property shall indicate which of the 64 possible Control Selectors are present for this Entity.
+If this Entity does not implement any Controls, then the value of the bitmap shall be zero.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -52,8 +51,7 @@ Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.
 				<Package>
 					<Name>Sdca_ControlSelector</Name>
 					<Filename>Sdca_ControlSelector.xml</Filename>
-					<Description>String encoding of a NameString of an object resolving to a package describing properties for each control selector. n is encoded as a hexadecimal integer. n equals to each bit that bit that is set in mipi-sdca-control-selector-list, encoded as a capitalized hex number without any leading zeros (i.e. %X not %8X or %8x). See Table 19 Control Descriptor for package contents.
-</Description>
+					<Description>This Subproperty shall contain the name of the object that contains Subproperties for one Control Selector for this Entity.</Description>
 					<PropertyNamePrefix>mipi-sdca-control-0x</PropertyNamePrefix>
 					<PropertyNamePostfix>-subproperties</PropertyNamePostfix>
 					<PackageNameDataType>Hex</PackageNameDataType>
@@ -63,315 +61,515 @@ Bit 0 maps to control selector 0, bit 18 maps to control selector 18, etc.
 					<HierarchicalProperties></HierarchicalProperties>
 				</Package>
 			</DependentPackages>
-		</Property>	
+		</Property>
+
+		<!--Pinlist-->
 		<Property>
 			<Name>mipi-sdca-input-pin-list</Name>
 			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>This property describes the connected input pins for this Entity.
-Bin N is set to indicate a connection on pin N. Bit 0 is always 0.
-</Description>
+			<Description>This Property shall indicate which of the 64 possible input pins are connected for this Entity.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
 			<DependentPackages>
-                		<Package>
-					<Name>Sdca_Entity</Name>
-					<Filename>Sdca_Entity.xml</Filename>
-					<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package connected to pin n. n is encoded as a decimal integer (with no leading zeros), for each non-zero bit in mipi-sdca-input-pin-list.
-For a Clock Selector (CX), this is either a Clock Source or another Clock Selector.
-</Description>
+				<Package>
+					<Name>Sdca_Pinlist</Name>
+					<Filename>Sdca_Pinlist.xml</Filename>
+					<Description>This Subproperty shall reference the Entity Descriptor for the Entity connected to input pin n for this Entity.</Description>
 					<PropertyNamePrefix>mipi-sdca-input-pin-</PropertyNamePrefix>
 					<PropertyNamePostfix></PropertyNamePostfix>
-					<PackageNameDataType>Dec</PackageNameDataType>
-					<PackageNamePrefix>E</PackageNamePrefix>
+					<PackageNameDataType>Hex</PackageNameDataType>
+					<PackageNamePrefix>C</PackageNamePrefix>
 					<InterpretValue>BitMap</InterpretValue>
-					<DisableAutoNameGeneration>1</DisableAutoNameGeneration>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
 					<HierarchicalProperties></HierarchicalProperties>
-				</Package>   
-            </DependentPackages>
+				</Package>
+			</DependentPackages>
 		</Property>
+
+		<!--Input Terminal-->
 		<Property>
 			<Name>mipi-sdca-terminal-type</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property describes the terminal type as described in SDCA specification in the tables
-entitled Enumeration Values for DisCo Property mipi-sdca-terminal-type.
-</Description>
+			<Description>This Property shall indicate the Terminal Type for this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-terminal-reference-number</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>An integer representing jack number to which this IT/OT is connected.
-This property shall only be used when the terminal is connected to a jack input (see SDCA spec for details).
-</Description>
+			<Description>This Property shall indicate the Reference Number of the External Peripheral Connection for this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
-			<DependentPackages></DependentPackages>
-		</Property>
-		<Property>
-			<Name>mipi-sdca-terminal-clock-connection</Name>
-			<DataType>String</DataType>
-			<Required>1</Required>
-			<Description>String encoding of a NameString of an object resolving to the Entity Descriptor package for the clock entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this terminal. 
-This property is required if a clock input pin connection is present.
-</Description>
-			<OEMModify>0</OEMModify>
-			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-terminal-connector-type</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>An integer representing connector type to which this IT/OT is connected. This property shall only be used when the terminal has a connector as described in SDCA specification in the tables entitled TODO:Add reference here.</Description>
+			<Description>This Property shall indicate the Terminal Connector Type to which this IT is connected.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-terminal-transducer-count</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>TBD</Description>
+			<Description>This Property shall indicate how many Input Transducers are attached to this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
-			<Name>mipi-sdca-microphone-snr</Name>
+			<Name>mipi-sdca-terminal-pipe-number</Name>
 			<DataType>Integer</DataType>
-			<Required>0</Required>
-			<Description>TBD</Description>
+			<Required>1</Required>
+			<Description>This Property shall indicate the NDAI pipe number associated with this streaming IT.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
-		<Property>
-			<Name>mipi-sdca-microphone-sensitivity</Name>
-			<DataType>Integer</DataType>
-			<Required>0</Required>
-			<Description>TBD</Description>
-			<OEMModify>0</OEMModify>
-			<Value></Value>
-			<Default></Default>
-			<DependentPackages></DependentPackages>
-		</Property>
+
+	<!--Output Terminal-->
+
+	<!--Extension Unit-->
 		<Property>
 			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
 			<DataType>Integer</DataType>
-			<Required>0</Required>
-			<Description>TBD</Description>
+			<Required>1</Required>
+			<Description>This Property shall contain the maximum time in microseconds allowed for this Device to change the ownership from Device to Host in an Rx UMP when Host Software is waiting for the owner to change back to Host.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+		<Property>
+			<Name>mipi-sdca-FDL-reset-mechanism</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the reset mechanism that Host Software should use in response to an FDL Status of Request_Reset.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Extension Unit-->
 		<Property>
 			<Name>mipi-sdca-cs-type</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property indicates whether the Clock Source is synchronous or asynchronous to the bus clock. 
-</Description>
+			<Description>Indicates the type of Clock Source.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-clock-valid-max-delay</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property reports the maximum delay that software needs to wait for clock to be valid.</Description>
+			<Description>This Property shall indicate the maximum delay in microseconds that software needs to wait for clock to be valid for this Clock Source.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+
+	<!--Power Domain Entity-->
 		<Property>
 			<Name>mipi-sdca-powerdomain-managed-list</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>A package containing one integer entry for each entity ID managed by this PDE.
-e.g. Package() {0x1, 0x3, 0x4, 0x15, 0x8, 0x11}
-Note- PDEs do not manage other PDEs.
-</Description>
+			<Description>This Property shall be an array that indicates which Entities are explicitly managed by this PDE.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-powerdomain-transition-typical-delay</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>This property describes typical time it takes to transition from one power state to another. The Package has triplets of integers in the form of From_PS, To_PS, Time(us).
-e.g.
-Package()
-{
-   3, 0, 350 ,
-   0, 3, 50,
-   2, 0, 150,
-   0, 2, 50
-}
-</Description>
+			<Description>This Property shall be an array indicating the typical time in microseconds that this PDE will take to transition from one power state to another.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-powerdomain-transition-max-delay</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>This property describes the maximum time it takes to transition from one power state to another. The Package has triplets of integers in the form of From_PS, To_PS, Time(us).
-e.g.
-Package()
-{
-   3, 0, 500,
-   0, 3, 200,
-   2, 0, 500,
-   0, 2, 200
-}
-</Description>
+			<Description>This Property shall be an array indicating the maximum time in microseconds that this PDE will take to transition from one power state to another.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+
+	<!--Group Entity (GE)-->
 		<Property>
 			<Name>mipi-sdca-ge-managed-terminal-reference-number</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property maps to the value contained in the mipi-sdca-terminal-reference-number within an IT or OT Entity Descriptor.</Description>
+			<Description>This Property shall contain the value of Property mipi-sdca-terminal-reference-number within the Entity Descriptors of the IT(s) and/or OT(s) managed by this GE.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+
+	<!--Security & Privacy Entity-->
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds allowed for the Device to change the ownership from Device to Host in an Rx UMP for this SPE when Host Software is waiting for the owner to change back to Host.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Multi-Function Processing Unit-->
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds allowed for the Device to change the ownership from Device to Host in an Rx UMP for this MFPU when Host Software is waiting for the owner to change back to Host.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Smart Microphon Processing Unit-->
 		<Property>
 			<Name>mipi-sdca-smpu-trigger-ready-max-delay</Name>
 			<DataType>Integer</DataType>
-			<Required>0</Required>
-			<Description>TBD</Description>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds that Host Software will wait for a trigger to be ready for this SMPU.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
-			<Name>mipi-sdca-empty-fifo-count</Name>
+			<Name>mipi-sdca-smpu-empty-fifo-count</Name>
 			<DataType>Integer</DataType>
-			<Required>0</Required>
-			<Description>TBD</Description>
+			<Required>1</Required>
+			<Description>This Property shall indicate the latency in samples for this SMPU between the SMPU buffer and the Output Terminal, i.e., the number of samples that the Host should read after changing Hist_CurrentOwner back to Device before disabling the data port (to ensure Sample continuity between capture streams).</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds allowed for the Device to change the ownership from Device to Host in an Rx UMP for this SMPU when the Host Software is waiting for the owner to change back to Host. </Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Smart Amplifier Processing Unit (SAPU)-->
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds allowed for the Device to change the ownership from Device to Host in an Rx UMP for this SAPU when Host Software is waiting for the owner to change back to Host.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Tone Generator-->
 		<Property>
 			<Name>mipi-sdca-tone-nominal-frequency</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property specifies the base frequency for the tone generator.</Description>
+			<Description>This Property shall indicate the base frequency in Hz for this TG.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+
+	<!--Human Interface Device Entity (HIDE)-->
 		<Property>
 			<Name>mipi-sdca-HIDTx-supported-report-ids</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>A package containing one integer entry for each report id transmitted by this HIDE Tx.
-e.g. {1, 2, 5}</Description>
+			<Description>This Property shall be an array indicating which Reports could be transmitted by this HIDE Tx.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-HIDRx-supported-report-ids</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>A package containing one integer entry for each report id transmitted by this HIDE Rx.
-e.g. {1, 2, 5}</Description>
+			<Description>This Property shall be an array indicating which Reports could be transmitted by this HIDE Rx.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-HIDTx-supported-feature-report-ids</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>This Property shall be an array indicating which Reports could be transmitted by this HIDE Tx.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-HIDRx-supported-feature-report-ids</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>This Property shall be an array indicating which Reports could be transmitted by this HIDE Rx.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
 		<Property>
 			<Name>mipi-sdca-hide-related-audio-function-list</Name>
-			<DataType>Package</DataType>
+			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>A package containing one integer entry for each audio function number within this device that is sending/receiving the messages in this HIDE.</Description>
+			<Description>This Property shall be an array indicating which Audio Function Numbers within this Device are sending/receiving the messages in this HIDE. </Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
-			<Default></Default>
+			<Default>1</Default>
 			<DependentPackages></DependentPackages>
 		</Property>
+		<Property>
+			<Name>mipi-sdca-RxUMP-ownership-transition-max-delay</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the maximum time in microseconds allowed for the Device to change the ownership from Device to Host in an Rx UMP for this HIDE when Host Software is waiting for the owner to change back to Host.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	<!--Wall Clock Entity (WCE)-->
+		<Property>
+			<Name>mipi-sdca-clock-connection</Name>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>This Subproperty shall contain the name of the object that contains the Entity Descriptor of the Clock Entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this WCE.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+	</Properties>
+
+
+
 	</Properties>
 
 	<HierarchicalProperties>
 	</HierarchicalProperties>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	<BufferProperties>
+
+		<!--Input Terminal-->
 		<BufferProperty>
 			<PropertyName>mipi-sdca-microphone-array-geometry</PropertyName>
 			<DataType>String</DataType>
 			<Required>0</Required>
-			<Description>TBD</Description>
+			<Description>This Buffer Property shall contain the name of the buffer that describes the relative location details for the
+microphones within the microphone array connected to this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>
 			<Filename>Sdca_Buffer.xml</Filename>
 		</BufferProperty>
 		<BufferProperty>
-			<PropertyName>mipi-sdca-ge-selectedmode-controls-affected</PropertyName>
+			<PropertyName>mipi-sdca-microphone-array-sensitivity</PropertyName>
 			<DataType>String</DataType>
-			<Required>1</Required>
-			<Description>This property lists each control that will be affected by when a particular mode is selected. n is encoded as a decimal integer and there shall be one entry for each selected mode. The list of available modes is provided by the mipi-sdca-control-number-range property in the Control Selector Descriptor shown in Table
-
-Contents of the buffer contains data in following format. (need more description here)
-
-
+			<Required>0</Required>
+			<Description>This Buffer Property shall contain the name of the buffer that describes the Sensitivity of the microphones
+within the microphone array connected to this IT.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-microphone-array-snr</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall contain the name of the buffer that describes the Signal-to-Noise ratio of the
+microphones within the microphone array connected to this IT.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-reference-description</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall contain the name of the buffer that describes the physical properties of the jack
+connected to this IT.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-prepare-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this IT are prepared for streaming.
+This Property shall only be declared for streaming ITs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-deprepare-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this IT are deprepared for streaming.
+This Property shall only be declared for streaming ITs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-enable-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this IT are enabled for streaming.
+This Property shall only be declared for streaming ITs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-disable-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this IT are disabled for streaming.
+This Property shall only be declared for streaming ITs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-pdm-pcm-wordlength-configs-map</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property is a byte array describing the word width(s) of PCM on the Host that can be accepted (e.g., by the Host Agent) to produce PDM word widths that are supported as input to the Device Function.
+This Property should be present for every streaming IT that supports PDM streaming format(s), unless the PDM-PCM word length mapping is described elsewhere.
+Example:
 Buffer()
 {
-  0x04,  // Mode Count (1-n)
-  0x00,  // Mode 0 (follows)
-    0x03,  // Control Count 
-      // Entity ID 0 (byte)
-      // Control Selector 0 (byte)
-      // Control Number 0 (byte)
-      // Control Value 0 (4 bytes)
-      // Entity ID 1(byte)
-      // Control Selector 1 (byte)
-      // Control Number 1 (byte)
-      // Control Value 1 (4 bytes)
-      // Entity ID 2 (byte)
-      // Control Selector 2 (byte)
-      // Control Number 2 (byte)
-      // Control Value 2 (4 bytes)
-  0x03,  // Mode 3 (follows)
-    0x01,  // Control Count 
-...
-
-  0x11,  // Mode 17 (follows)
-    0x02,  // Control Count 
-...
+0x01, 0x10, // 1 bit PDM -> 16 bit PCM
+0x01, 0x20, // 1 bit PDM -> 32 bit PCM
+0x02, 0x10, // 2 bit PDM -> 16 bit PCM
+0x02, 0x18, // 2 bit PDM -> 24 bit PCM
+0x02, 0x20 // 2 bit PDM -> 32 bit PCM
 }
 </Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-pcm-containersize-configs-map</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property is a byte array describing the container size(s) (i.e., memory word width) of PCM on the Host that can be accepted (e.g., by the Host Agent) to produce various Stream word widths that are supported as input to the Device Function. Where the transport stream is PDM, the Host container size can be found for the corresponding PCM word width as described in the Terminal’s mipi-sdca-terminal-pdm-pcm-wordlength-configs-map.
+This Property should be present for every streaming IT that can be supplied by memory container sizes that differ from the configured Stream word width, unless that mapping is described elsewhere.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+
+	<!--Group Entity (GE)-->
+		<BufferProperty>
+			<PropertyName>mipi-sdca-ge-selectedmode-controls-affected</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall contain the name of the buffer that lists each Control that will be affected when a particular mode is selected for this Group Entity.
+			The contents of the named buffer shall have the following format:
+Buffer()
+{
+ 0x03, // Mode Count (byte:1-n)
+ 0x00, // Mode 0 (follows)
+ 0x03, // Control Count
+ 0x22, // Example of First Entity ID (byte)
+ 0x00, // Example of First Control Selector (byte)
+ 0x03, // Example of First Control Number (byte)
+ 0x34, 0x12, 0x00, 0x00, // Example of First Control Value 0x1234 (4 bytes)
+ ... // Entity ID (byte)
+ ... // Control Selector (byte)
+ ... // Control Number (byte)
+ ... // Control Value (4 bytes)
+ ... // Entity ID (byte)
+ ... // Control Selector (byte)
+ ... // Control Number (byte)
+ ... // Control Value (4 bytes)
+ 0x03, // Mode 3 (follows)
+ 0x01, // Control Count
+ ... // Entity ID (byte)
+ ... // Control Selector (byte)
+ ... // Control Number (byte)
+ ... // Control Value (4 bytes)
+ 0x11, // Mode 17 (follows)
+ 0x01, // Control Count
+ ... // Entity ID (byte)
+ ... // Control Selector (byte)
+ ... // Control Number (byte)
+ ... // Control Value (4 bytes)
+}</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>

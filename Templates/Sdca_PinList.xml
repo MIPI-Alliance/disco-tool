@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+	<Name></Name>
+	<Header>
+		<TemplateType>Sdca_PinList</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-input-pin-list</Name>
+			<DataType>BitMap</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the number of Channels in this Cluster.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages>
+				<Package>
+					<Name>Sdca_Entity</Name>
+					<Filename>Sdca_EntityDescriptor.xml</Filename>
+					<Description>This Subproperty shall reference the Entity Descriptor for the Entity connected to input pin n for this Entity.</Description>
+					<PropertyNamePrefix>mipi-sdca-input-pin</PropertyNamePrefix>
+					<PropertyNamePostfix></PropertyNamePostfix>
+					<PackageNameDataType>Bit</PackageNameDataType>
+					<PackageNamePrefix>E</PackageNamePrefix>
+					<InterpretValue>Package</InterpretValue>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
+		</Property>		
+	</Properties>
+	<HierarchicalProperties>
+
+	</HierarchicalProperties>
+
+	<BufferProperties>
+
+	</BufferProperties>
+</Template>

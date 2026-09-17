@@ -19,7 +19,7 @@
 			<Name>mipi-sdca-channel-count</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property describes number of channels in the cluster. ToDo: Ensure that this property aligns with Channel Information (Table 8). </Description>
+			<Description>This Property shall indicate the number of Channels in this Cluster.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default>1</Default>
@@ -31,7 +31,8 @@
 					<!-- Dependent package file name -->
 					<Filename>Sdca_Channel.xml</Filename>
 					<!-- Dependent package description -->
-					<Description>String encoding of a NameString of an object resolving to a package describing properties for the segment. Number of entries shall be equal to mipi-sdca-channel-count. See Error! Reference source not found. for package contents.</Description>
+					<Description>This Subproperty shall contain the Name of the object that contains Subproperties for one Channel for this Cluster.
+The number of such Properties present shall be equal to the value of Property mipi-sdca-channel-count for this Cluster, with 'n' in the Property String starting at 1 and increasing by 1 until the value of Property mipi-sdca-channel-count is reached.</Description>
 					<!-- Prefix of the property name used to reference this package -->
 					<PropertyNamePrefix>mipi-sdca-channel-</PropertyNamePrefix>
 					<!-- Postfix of the property name used to reference this package -->

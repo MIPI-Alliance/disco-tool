@@ -19,8 +19,18 @@
 			<Name>mipi-sdw-opaqueset-count</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description> This property describes number of permutations of entities and control selectors used in this set.
-</Description>
+			<Description>This Property shall indicate the number of Control Selectors written by this OpaqueSet.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdw-opaqueset-row-n-count</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This property should be user edited and duplicated as needed to match the naming convention as described below.
+This Property shall be an array that describes the Entity ID and Control Selector to be updated when applying the settings in one OpaqueSet row. The data to be written to the Controls is described in Property mipi-sdca-opaqueset-n-data, where values of n range from 1 to the value of Property mipi-sdca-opaqueset-count. The number of such Properties present shall equal the value of Property mipi-sdca-opaqueset-count. For these Properties, the values of n in the Property Strings shall start at 1 and shall increment by 1 until the value of Property mipi-sdca-opaqueset-count is reached.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -32,6 +42,19 @@
 	</HierarchicalProperties>
 
 	<BufferProperties>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-opaqueset-row-n-data</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This property should be user edited and duplicated as needed to match the naming convention as described below.
+This Property shall contain the name of the buffer that contains the bytes to be written to the Controls specified by the Entity and Control Selectors referenced in Property mipi-sdca-opaqueset-n-header sequentially.
+The number of such Properties present shall equal the value of Property mipi-sdca-opaqueset-count. For these Properties, the values of n in the Property Strings shall start at 1 and shall increment by 1 until the value of Property mipi-sdca-opaqueset-count is reached.
+Values: Byte 0 in the target buffer shall be written to Control Number 0; Byte 1 (if present) shall be written to Control Number 1; and so forth. The size of (i.e., the number of bytes in) this buffer may vary from 1-64.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName/>
+			<Value/>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
 	</BufferProperties>
 	
 </Template>

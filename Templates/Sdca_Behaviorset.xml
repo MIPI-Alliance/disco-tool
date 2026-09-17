@@ -19,8 +19,7 @@
 			<Name>mipi-sdca-behavior-set-cbn-list</Name>
 			<DataType>Package</DataType>
 			<Required>1</Required>
-			<Description>This property is a package containing integer entries - one per Class Behavior Number.
-</Description>
+			<Description>This Property shall be an array listing the Class Behaviors for this Behavior Set.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -31,7 +30,7 @@
 			<Name>mipi-sdca-behavior-set-dbn-list</Name>
 			<DataType>Package</DataType>
 			<Required>1</Required>
-			<Description>This property is a package containing integer entries - one per Detailed Behavior Number.</Description>
+			<Description>This Property shall be an array listing the Detailed Behaviors for this Behavior Set.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>

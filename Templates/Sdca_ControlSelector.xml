@@ -19,8 +19,7 @@
 			<Name>mipi-sdca-control-access-layer</Name>
 			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>This property describes which hardware/software layers will be using all controls within this control selector. See SDCA Specification for value of each bit.
-</Description>
+			<Description>This Property shall indicate which Device Function or software layer(s) will be using all Control Numbers within this Control.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -30,8 +29,7 @@
 			<Name>mipi-sdca-control-access-mode</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property describes which access mode all control numbers within this control will use. See SDCA Specification for value of each access mode.
-</Description>
+			<Description>This Property shall indicate the Access Mode that all Control Numbers within this Control will use.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -41,10 +39,10 @@
 			<Name>mipi-sdca-control-deferrable</Name>
 			<DataType>Boolean</DataType>
 			<Required>0</Required>
-			<Description>False: All control numbers within this control are non-deferrable. 
-True (nonzero): All control numbers within this control are deferrable.
-When this property is not present, it is assumed that all control numbers within this control are non-deferrable. 
-</Description>
+			<Description>This Property shall indicate whether the Control Numbers within this Control are deferrable or non-deferrable.
+Values:
+False (Default): All Control Numbers within this Control are non-deferrable.
+True (nonzero): All Control Numbers within this Control are deferrable.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -54,8 +52,7 @@ When this property is not present, it is assumed that all control numbers within
 			<Name>mipi-sdca-control-interrupt-position</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>Bit position in the SDCA interrupt registers for this control. This property is required for all controls that generate interrupts. If this control does not generate interrupts, this property is not present.
-</Description>
+			<Description>This Property shall indicate this Control's position in the SDCA interrupt registers.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -65,18 +62,46 @@ When this property is not present, it is assumed that all control numbers within
 			<Name>mipi-sdca-control-cn-list</Name>
 			<DataType>BitMap</DataType>
 			<Required>1</Required>
-			<Description>An integer containing one bit for each control number implemented by this control. Bit 0 maps to control number 0, bit 18 maps to control number 18, etc. 
+			<Description>This Property shall indicate which Control Numbers this Control implements.
+Values:
+Bit 0 maps to Control Number 0, bit 18 maps to Control Number 18, etc.
+A value of 0b1 in a bit indicates that the Control Number is supported; 0b0 means the Control Number is not supported.
 </Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
-			<DependentPackages></DependentPackages>
+			<DependentPackages>
+				<Package>
+					<Name>Sdca_ControlCN</Name>
+					<Filename>Sdca_ControlCN.xml</Filename>
+					<Description>This Property shall indicate the DC value of one Control Number for this Control.</Description>
+					<PropertyNamePrefix>mipi-sdca-control-cn-</PropertyNamePrefix>
+					<PropertyNamePostfix>-dc-value</PropertyNamePostfix>
+					<PackageNameDataType>Hex</PackageNameDataType>
+					<PackageNamePrefix>N</PackageNamePrefix>
+					<InterpretValue>Integer</InterpretValue>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+				<Package>
+					<Name>Sdca_ControlCN</Name>
+					<Filename>Sdca_ControlCN.xml</Filename>
+					<Description>This Property shall indicate the system-preferred default value for one Control Number for this Control. This default value is not applicable to Controls whose Access Mode is DC or RO.</Description>
+					<PropertyNamePrefix>mipi-sdca-control-cn-</PropertyNamePrefix>
+					<PropertyNamePostfix>-default-value</PropertyNamePostfix>
+					<PackageNameDataType>Hex</PackageNameDataType>
+					<PackageNamePrefix>N</PackageNamePrefix>
+					<InterpretValue>Integer</InterpretValue>
+					<DisableAutoNameGeneration>0</DisableAutoNameGeneration>
+					<HierarchicalProperties></HierarchicalProperties>
+				</Package>
+			</DependentPackages>
 		</Property>			
 		<Property>
 			<Name>mipi-sdca-control-dc-value</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>If control has an access mode of DC, this property is required and specifies the DC value of the control. This property shall be used if there is a single control number, or all control numbers have the same DC value.</Description>
+			<Description>This Property shall indicate the DC value of this Control. If the Control has more than one Control Number (i.e., if Property mipi-sdca-control-cn-list exists), then this value is applied to all Control Numbers.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -86,24 +111,34 @@ When this property is not present, it is assumed that all control numbers within
 			<Name>mipi-sdca-control-default-value</Name>
 			<DataType>Integer</DataType>
 			<Required>0</Required>
-			<Description>This property specifies a system-preferred value of the control. The default value is only applicable to controls with access mode values of RW or Dual.
-This property shall be used if there is a single control number, or all control numbers have the same default value.
-</Description>
+			<Description>This Property shall indicate the system-preferred default value for this Control. If the Control has more than one Control Number (i.e., if Property mipi-sdca-control-cn-list exists), then this value is applied to all Control Numbers. This default value is not applicable to Controls whose Access Mode is DC or RO.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
 			<DependentPackages></DependentPackages>
-		</Property>	
+		</Property>
 		<Property>
 			<Name>mipi-sdca-control-fixed-value</Name>
 			<DataType>Integer</DataType>
 			<Required>0</Required>
-			<Description>TBD</Description>
+			<Description>This Property shall indicate the single, fixed value to which software is permitted to set this Control. This fixed value is not applicable to Controls whose Access Mode is DC or RO. This value informs the Host that it shall not write any other value to this Control. If the Control has more than one Control Number (i.e., if Property mipi-sdca-control-cn-list exists), then this value is applied to all Control Numbers.
+If any Property mipi-sdca-control-cn-<n>-fixed-value exists for this Control, then this Property shall not be present.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
 			<DependentPackages></DependentPackages>
-		</Property>		
+		</Property>
+		<Property>
+			<Name>mipi-sdca-control-cn-n-fixed-value</Name>
+			<DataType>Integer</DataType>
+			<Required>0</Required>
+			<Description>This Property shall indicate the single, fixed value to which software is permitted to set one Control Number for this Control. This fixed value is not applicable to Controls whose Access Mode is DC or RO. This value informs the Host that it shall not write any other value to this Control. If Property mipi-sdca-control-fixed-value exists for this Control, then this Property shall not be present.
+If any Property mipi-sdca-control-cn-n-fixed-value exists for this Control, then one such Property shall be present for every value that appears in Property mipi-sdca-control-cn-list for this Control. For each such Property, the value of n in the Property String shall match the corresponding value in Property mipi-sdca-control-cn-list.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default></Default>
+			<DependentPackages></DependentPackages>
+		</Property>
     </Properties>
 	
 	<HierarchicalProperties>
@@ -115,11 +150,17 @@ This property shall be used if there is a single control number, or all control 
 			<PropertyName>mipi-sdca-control-range</PropertyName>
 			<DataType>String</DataType>
 			<Required>1</Required>
-			<Description>This value is interpreted in accordance with the section Data Types and Ranges for Controls in the SDCA Specification.
-This property shall be used if there is a single control, or all control numbers implement the same range.
-
-See SDCA Specification for range formats (all little-endian).
-</Description>
+			<Description>This Buffer Property shall contain the name of an object that indicates the value range for this Control.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-control-cn-n-range</PropertyName>
+			<DataType>String</DataType>
+			<Required>1</Required>
+			<Description>This Buffer Property shall contain the name of an object that indicates the value range of one Control Number for this Control. This Property shall use the same encoding as Property mipi-sdca-control-range for this Control.</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>

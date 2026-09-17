@@ -1,0 +1,195 @@
+<?xml version="1.0" ?>
+<!-- Version 1.0 -->
+
+<Template>
+	<Name></Name>
+	<Header>
+		<TemplateType>Sdca_OutputTerminal</TemplateType>
+		<Parents></Parents>
+		<Version>1</Version>
+		<Specification>DisCo for Soundwire 1.1</Specification>
+		<Author>MIPI</Author>
+		<TemplatePath></TemplatePath>
+	</Header>
+	
+	<Properties>
+		<Property>
+			<Name>mipi-sdca-terminal-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the Terminal Type for this OT.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-reference-number</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the Reference Number of the External Peripheral Connection for this OT.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-connector-type</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the Terminal Connector Type to which this OT is connected.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-transducer-count</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate how many Input Transducers are attached to this OT.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-pipe-number</Name>
+			<DataType>Integer</DataType>
+			<Required>1</Required>
+			<Description>This Property shall indicate the NDAI pipe number associated with this streaming OT.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+
+		<!--Subproperties but where do they live-->
+		<Property>
+			<Name>mipi-sdca-terminal-clock-connection</Name>
+			<DataType>Sring</DataType>
+			<Required>1</Required>
+			<Description>This Subproperty shall contain the name of the object that contains the Entity Descriptor for the Clock Entity (either a Clock Source or a Clock Selector) that directly supplies the clock to this OT.
+Conditions: This Subproperty shall be present if the OT clock input pin is connected to a CS or CX.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-function-agent-connection</Name>
+			<DataType>Sring</DataType>
+			<Required>1</Required>
+			<Description>This Subproperty shall contain the name of the object that contains the Entity Descriptor for the Function Agent Entity this OT is connected to.
+Conditions: This Subproperty shall be present when this OT is connected to a Function Agent Entity.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-terminal-external-interface-agent-connection</Name>
+			<DataType>Sring</DataType>
+			<Required>1</Required>
+			<Description>This Subproperty shall contain the name of the object that contains the Entity Descriptor for the External Interface Agent Entity this OT is connected to.
+Conditions: This Subproperty shall be present when this OT is connected to an External Interface Agent Entity.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+		<Property>
+			<Name>mipi-sdca-parent-terminal</Name>
+			<DataType>Sring</DataType>
+			<Required>1</Required>
+			<Description>This Subproperty shall contain the name of the object that contains the Entity Descriptor for the Entity that this streaming OT is dependent on.
+Conditions: This Subproperty shall be present when this streaming OT is dependent on another streaming terminal.</Description>
+			<OEMModify>0</OEMModify>
+			<Value></Value>
+			<Default>1</Default>
+			<DependentPackages></DependentPackages>
+		</Property>
+	</Properties>
+
+	<HierarchicalProperties>
+	</HierarchicalProperties>
+
+	<BufferProperties>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-reference-description</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall contain the name of the buffer that describes the physical properties of the jack connected to this OT</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-prepare-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this OT are prepared for streaming.
+This Property shall only be declared for streaming OTs</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-deprepare-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this OT are deprepared for streaming.
+This Property shall only be declared for streaming OTs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-enable-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this OT are enabled for streaming.
+This Property shall only be declared for streaming OTs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-disable-table</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property shall be an array of SoundWire register addresses and the values that need to be written to each such register when channel(s) within the data port(s) associated with this OT are disabled for streaming.
+This Property shall only be declared for streaming OTs.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-pdm-pcm-wordlength-configs-map</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property is a byte array describing the word width(s) of PCM on the Host that can be produced (e.g., by the Host Agent) from various PDM word widths that can be output by the Device Function.
+This Property should be present for every streaming OT that supports PDM streaming format(s), unless the PDM-PCM word length mapping is described elsewhere.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+		<BufferProperty>
+			<PropertyName>mipi-sdca-terminal-pcm-containersize-configs-map</PropertyName>
+			<DataType>String</DataType>
+			<Required>0</Required>
+			<Description>This Buffer Property is a byte array describing the container size(s) (i.e., memory word width) of PCM on the Host that can be produced (e.g., by the Host Agent) from various Stream word widths that can be output by the Device Function. Where the transport stream is PDM, the container size can be found for the corresponding PCM word width as described in the Terminal’s mipi-sdca-terminal-pdm-pcmwordlength-configs-map.
+This Property should be present for every streaming OT that can supply memory container sizes that differ from the configured Stream word width, unless that mapping is described elsewhere.</Description>
+			<OEMModify>0</OEMModify>
+			<BufferName></BufferName>
+			<Value></Value>
+			<Filename>Sdca_Buffer.xml</Filename>
+		</BufferProperty>
+	</BufferProperties>
+</Template>

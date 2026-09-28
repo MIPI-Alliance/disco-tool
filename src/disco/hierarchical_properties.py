@@ -387,7 +387,15 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
         point = event.GetPosition()
 
         # finds the name of the property to be deleted (to be used in the delete_property function)
-        self.delete_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
+        self.rightlick_edit_property_name = self.packs_grid.GetCellValue(event.GetRow(), 0)
+
+        # finds the property that was right-clicked
+        is_currently_required = False
+        is_currently_OEMModify = False
+        for prop in self.main_window.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
+            if prop.find('Name').text == self.rightlick_edit_property_name:
+                is_currently_required = prop.find('Required').text == "1"
+                is_currently_OEMModify = prop.find('OEMModify').text == "1"
 
         # do not allow the user to delete hierarchical properties dynamically created from BitMaps in above properties panel
         enabled = True
@@ -396,15 +404,31 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
             for property_keys, property_values in template_values.items():
                 if not enabled: break
                 for key, (subproperty_name, subproperty_code) in property_values.items():
-                    if self.delete_property_name == subproperty_name:
+                    if self.rightlick_edit_property_name == subproperty_name:
                         enabled = False
                         break
 
         # creates a pop up menu with the option to delete and opens this menu at the correct screen position
         popUpMenu = wx.Menu()
-        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.delete_property_name)
+
+        requiredToggle = wx.MenuItem(popUpMenu, wx.NewId(), "Required", kind=wx.ITEM_CHECK)
+        oemmodifyToggle = wx.MenuItem(popUpMenu, wx.NewId(), "OEMModify", kind=wx.ITEM_CHECK)
+        editDescription = wx.MenuItem(popUpMenu, wx.NewId(), "Edit")
+        deleteItem = wx.MenuItem(popUpMenu, wx.NewId(), "Remove " + self.rightlick_edit_property_name)
+
+        popUpMenu.Append(requiredToggle)
+        requiredToggle.Check(is_currently_required)
+
+        popUpMenu.Append(oemmodifyToggle)
+        oemmodifyToggle.Check(is_currently_OEMModify)
+
+        popUpMenu.Append(editDescription)
         popUpMenu.Append(deleteItem)
         deleteItem.Enabled = enabled
+
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_hier_required, requiredToggle)
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.toggle_hier_oemmodify, oemmodifyToggle)
+        popUpMenu.Bind(wx.EVT_MENU, self.main_window.edit_hier_description_modal, editDescription)
         popUpMenu.Bind(wx.EVT_MENU, self.main_window.delete_hier_property, deleteItem)
         self.PopupMenu(popUpMenu, point)
 
@@ -434,6 +458,42 @@ class HierarchicalPropertyPanel(panel_base.PanelBase):
                     msg = description + ":" + "\n\n" + "String can be entered in any format."
                     # event.GetEventObject().SetToolTip(msg)
                     self.main_window.description_panel.SetValue(msg)
+
+    def open_hier_property_edit_frame(self, message):
+
+        description, prefix, filename = '', '', ''
+        hier_prop_found = False
+        is_subproperty = False
+        for prop in self.main_window.curr_tree.getroot().find('HierarchicalProperties').iter('HierarchicalProperty'):
+            if prop.find('Name').text == message:
+                description = prop.find('Description').text
+                prefix = prop.find('PackageNamePrefix').text
+                filename = prop.find('Filename').text
+                hier_prop_found = True
+
+        if not hier_prop_found:
+            # may be a dependent package, so search for that in Properties instead
+            for prop in self.main_window.curr_tree.getroot().find('Properties').iter('Property'):
+                try:
+                    if (
+                        prop.find('DependentPackages').find("Package").find("PropertyNamePrefix").text == re.split(r"\d+", message)[0]
+                        and prop.find('DependentPackages').find("Package").find("PropertyNamePostfix").text == re.split(r"\d+", message)[1]
+                    ):
+                        description = prop.find('DependentPackages').find("Package").find('Description').text
+                        prefix = prop.find('DependentPackages').find("Package").find('PackageNamePrefix').text
+                        filename = prop.find('DependentPackages').find("Package").find('Filename').text
+                        is_subproperty = True
+                except:
+                    pass
+
+        dlg = EditHierPropertyDialog(self, -1, "Edit Hierarchical Property", size=(520, 700), style=wx.DEFAULT_DIALOG_STYLE, description=description, prefix=prefix, filename=filename)
+        dlg.CenterOnScreen()
+        val = dlg.ShowModal()
+
+        if val == wx.ID_OK:
+            return dlg.description.GetValue(), dlg.prefix.GetValue(), dlg.file.GetValue(), is_subproperty
+        else:
+            return None, None, None, False
 
 class AddHierarchicalProperty(wx.Dialog):
 
@@ -548,7 +608,70 @@ class AddHierarchicalProperty(wx.Dialog):
         vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
         self.SetSizer(vbox_main)
         vbox_main.Fit(self)
-                    
-                    
-                    
-                    
+
+class EditHierPropertyDialog(wx.Dialog):
+
+    def __init__(self, parent, ID, title, size=wx.DefaultSize, pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE, description="", prefix="", filename=""):
+        wx.Dialog.__init__(self, parent, ID, title, pos, size, style)
+        self.parent = parent
+        pre = wx.Dialog()
+        pre.SetExtraStyle(wx.DIALOG_EX_CONTEXTHELP)
+        pre.Create(parent, ID, title, pos, size, style)
+
+        vbox_main = wx.BoxSizer(wx.VERTICAL)
+
+        descriptionLabel = wx.StaticText(self, label="Description:")
+        app_constants.set_title_font(descriptionLabel)
+        self.description = wx.TextCtrl(self, -1, value=description, size=(400, 400), style=wx.TE_MULTILINE)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(descriptionLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.description, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        prefixLabel = wx.StaticText(self, label="Package name prefix:")
+        app_constants.set_title_font(prefixLabel)
+        self.prefix = wx.TextCtrl(self, value=prefix, size=(300, -1))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(prefixLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.prefix, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        fileLabel = wx.StaticText(self, label="File name:")
+        app_constants.set_title_font(fileLabel)
+        self.file = wx.TextCtrl(self, value=filename, size=(300, -1))
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(fileLabel, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT | wx.TOP, 10)
+        self.SetSizer(vbox_main)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.file, 0, wx.LEFT, 10)
+        vbox_main.Add(hbox, 0, wx.LEFT, 10)
+        self.SetSizer(vbox_main)
+
+        buttonsizer = wx.StdDialogButtonSizer()
+
+        ok_button = wx.Button(self, wx.ID_OK, size=(85, 35))
+        app_constants.set_button_font(ok_button)
+        ok_button.SetDefault()
+        buttonsizer.AddButton(ok_button)
+
+        cancel_button = wx.Button(self, wx.ID_CANCEL, size=(85, 35))
+        app_constants.set_button_font(cancel_button)
+        buttonsizer.AddButton(cancel_button)
+        buttonsizer.Realize()
+        vbox_main.Add(buttonsizer, 0, wx.ALL, 5)
+        self.SetSizer(vbox_main)

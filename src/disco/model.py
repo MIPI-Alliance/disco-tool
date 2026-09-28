@@ -13,6 +13,7 @@
 #
 #  -------------------------------------------------------------------------------
 
+import re
 import xml.etree.ElementTree as et
 import copy
 import os
@@ -901,8 +902,94 @@ class model():
         child = et.SubElement(parents, "Parent")
         child.text = parent_name
 
-    #deletes a normal property from current element tree
+    def toggle_required(self, message, panel):
+        """
+        Toggles the 'Required' value of a property
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find(panel)
+        singularTag = panel[:-3] + "y" # Propert + y, HierarchicalPropert + y, BufferPropert + y
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter(singularTag):
+            if parent.find('Name').text == message:
+
+                # flip required
+                required = parent.find('Required').text
+                parent.find('Required').text = "0" if required == "1" else "1"
+
+    def toggle_oemmodify(self, message, panel):
+        """
+        Toggles the 'OEMModify' value of a property
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find(panel)
+        singularTag = panel[:-3] + "y" # Propert + y, HierarchicalPropert + y, BufferPropert + y
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter(singularTag):
+            if parent.find('Name').text == message:
+
+                # flip OEMModify
+                required = parent.find('OEMModify').text
+                parent.find('OEMModify').text = "0" if required == "1" else "1"
+
+    def edit_property_from_modal(self, message, description):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('Properties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('Property'):
+            if parent.find('Name').text == message:
+                parent.find('Description').text = description
+
+    def edit_hier_property_from_modal(self, message, description, prefix, file, is_subproperty):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        hierPropsTag = root.find('HierarchicalProperties')
+        propsTag = root.find('Properties')
+
+        #finds the property that the user wants to update
+        if is_subproperty:
+            for parent in propsTag.iter('Property'):
+                try:
+                    if (
+                        parent.find('DependentPackages').find("Package").find("PropertyNamePrefix").text == re.split(r"\d+", message)[0]
+                        and parent.find('DependentPackages').find("Package").find("PropertyNamePostfix").text == re.split(r"\d+", message)[1]
+                    ):
+                        parent.find('DependentPackages').find("Package").find('Description').text = description
+                        parent.find('DependentPackages').find("Package").find('PackageNamePrefix').text = prefix
+                        parent.find('DependentPackages').find("Package").find('Filename').text = file
+                except:
+                    pass
+        else:
+            for parent in hierPropsTag.iter('HierarchicalProperty'):
+                if parent.find('Name').text == message:
+                    parent.find('Description').text = description
+                    parent.find('PackageNamePrefix').text = prefix
+                    parent.find('Filename').text = file
+
+    def edit_buff_property_from_modal(self, message, description):
+        """
+        Changes a property's description, as set from the Edit Description modal
+        """
+        root = self.curr_tree.getroot()
+        propsTag = root.find('BufferProperties')
+
+        #finds the property that the user wants to update
+        for parent in propsTag.iter('BufferProperty'):
+            if parent.find('PropertyName').text == message:
+                parent.find('Description').text = description
+
     def delete_property(self, message):
+        """
+        Deletes a normal property from current element tree
+        """
         root = self.curr_tree.getroot()
         propsTag = root.find('Properties')
 

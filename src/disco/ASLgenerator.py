@@ -66,8 +66,8 @@ class ASLgenerator():
             if adr_value != "":
                 self.asl_file.write('   Name(_ADR, '+adr_value+')\n\n')
 
-            #master hierarchical list keeps track of the hierarchical properties from all of the element trees added to the asl file so far
-            self.master_hierarchical_list = []
+            #manager hierarchical list keeps track of the hierarchical properties from all of the element trees added to the asl file so far
+            self.manager_hierarchical_list = []
         
         # if this tree contains a buffer property, then add that buffer property and value to the asl file and return 
         props_tag = self.curr_tree.find('Properties')
@@ -195,19 +195,19 @@ class ASLgenerator():
         #this method is recursively called on any buffer properties in order to add those properties to the asl file
         for buff_prop in buffer_list:
 
-            #if a buffer property from this tree doesn't exist in master_hierarchical_list, add it there and then generate the asl-
+            #if a buffer property from this tree doesn't exist in manager_hierarchical_list, add it there and then generate the asl-
             #this is to prevent shared packages from being included more than once in the asl file
-            if buff_prop[1] not in self.master_hierarchical_list:
-                self.master_hierarchical_list.append(buff_prop[1])
+            if buff_prop[1] not in self.manager_hierarchical_list:
+                self.manager_hierarchical_list.append(buff_prop[1])
                 self.generate_asl(buff_prop[1], device_name, None, None, None, None)
 
         #this method is recursively called on any hierarchical properties in order to add those packages to the asl file
         for hier_prop in new_hierarchical_list:
 
-            #if a hierarchical property from this tree doesn't exist in master_hierarchical_list, add it there and then generate the asl-
+            #if a hierarchical property from this tree doesn't exist in manager_hierarchical_list, add it there and then generate the asl-
             #this is to prevent shared buffer properties from being included more than once in the asl file
-            if hier_prop[1] not in self.master_hierarchical_list:
-                self.master_hierarchical_list.append(hier_prop[1])
+            if hier_prop[1] not in self.manager_hierarchical_list:
+                self.manager_hierarchical_list.append(hier_prop[1])
                 self.generate_asl(hier_prop[1], device_name, None, None, None, None)
 
         #ends the asl file once all hierarchical properties have been recursively added

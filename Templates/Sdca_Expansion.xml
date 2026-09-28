@@ -19,7 +19,7 @@
 			<Name>mipi-sdca-function-expansion-subsystem-id</Name>
 			<DataType>Integer</DataType>
 			<Required>1</Required>
-			<Description>This property describes a subsystem ID to be used to determine the correct function expansion driver to be installed/loaded. This value is vendor-specific.</Description>
+			<Description>This Property shall contain a Subsystem ID to be used to determine the correct Function Expansion Driver to be installed/loaded.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -29,7 +29,7 @@
 			<Name>mipi-sdca-function-expansion-subsystem-revision-id</Name>
 			<DataType>Integer</DataType>
 			<Required>0</Required>
-			<Description>This optional property provides a subsystem revision ID to be used to determine the correct function expansion driver to be installed/loaded. This value is vendor-specific.</Description>
+			<Description>This Property shall contain a Subsystem Revision ID to be used to determine the correct Function Expansion Driver to be installed/loaded.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>
@@ -39,8 +39,8 @@
 			<Name>mid-*</Name>
 			<DataType>Integer</DataType>
 			<Required>0</Required>
-			<Description>Vendor may add any vendor specific properties to this descriptor. This is the only descriptor in SDCA where Vendor can specify implementation defined properties. 
-Note that the vendor prefix represented by mid is the vendor's MIPI Manufacturer ID, a four-digit hexadecimal number. E.g. 0339-sample-property for a Dell-defined property.</Description>
+			<Description>This Property shall contain vendor-specific Property information. The vendor may use this Property to add any desired vendor-specific Properties to this Descriptor.
+Note: This is the only SDCA Descriptor that permits the Vendor to include implementation-defined Properties.</Description>
 			<OEMModify>0</OEMModify>
 			<Value></Value>
 			<Default></Default>

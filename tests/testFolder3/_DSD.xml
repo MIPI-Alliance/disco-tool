@@ -10,7 +10,7 @@
 	<Header>
 		
 		
-		<TemplateType>SDW_Slave</TemplateType>
+		<TemplateType>SDW_Peripheral</TemplateType>
 		
 		
 		<Parents/>
@@ -176,7 +176,7 @@ Example: 0x00010000 indicates that the contained properties shall be interpreted
 			<Required>0</Required>
 			
 			
-			<Description>True (nonzero): This Slave only supports the simplified clock stop prepare state machine, and will always be ready for a clock stop transition.</Description>
+			<Description>True (nonzero): This Peripheral only supports the simplified clock stop prepare state machine, and will always be ready for a clock stop transition.</Description>
 			
 			
 			<OEMModify>0</OEMModify>
@@ -207,10 +207,10 @@ Example: 0x00010000 indicates that the contained properties shall be interpreted
 			<Required>0</Required>
 			
 			
-			<Description>Slave-specific timeout in milliseconds. 
-This value indicates the worst-case latency of the Clock Stop Prepare state machine transitions. After receiving a successful clock stop prepare/de-prepare command, the Slave should complete the operation before the expiration of the timeout. Software may poll for completion periodically, or wait for this timeout value. If the requested action has not completed at the end of this timeout, software shall interpret this as an error condition. 
+			<Description>Peripheral-specific timeout in milliseconds. 
+This value indicates the worst-case latency of the Clock Stop Prepare state machine transitions. After receiving a successful clock stop prepare/de-prepare command, the Peripheral should complete the operation before the expiration of the timeout. Software may poll for completion periodically, or wait for this timeout value. If the requested action has not completed at the end of this timeout, software shall interpret this as an error condition. 
 It is recommended that this value be lower than 300 ms. 
-This property shall not be used when a Slave implements a Simplified ClockStopPrepare state machine.</Description>
+This property shall not be used when a Peripheral implements a Simplified ClockStopPrepare state machine.</Description>
 			
 			
 			<OEMModify>0</OEMModify>
@@ -232,7 +232,7 @@ This property shall not be used when a Slave implements a Simplified ClockStopPr
 		<Property>
 			
 			
-			<Name>mipi-sdw-slave-channelprepare-timeout</Name>
+			<Name>mipi-sdw-peripheral-channelprepare-timeout</Name>
 			
 			
 			<DataType>Integer</DataType>
@@ -241,11 +241,11 @@ This property shall not be used when a Slave implements a Simplified ClockStopPr
 			<Required>0</Required>
 			
 			
-			<Description>Slave-specific Timeout value in milliseconds. 
-This value indicates the worst-case latency of the Channel Prepare state machine transitions. After receiving a successful channel prepare/de-prepare command, the Slave should complete the operation before the expiration of the timeout. 
+			<Description>Peripheral-specific Timeout value in milliseconds. 
+This value indicates the worst-case latency of the Channel Prepare state machine transitions. After receiving a successful channel prepare/de-prepare command, the Peripheral should complete the operation before the expiration of the timeout. 
 Software may poll for completion periodically or wait for this timeout value. If the requested action has not completed at the end of this timeout, software shall interpret this as an error condition. 
 It is recommended this value be lower than 30 ms, in order to comply with typical operating system certification requirements for cold boot latency for the audio subsystem. The timeout value is assumed to be the same for all channels in all ports. 
-This property shall not be used when a Slave implements a Simplified ChannelPrepare state machine. </Description>
+This property shall not be used when a Peripheral implements a Simplified ChannelPrepare state machine. </Description>
 			
 			
 			<OEMModify>0</OEMModify>
@@ -400,7 +400,7 @@ This property shall not be used when a Slave implements a Simplified ChannelPrep
 			<Required>0</Required>
 			
 			
-			<Description>Slave behavior when the Master attempts a Read to the Port15 alias. 
+			<Description>Peripheral behavior when the Manager attempts a Read to the Port15 alias. 
 0: Command_Ignored 
 1: Command_OK, data is logical OR of all registers 
 All other values: Reserved. </Description>
@@ -425,7 +425,7 @@ All other values: Reserved. </Description>
 		<Property>
 			
 			
-			<Name>mipi-sdw-master-count</Name>
+			<Name>mipi-sdw-manager-count</Name>
 			
 			
 			<DataType>Integer</DataType>
@@ -434,8 +434,8 @@ All other values: Reserved. </Description>
 			<Required>0</Required>
 			
 			
-			<Description>If present, this property describes the number of Masters present on this Slave. 
-For a Slave containing one or more Masters, this property is Required and its value shall not be Zero</Description>
+			<Description>If present, this property describes the number of Managers present on this Peripheral. 
+For a Peripheral containing one or more Managers, this property is Required and its value shall not be Zero</Description>
 			
 			
 			<OEMModify>0</OEMModify>
@@ -453,13 +453,13 @@ For a Slave containing one or more Masters, this property is Required and its va
 				<Package>
 					
 					
-					<Name>SDW_Master</Name>
+					<Name>SDW_Main</Name>
 					
 					
-					<Filename>Master.xml</Filename>
+					<Filename>Main.xml</Filename>
 					
 					
-					<Description>String encoding of a NameString of an object resolving to a package describing properties for each master. The number of these entries shall be equal to the value of mipi-sdw-master-count.</Description>
+					<Description>String encoding of a NameString of an object resolving to a package describing properties for each manager. The number of these entries shall be equal to the value of mipi-sdw-manager-count.</Description>
 					
 					
 					<PropertyNamePrefix>mipi-sdw-link-</PropertyNamePrefix>

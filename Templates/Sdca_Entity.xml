@@ -410,14 +410,13 @@ If this Entity does not implement any Controls, then the value of the bitmap sha
 
 	<BufferProperties>
 
-		<!--Input Terminal-->
-		<!--Output Terminal-->
+		<!--Input/Output Terminal-->
 		<BufferProperty>
 			<PropertyName>mipi-sdca-microphone-array-geometry</PropertyName>
 			<DataType>String</DataType>
 			<Required>0</Required>
 			<Description>This Buffer Property shall contain the name of the buffer that describes the relative location details for the
-microphones within the microphone array connected to this IT or OT.</Description>
+microphones within the microphone array connected to this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>
@@ -428,7 +427,7 @@ microphones within the microphone array connected to this IT or OT.</Description
 			<DataType>String</DataType>
 			<Required>0</Required>
 			<Description>This Buffer Property shall contain the name of the buffer that describes the Sensitivity of the microphones
-within the microphone array connected to this IT or OT.</Description>
+within the microphone array connected to this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>
@@ -439,7 +438,7 @@ within the microphone array connected to this IT or OT.</Description>
 			<DataType>String</DataType>
 			<Required>0</Required>
 			<Description>This Buffer Property shall contain the name of the buffer that describes the Signal-to-Noise ratio of the
-microphones within the microphone array connected to this IT or OT.</Description>
+microphones within the microphone array connected to this IT.</Description>
 			<OEMModify>0</OEMModify>
 			<BufferName></BufferName>
 			<Value></Value>

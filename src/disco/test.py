@@ -427,7 +427,7 @@ class TestModel(unittest.TestCase):
         my_model.set_curr_tree('_DSD')
 
         #calls the delete_property function on the element tree
-        my_model.delete_property('mipi-sdw-master-count')
+        my_model.delete_property('mipi-sdw-manager-count')
         tree = my_model.get_curr_tree()
         tree_list = my_model.get_tree_list()
 
@@ -439,7 +439,7 @@ class TestModel(unittest.TestCase):
 
         #makes sure the property that was just deleted no longer exists in the element tree
         for prop in tree.getroot().find('Properties').iter('Property'):
-            if prop.find('Name').text == 'mipi-sdw-master-count':
+            if prop.find('Name').text == 'mipi-sdw-manager-count':
                 found = True
 
         self.assertEqual(False, found, 'property was not deleted')
@@ -563,7 +563,7 @@ class TestModel(unittest.TestCase):
         my_model.set_curr_tree('_DSD')
 
         #calls the add_hier_property function on the element tree
-        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'MS', 'MS02', 'Master.xml', 'mipi-sdca-control-list', 'Sdca_ControlSelector'])
+        my_model.add_new_hier_property(['new-property', 'String', '0', 'description', '0', 'MS', 'MS02', 'Main.xml', 'mipi-sdca-control-list', 'Sdca_ControlSelector'])
         tree = my_model.get_curr_tree()
         tree_list = my_model.get_tree_list()
 

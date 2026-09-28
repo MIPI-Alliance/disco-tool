@@ -269,7 +269,7 @@
 			<OEMModify>0</OEMModify>
 			<PackageNamePrefix>MS</PackageNamePrefix>
 			<Value>MS00</Value>
-			<Filename>Master.xml</Filename>
+			<Filename>Main.xml</Filename>
 		</HierarchicalProperty>
 	</HierarchicalProperties>
 	

@@ -326,11 +326,11 @@ class model():
 
             #populates the to_add and to_delete lists accordingly
             if old_value == 0:
-                to_add = range(1, value + 1)
+                to_add = list(range(1, value + 1))
             elif value > old_value:
-                to_add = range(old_value + 1, value + 1)
+                to_add = list(range(old_value + 1, value + 1))
             else:
-                to_delete = range(value + 1, old_value + 1)
+                to_delete = list(range(value + 1, old_value + 1))
 
         if interpret_value == 'Package':
 
